@@ -1,15 +1,15 @@
-# Dataset Links
+OCR: 
+https://www.kaggle.com/datasets/hojjatk/mnist-dataset/data  60k images
 
-## OCR
-- [MNIST Dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset/data)
+summaries:
+https://huggingface.co/datasets/abisee/cnn_dailymail 300k
+https://huggingface.co/datasets/kmfoda/booksum 400k
 
-## Summaries
-- [CNN/DailyMail](https://huggingface.co/datasets/abisee/cnn_dailymail)
-- [BookSum](https://huggingface.co/datasets/kmfoda/booksum)
+QA:
+https://huggingface.co/datasets/rajpurkar/squad_v2 130k
 
-## Question Answering (QA)
-- [SQuAD v2](https://huggingface.co/datasets/rajpurkar/squad_v2)
+MCQ:
+https://huggingface.co/datasets/allenai/sciq 11.7k
+https://huggingface.co/datasets/yyyyifan/TQA - with images 3.29k
 
-## Multiple Choice Questions (MCQ)
-- [SciQ](https://huggingface.co/datasets/allenai/sciq)
-- [TQA](https://huggingface.co/datasets/yyyyifan/TQA)
+
