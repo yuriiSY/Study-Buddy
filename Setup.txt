@@ -1,0 +1,128 @@
+# FinalTeamProject — Step‑by‑Step Setup (Windows + Docker Desktop + VS Code)
+_Last updated: 2025-09-24 19:00 UTC_
+
+This guide gets **Postgres + pgAdmin + Backend** running, and optionally the **Frontend**. It assumes your repo root is `C:\FinalTeamProject`.
+
+---
+
+## 0) Prerequisites
+- **Docker Desktop** installed and running.
+- **VS Code** (optional but recommended).
+- **Node.js on host is NOT required** (we’ll run Node inside Docker).
+
+---
+
+## 1) Start database services
+```powershell
+cd C:\FinalTeamProject
+docker compose -f backend\docker-compose.yml up -d postgres pgadmin
+docker compose -f backend\docker-compose.yml logs -f postgres
+```
+- pgAdmin: open http://localhost:5050 and login (see **Ports & Passwords** below).
+
+---
+
+## 2) Backend environment
+Create `backend/.env`:
+```ini
+PORT=5000
+DATABASE_URL="postgresql://admin:secret@postgres:5432/mydb?schema=public"
+```
+> If you ever run the backend directly on Windows (not Docker), switch host to `localhost` in `DATABASE_URL`.
+
+---
+
+## 3) Build and start the backend
+```powershell
+# Build image and start backend (and DB if not already running)
+docker compose -f backend\docker-compose.yml up -d --build backend
+docker compose -f backend\docker-compose.yml logs -f backend
+```
+
+If you see `nodemon: not found` or `@prisma/client did not initialize yet`, initialize deps/client in the bind-mounted workspace:
+```powershell
+docker compose -f backend\docker-compose.yml run --rm backend bash -lc "npm ci && npx prisma generate"
+docker compose -f backend\docker-compose.yml up -d backend
+docker compose -f backend\docker-compose.yml logs -f backend
+```
+
+---
+
+## 4) Generate Prisma client & run migrations (first time or after schema changes)
+```powershell
+docker compose -f backend\docker-compose.yml exec backend bash -lc "npx prisma generate"
+docker compose -f backend\docker-compose.yml exec backend bash -lc "npx prisma migrate dev --name init"
+```
+> These commands must run **inside the running backend container** so they write to the same `node_modules` used at runtime.
+
+---
+
+## 5) Verify the API
+- Open http://localhost:5000/ (should respond `Backend running...`).
+- Any API routes (e.g., `/api/users`) should respond after DB is initialized.
+
+---
+
+## 6) (Optional) Frontend
+Build a production image that serves the Vite build via `serve` on port `5173`:
+```powershell
+# Only if you added frontend Dockerfile + service
+docker compose -f backend\docker-compose.yml up -d --build frontend
+docker compose -f backend\docker-compose.yml logs -f frontend
+```
+Access: http://localhost:5173/
+
+**Dev proxy (if the app does API calls):** In `frontend/vite.config.js`
+```js
+export default { server: { proxy: { "/api": "http://localhost:5000" } } }
+```
+
+---
+
+## 7) Common lifecycle commands
+```powershell
+# show services
+docker compose -f backend\docker-compose.yml ps
+
+# tails logs
+docker compose -f backend\docker-compose.yml logs -f backend
+
+# shell in backend
+docker compose -f backend\docker-compose.yml exec backend bash
+
+# selective rebuild + restart
+docker compose -f backend\docker-compose.yml build backend
+docker compose -f backend\docker-compose.yml up -d backend
+
+# stop everything (keeps DB volume)
+docker compose -f backend\docker-compose.yml down
+
+# wipe containers + volumes (DB data loss)
+docker compose -f backend\docker-compose.yml down -v
+```
+
+---
+
+## 8) Ports & Passwords (defaults)
+- **Backend (Express/Prisma):** http://localhost:5000
+- **Frontend (Vite build via `serve`):** http://localhost:5173
+- **pgAdmin:** http://localhost:5050
+  - Email: `admin@admin.com`
+  - Password: `secret`
+- **Postgres:** host `localhost` (from host) or `postgres` (from containers); port **5432**
+  - User: `admin`
+  - Password: `secret`
+  - DB: `mydb`
+  - Example URL (inside Docker): `postgresql://admin:secret@postgres:5432/mydb?schema=public`
+  - Example URL (from host): `postgresql://admin:secret@localhost:5432/mydb?schema=public`
+
+>**Change these credentials for non‑demo environments.** Store secrets securely.
+
+---
+
+## 9) Troubleshooting quick hits
+- **`nodemon: not found`** → run `npm ci` inside the backend container (bind mount overwrote image’s node_modules).
+- **`@prisma/client did not initialize yet`** → run `npx prisma generate` inside the backend container; avoid masking `node_modules` with anonymous volumes.
+- **Port in use** → change the **left** side of `ports:` in `docker-compose.yml`, e.g., `5001:5000`, then `up -d`.
+- **pgAdmin can’t reach DB** → host inside Compose is `postgres`; from host use `localhost:5432`.
+
