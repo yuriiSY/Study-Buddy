@@ -1,0 +1,18 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+# Install only production deps for serving the build
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+# Build the Vite app
+RUN npm run build
+
+# Serve with a lightweight web server
+RUN npm install -g serve
+
+EXPOSE 5173
+CMD ["serve", "-s", "dist", "-l", "5173"]

@@ -1,4 +1,4 @@
-import prisma from "../prismaClient.js";
+import prisma from "../prismaClient.js"; // from controllers
 
 // GET all users
 export const getUsers = async (req, res) => {
