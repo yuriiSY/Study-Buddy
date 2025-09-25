@@ -1,5 +1,6 @@
 OCR: 
-https://www.kaggle.com/datasets/hojjatk/mnist-dataset/data  60k images
+https://www.kaggle.com/datasets/hojjatk/mnist-dataset/data  60k images for digits
+https://huggingface.co/datasets/Teklia/IAM-line 6.48 K train set, 2.92 k test,976 validation for sentence recognition
 
 summaries:
 https://huggingface.co/datasets/abisee/cnn_dailymail 300k
