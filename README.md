@@ -17,16 +17,12 @@ AI Study Buddy is a simple app to help students study better. It combines tools 
 ## Team
 Team of 4 members:
 - [**Anika Siddiqui**](https://github.com/merelyaname) - Frontend Developer
-- **Rumaysa Babulkhair**
-- **Rumaysa Babulkhair**
-- **Rumaysa Babulkhair**
+- [**Yuri Sykal**](https://github.com/yuriiSY) - Backend Developer
+- [**Rumaysa Babulkhair**](https://github.com/rumaysaa) - Backend Developer
+- [**Lorenzo Palleschir**](https://github.com/LP1911) - Frontend Developer
 
 
 📖 Further documentation can be found in the [Documentation branch](https://github.com/yuriiSY/FinalTeamProject/tree/Documentation).
-
-📄 **MIT License**
-
-# Final Project
 
 ## Prerequisites
 
