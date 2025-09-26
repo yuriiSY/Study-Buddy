@@ -10,6 +10,7 @@ Some of the Key Features**
 -	Multimodal Input
 -	Peer Matching
 
+📖 Further documentation can be found in the [Documentation branch](https://github.com/yuriiSY/FinalTeamProject/tree/Documentation).
 
 📄 **MIT License**
 
