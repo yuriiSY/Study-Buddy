@@ -1,14 +1,26 @@
-**AI Study Buddy is a web-based application which aims to enhance a student’s learning and study routine. With the use of schedules, note summaries, quizzes and more, studying can become less of a task and become more effective.
-Some of the Key Features**
+# AI Study Buddy
 
--	Note Uploading
--	Quiz Generation
--	Pomodoro Timer
--	Gamified System
--	Knowledge Gap Detection
--	AI Tutoring
--	Multimodal Input
--	Peer Matching
+AI Study Buddy is a simple app to help students study better. It combines tools like uploading notes (text, PDFs, images, audio, videos), making quizzes, using a Pomodoro timer, earning rewards, finding weak spots, chatting with an AI tutor, connecting with study partners, and discussing topics in a community forum (like StackOverflow). The app is built to be fast, grow with more users, and easy to update.
+
+## What It Does
+
+- **Upload Notes**: Add text, PDFs or images(like lecture slides or handwritten notes). The app reads them with AI.
+- **Audio/Video Support**: Upload lecture audio or videos to get transcripts, summaries, or quizzes.
+- **Quizzes**: Creates practice quizzes from your notes to help you learn.
+- **Pomodoro Timer**: Helps you focus with timed study and break sessions.
+- **Rewards**: Earn points, badges, and climb the leaderboard for studying.
+- **Find Weak Spots**: Shows what you need to study more based on your notes.
+- **AI Tutor**: Ask questions and get clear answers, like a personal tutor.
+- **Study Partners**: Connects you with students studying similar topics.
+- **Community Forum**: Discuss topics, ask questions, and share tips.
+
+## Team
+Team of 4 members:
+- [**Anika Siddiqui**](https://github.com/merelyaname) - Frontend Developer
+- **Rumaysa Babulkhair**
+- **Rumaysa Babulkhair**
+- **Rumaysa Babulkhair**
+
 
 📖 Further documentation can be found in the [Documentation branch](https://github.com/yuriiSY/FinalTeamProject/tree/Documentation).
 
