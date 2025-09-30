@@ -19,7 +19,7 @@ Team of 4 members:
 - [**Anika Siddiqui**](https://github.com/merelyaname) - Frontend Developer
 - [**Yuri Sykal**](https://github.com/yuriiSY) - Backend Developer
 - [**Rumaysa Babulkhair**](https://github.com/rumaysaa) - Backend Developer
-- [**Lorenzo Palleschir**](https://github.com/LP1911) - Frontend Developer
+- [**Lorenzo Palleschi**](https://github.com/LorenzoP83) - Frontend Developer
 
 
 📖 Further documentation can be found in the [Documentation branch](https://github.com/yuriiSY/FinalTeamProject/tree/Documentation).
