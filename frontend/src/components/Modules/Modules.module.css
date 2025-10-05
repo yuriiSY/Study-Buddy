@@ -1,0 +1,15 @@
+.modules {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media (min-width: 768px) {
+  .modules {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+   }
+}
