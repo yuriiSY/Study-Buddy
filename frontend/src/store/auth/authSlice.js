@@ -1,49 +1,57 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 
 export const loginUser = createAsyncThunk(
-  'auth/login',
+  "auth/login",
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post('https://your-api-url.com/api/login', credentials);
+      const response = await axios.post(
+        "http://localhost:4000/api/auth/signin",
+        credentials
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+      return rejectWithValue(error.response?.data?.message || "Login failed");
     }
   }
 );
-
 
 export const registerUser = createAsyncThunk(
-  'auth/register',
+  "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post('https://your-api-url.com/api/register', userData);
+      const response = await axios.post(
+        "http://localhost:4000/api/auth/signup",
+        userData
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Registration failed');
+      return rejectWithValue(
+        error.response?.data?.message || "Registration failed"
+      );
     }
   }
 );
+
+const token = localStorage.getItem("token");
 
 const initialState = {
   user: null,
   token: null,
   loading: false,
   error: null,
-  isLoggedIn: false,
+  isLoggedIn: !!token,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     logoutUser: (state) => {
       state.user = null;
       state.token = null;
       state.isLoggedIn = false;
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
     },
   },
   extraReducers: (builder) => {
@@ -58,10 +66,10 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.isLoggedIn = true;
-        localStorage.setItem('token', action.payload.token);
+        localStorage.setItem("token", action.payload.token);
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.isLoggedIn = true;
+        state.isLoggedIn = false;
         state.loading = false;
         state.error = action.payload;
       })
@@ -74,8 +82,8 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
-        state.isLoggedIn = true;
-        localStorage.setItem('token', action.payload.token);
+        state.isLoggedIn = false;
+        localStorage.setItem("token", action.payload.token);
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;

@@ -1,0 +1,38 @@
+[
+  {
+    "title": "Create New Study Space",
+    "description": "Setup your module, upload materials and start studying with your Tutor AI.",
+    "image": "create_study_space.png",
+    "linkUrl": "#"
+  },
+  {
+    "title": "Resume Study",
+    "description": "Continue studying from where you left.",
+    "image": "resume_study.png",
+    "linkUrl": "#"
+  },
+  {
+    "title": "Self - Asessment",
+    "description": "Make your concepts stronger by practising brainstorming questions.",
+    "image": "self_asessment.png",
+    "linkUrl": "#"
+  },
+  {
+    "title": "Mock Exams",
+    "description": "Comprehensive 2-hour practice test with all question types. Prepares you fully for your  exam.",
+    "image": "mock_exams.png",
+    "linkUrl": "#"
+  },
+  {
+    "title": "Smart Revisions",
+    "description": "Revise your concepts by Flashcards and get help with hints",
+    "image": "smart_revision.png",
+    "linkUrl": "#"
+  },
+  {
+    "title": "Achievements",
+    "description": "Visual progress tracking with detailed analytics",
+    "image": "achievments.png",
+    "linkUrl": "#"
+  }
+]

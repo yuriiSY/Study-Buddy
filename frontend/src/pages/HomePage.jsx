@@ -1,17 +1,19 @@
-import MainMenu from '../components/MainMenu/MainMenu';
-import Layout from '../components/Layout/Layout';
-import Modules from '../components/Modules/Modules';
-import Footer from '../components/Footer/Footer';
-
+import Layout from "../components/Layout/Layout";
+import Header from "../components/Header/Header";
+import CardsSection from "../components/CardsSection/CardsSection";
+import HotDiscussions from "../components/HotDiscussions/HotDiscussions";
+import styles from "./HomePage.module.css";
 
 export const HomePage = () => {
   return (
-  <>
-    <Layout>
-        <MainMenu />
-        <Modules />
-    </Layout>
-    {/* <Footer /> */}
-  </>
+    <>
+      <Layout>
+        <Header />
+        <div className={styles.homePage}>
+          <CardsSection />
+          <HotDiscussions />
+        </div>
+      </Layout>
+    </>
   );
 };

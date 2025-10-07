@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import authRouter from "./routes/authRouter.js";
+import dotenv from "dotenv";
 
+dotenv.config();
 export const app = express();
 
 // Middleware
