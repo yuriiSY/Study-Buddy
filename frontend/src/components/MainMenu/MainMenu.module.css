@@ -1,0 +1,28 @@
+.header {
+    padding: 10px;
+}
+
+.menuList{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    list-style: none;
+}
+
+.menuItem:last-child {
+  margin-left: auto;
+} 
+
+.link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+
+.link:hover,
+.link:active,
+.link:visited {
+  text-decoration: none;
+  color: inherit;
+}

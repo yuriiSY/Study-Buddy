@@ -1,0 +1,178 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #656596;
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: #1a1a1a;
+  padding: 0.5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #ddd;
+}
+
+.stats {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stats li {
+  background-color: #fff;
+  color: #333;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.userMenu {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #fff;
+}
+
+.logoLink {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.statLink {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.loginLink {
+  text-decoration: none;
+  color: #fff;
+  background-color: #4a4a8c;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.authLinks {
+  display: flex;
+  gap: 8px;
+}
+
+.userSection {
+  position: relative;
+}
+
+.userMenu {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 6px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.arrow {
+  color: #fff;
+  font-size: 12px;
+}
+
+.dropdown {
+  position: absolute;
+  top: 55px;
+  right: 0;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 180px;
+  padding: 10px 0;
+  z-index: 10;
+  animation: fadeIn 0.2s ease;
+}
+
+.menuItem {
+  display: block;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
+
+.menuItem:hover {
+  background: #f3f4f6;
+}
+
+.divider {
+  margin: 8px 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+.logout {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #e53e3e;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.logout:hover {
+  background: #ffecec;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

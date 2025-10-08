@@ -1,0 +1,10 @@
+.addCard {
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    width: 250px;
+    height: 150px;
+    padding: 15px;
+    border: 1px dashed #273da4;
+    border-radius: 8px;
+}
