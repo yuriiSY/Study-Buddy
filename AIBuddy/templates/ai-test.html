@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Test Page</title>
+</head>
+<body>
+  <h1>Welcome to the AI Test Page</h1>
+  <p>This is a simple HTML page for testing AI functionality for AI Study Buddy.</p>
+
+  <form id="aiForm" method="post">
+    <textarea id="userInput" name="userInput" rows="5" cols="50" placeholder="How can I help you?"></textarea><br>
+    <button type="submit">Submit Query</button>
+  </form>
+
+  {% if response %}
+    <h2>AI Response:</h2>
+    <p>{{ response }}</p>
+  {% endif %}
+</body>
+</html>
