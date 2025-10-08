@@ -7,7 +7,7 @@
 • Frequent meetings allowed for the workflow of the week to be smooth  
 • Figma design updated with a cleaner visual  
 • Code for Figma design is making good progress  
-• Registrations prototype page working, thanks to Yurii 
+• Registrations prototype page working, thanks to Yurii  
 • Initial logo was designed by Lorenzo  
 ### What to improve
 • **Meeting time** was dragged out in one case leading to a drawn out 2 hour meeting  
@@ -18,4 +18,3 @@
 • Feedback will be received during weekly overview before making any further UI changes  
 • DB architecture needs further evaluation
 
-## Week 4 Retrospectives:
