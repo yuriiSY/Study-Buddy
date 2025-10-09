@@ -10,11 +10,13 @@
 • Registrations prototype page working, thanks to Yurii  
 • Initial logo was designed by Lorenzo  
 ### What to improve
-• **Meeting time** was dragged out in one case leading to a drawn out 2 hour meeting  
-• Partial functionality of the AI Study Buddy remains tbd (Various features)  
-• Further documentation during each members updates  
+• **Meeting time** was dragged out in one case which lead to an extensive meeting, delaying our professor for a lecture  
+• Team members currently have a disjointed idea of features and their idea of functionality is not matching yet.  
+• Lack of a proper document explaining our project with functionality requirements, lit review.  
+• Maintaining a regular throughput of work rather than a few chosen condensed work days.    
 ### What actions are being taken
-• Ensure meetings are pre-timed with a rough time estimate  
-• Feedback will be received during weekly overview before making any further UI changes  
-• DB architecture needs further evaluation
+• Clearer meeting schedules with duration predefined. End result has a list of action points and members assigned with deadlines  
+• For each new feature implemented, a document will be created listing how it should would and how it's implemented.  
+• Weekly feedback is also playing a large part in the development and design  
+• Create a detailed project proposal document with functional requirements, technical architecture, lit review and methodology.  
 
