@@ -1,7 +1,7 @@
-# FinalTeamProject — Step‑by‑Step Setup (Windows + Docker Desktop + VS Code)
-_Last updated: 2025-09-24 19:00 UTC_
+# Study-Buddy — Step‑by‑Step Setup (Windows + Docker Desktop + VS Code)
+_Last updated: 2025-10-09 19:00 UTC_
 
-This guide gets **Postgres + pgAdmin + Backend** running, and optionally the **Frontend**. It assumes your repo root is `C:\FinalTeamProject`.
+This guide gets **Postgres + pgAdmin + Backend** running, and optionally the **Frontend**. It assumes your repo root is `C:\Study-Buddy`.
 
 ---
 
@@ -14,7 +14,7 @@ This guide gets **Postgres + pgAdmin + Backend** running, and optionally the **F
 
 ## 1) Start database services
 ```powershell
-cd C:\FinalTeamProject
+cd C:\Study-Buddy
 docker compose -f backend\docker-compose.yml up -d postgres pgadmin
 docker compose -f backend\docker-compose.yml logs -f postgres
 ```
