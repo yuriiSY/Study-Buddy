@@ -8,7 +8,6 @@ import { LoginPage } from "./pages/LoginPage/LoginPage";
 
 
 export default function App() {
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="h-screen flex items-center justify-center">
