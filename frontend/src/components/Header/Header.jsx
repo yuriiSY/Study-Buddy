@@ -30,7 +30,6 @@ const Header = () => {
 
   return (
     <header className={styles.header}>
-      {/* Logo */}
       <div className={styles.logoSection}>
         <a href="/" className={styles.logoLink}>
           <img src={logoImg} alt="Study Buddy Logo" className={styles.logo} />
@@ -41,7 +40,6 @@ const Header = () => {
         </a>
       </div>
 
-      {/* Stats (visible only when logged in) */}
       {isLoggedIn && (
         <ul className={styles.stats}>
           <li>
@@ -67,7 +65,6 @@ const Header = () => {
         </ul>
       )}
 
-      {/* Right side: User avatar or Sign In */}
       <div className={styles.userSection} ref={menuRef}>
         {isLoggedIn ? (
           <>

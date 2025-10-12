@@ -8,9 +8,11 @@
   margin-left: auto;
   margin-right: auto;
   height: 100vh;
-  background: 
-    linear-gradient(to right, rgba(255, 255, 0, .5), rgba(255, 0, 0, .5)),
-    linear-gradient(rgba(0, 255, 0, .7) 25%, rgba(255, 0, 0, .7) 75%);
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.8),
+    rgba(74, 74, 140, 0.9)
+  );
 }
 
 .container {
@@ -20,7 +22,7 @@
   width: 335px;
   padding: 24px 24px 24px 24px;
   transform: translate(-50%, -50%);
-  background: #151515;;
+  background: #151515;
   box-sizing: border-box;
   border-radius: 10px;
 }
@@ -39,7 +41,7 @@
 }
 
 .toggleOption:hover {
-  color: #F0B13A;
+  color: #656596;
 }
 
 .separator {
@@ -48,7 +50,7 @@
 }
 
 .active {
-  color: #DD9713;
+  color: #656596;
   font-weight: 600;
 }
 
@@ -59,7 +61,7 @@
 }
 
 .formImage {
-  width: 120px; 
+  width: 120px;
   height: auto;
   object-fit: contain;
 }
