@@ -20,3 +20,21 @@
 • Weekly feedback is also playing a large part in the development and design  
 • Create a detailed project proposal document with functional requirements, technical architecture, lit review and methodology.  
 
+
+## Week 4 Retrospectives:
+### What went well  
+• Tasks were assigned to individuals well  
+• Once again, good collaboration where needed e.g., feedback & task assistance  
+• Detailed meetings provided clarity and kept the group on track  
+• Figma was once again improved after the feedback given from the presentation  
+• Coding process of the pages is coming along well  
+• AI and its functionality is also improving
+• Tasks are now being done more consistently throughout the weeks 
+### What to improve  
+• Still need to improve on documentation of our tasks  
+• The UI design has minor disagreements of where some sections should be   
+• AI is yet to be fully selected  
+### What actions are being taken  
+• Additional diagrams are being made for use-cases and the technical architecture  
+• Additional sketches are being drawn to speed up the process of changes rather than full Figma re-designs  
+• Discussions of budget and benefits of the AI are being finalised
