@@ -3,11 +3,16 @@ import psycopg2
 from psycopg2.extras import Json
 from dotenv import load_dotenv
 import os
+import requests
+import openai
 
 app = Flask(__name__)
 
 # Load environment variables
 load_dotenv()
+
+# Load OpenAI API key from environment variables
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 # Database configuration
 db_config = {
@@ -83,6 +88,58 @@ def insert_fixed_embedding():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/get-file-from-onedrive', methods=['POST'])
+def get_file_from_onedrive():
+    try:
+        # Get the fileId from the request body
+        data = request.get_json()
+        file_id = data.get('fileId')
+
+        if not file_id:
+            return jsonify({"error": "fileId is required"}), 400
+
+        # Construct the OneDrive file URL dynamically
+        file_url = f"https://graph.microsoft.com/v1.0/me/drive/items/{file_id}/content"
+
+        # Fetch the file from OneDrive
+        response = requests.get(file_url, headers={
+            "Authorization": f"Bearer {os.getenv('ONEDRIVE_ACCESS_TOKEN')}"
+        })
+        response.raise_for_status()
+
+        # Extract file content (assuming text content for simplicity)
+        file_content = response.text
+
+        # Generate embeddings using OpenAI
+        embedding_response = openai.Embedding.create(
+            input=file_content,
+            model="text-embedding-ada-002"
+        )
+        embedding = embedding_response['data'][0]['embedding']
+
+        # Save the embedding to the database
+        conn = psycopg2.connect(**db_config)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO embeddings (vector, metadata)
+            VALUES (%s, %s)
+            """,
+            (embedding, Json({"fileId": file_id}))
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({"message": "File processed and embedding saved successfully"}), 200
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+    except openai.error.OpenAIError as e:
+        return jsonify({"error": f"OpenAI API error: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=3000)
