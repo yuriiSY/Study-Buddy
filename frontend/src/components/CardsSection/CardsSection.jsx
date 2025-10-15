@@ -20,17 +20,27 @@ const images = {
 };
 
 const CardsSection = () => {
+  const latestFileId = localStorage.getItem("latestFileId");
+
   return (
     <div className={styles.cardsSection}>
-      {cardsData.map((card, index) => (
-        <Card
-          key={index}
-          title={card.title}
-          description={card.description}
-          imageUrl={images[card.image]}
-          linkUrl={card.linkUrl}
-        />
-      ))}
+      {cardsData.map((card, index) => {
+        let link = card.linkUrl;
+
+        if (card.title === "Resume Study" && latestFileId) {
+          link = `${card.linkUrl}/${latestFileId}`;
+        }
+
+        return (
+          <Card
+            key={index}
+            title={card.title}
+            description={card.description}
+            imageUrl={images[card.image]}
+            linkUrl={link}
+          />
+        );
+      })}
     </div>
   );
 };

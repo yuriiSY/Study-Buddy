@@ -3,13 +3,13 @@
     "title": "Create New Study Space",
     "description": "Setup your module, upload materials and start studying with your Tutor AI.",
     "image": "create_study_space.png",
-    "linkUrl": "#"
+    "linkUrl": "/materials"
   },
   {
     "title": "Resume Study",
     "description": "Continue studying from where you left.",
     "image": "resume_study.png",
-    "linkUrl": "#"
+    "linkUrl": "/studyspace"
   },
   {
     "title": "Self - Asessment",

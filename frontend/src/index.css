@@ -1,5 +1,4 @@
-@import 'modern-normalize/modern-normalize.css';
-
+@import "modern-normalize/modern-normalize.css";
 
 html {
   box-sizing: border-box;
@@ -15,7 +14,7 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Poppins', Arial, sans-serif;
+  font-family: "Poppins", Arial, sans-serif;
   font-weight: 400;
   font-size: 14px;
   letter-spacing: -0.02em;
@@ -30,7 +29,7 @@ h5,
 h6,
 p {
   margin: 0;
-  font-family: 'Poppins', Arial, sans-serif;
+  font-family: "Poppins", Arial, sans-serif;
   font-weight: 600;
 }
 
@@ -81,6 +80,15 @@ select {
 
 .MuiInputBase-root.MuiOutlinedInput-root {
   border: none;
-  outline: none; 
-  
+  outline: none;
+}
+
+.image-responsive {
+  width: 300px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+  margin: 1rem auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
