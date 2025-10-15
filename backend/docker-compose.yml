@@ -1,7 +1,7 @@
 services:
   postgres:
-    image: postgres:15
-    container_name: postgres_db
+    image: ankane/pgvector:latest
+    container_name: postgres-pgvector
     restart: always
     environment:
       POSTGRES_USER: admin
@@ -32,7 +32,7 @@ services:
     working_dir: /app
     command: npm run dev
     ports:
-      - "5000:5000"
+      - "5100:5100"
     volumes:
       - .:/app
     env_file:
