@@ -30,4 +30,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@4.1.0
         with:
           branch: gh-pages
+          token: ${{ secrets.GH_PAT }}
           folder: ./frontend/dist
