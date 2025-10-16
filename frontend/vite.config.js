@@ -1,17 +1,19 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
-// https://vitejs.dev/config/
-export default defineConfig({
+const repoName = "/Study-Buddy/";
+
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
+  base: mode === "production" ? repoName : "/",
   server: {
-    host: true,       // allow access from Docker container
+    host: true, // allow access from Docker container
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://backend:5000', // container-to-container call
-        changeOrigin: true
-      }
-    }
-  }
-})
+      "/api": {
+        target: "http://backend:5000", // container-to-container call
+        changeOrigin: true,
+      },
+    },
+  },
+}));
