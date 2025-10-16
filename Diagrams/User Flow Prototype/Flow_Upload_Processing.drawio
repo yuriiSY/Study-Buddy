@@ -1,1 +1,52 @@
-<mxfile host="app.diagrams.net" modified="2025-10-08T23:22:50.352772Z" agent="python" version="22.0.0"><diagram id="175996577035278" name="User Flow: Upload Notes &amp; Processing"><mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" math="0" shadow="0"><root><mxCell id="0" /><mxCell id="1" parent="0" /><mxCell id="title" value="User Flow: Upload Notes &amp; Processing" style="text;whiteSpace=wrap;html=1;fontStyle=1;fontSize=18;" vertex="1" parent="1"><mxGeometry x="60" y="20" width="800" height="40" as="geometry" /></mxCell><mxCell id="s1" value="Dashboard → Upload (text/pdf/image/audio/video)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="60" y="100" width="260" height="80" as="geometry" /></mxCell><mxCell id="s2" value="API stores file → Object Storage" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="360" y="100" width="260" height="80" as="geometry" /></mxCell><mxCell id="e1" value="" style="endArrow=classic;" edge="1" parent="1" source="s1" target="s2"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="s3" value="API enqueues job → Redis queue" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="660" y="100" width="260" height="80" as="geometry" /></mxCell><mxCell id="e2" value="" style="endArrow=classic;" edge="1" parent="1" source="s2" target="s3"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="s4" value="Worker runs OCR/ASR/Summarisation" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="960" y="100" width="260" height="80" as="geometry" /></mxCell><mxCell id="e3" value="" style="endArrow=classic;" edge="1" parent="1" source="s3" target="s4"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="s5" value="Worker writes outputs → DB + Storage" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1260" y="100" width="260" height="80" as="geometry" /></mxCell><mxCell id="e4" value="" style="endArrow=classic;" edge="1" parent="1" source="s4" target="s5"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="s6" value="Notification to user (WS/Email)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="60" y="240" width="260" height="80" as="geometry" /></mxCell><mxCell id="e5" value="" style="endArrow=classic;" edge="1" parent="1" source="s5" target="s6"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="s7" value="User opens processed note summary" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="360" y="240" width="260" height="80" as="geometry" /></mxCell><mxCell id="e6" value="" style="endArrow=classic;" edge="1" parent="1" source="s6" target="s7"><mxGeometry relative="1" as="geometry" /></mxCell></root></mxGraphModel></diagram></mxfile>
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.2.5 Chrome/138.0.7204.251 Electron/37.6.1 Safari/537.36" version="28.2.5">
+  <diagram id="175996577035278" name="User Flow: Upload Notes &amp; Processing">
+    <mxGraphModel dx="1508" dy="592" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;User Flow: Upload Notes &amp;amp; Processing&lt;/font&gt;" style="text;whiteSpace=wrap;html=1;fontStyle=1;fontSize=18;" parent="1" vertex="1">
+          <mxGeometry x="60" y="20" width="800" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;Dashboard → Upload (text/pdf/image/audio/video)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="60" y="100" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;API stores file → Object Storage&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="360" y="100" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="" style="endArrow=classic;" parent="1" source="s1" target="s2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;API enqueues job → Redis queue&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="660" y="100" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="" style="endArrow=classic;" parent="1" source="s2" target="s3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;Worker runs OCR/ASR/Summarisation&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="960" y="100" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="" style="endArrow=classic;" parent="1" source="s3" target="s4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;Worker writes outputs → DB + Storage&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1260" y="100" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="" style="endArrow=classic;" parent="1" source="s4" target="s5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;Notification to user (WS/Email)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="60" y="240" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="" style="endArrow=classic;" parent="1" source="s5" target="s6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s7" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;User opens processed note summary&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="360" y="240" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="" style="endArrow=classic;" parent="1" source="s6" target="s7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
