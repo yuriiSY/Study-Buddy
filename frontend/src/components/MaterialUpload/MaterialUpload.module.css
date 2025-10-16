@@ -1,0 +1,52 @@
+.uploadBox {
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.heading {
+  color: #4a58d8;
+  margin-bottom: 0.5rem;
+}
+
+.radioGroup {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  color: #555;
+}
+
+.dropArea {
+  border: 2px dashed #cfd6f0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  color: #888;
+}
+
+.uploadBox {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fff;
+  width: 100%;
+}
+
+.dropArea:hover {
+  background: #f0f8ff;
+}
+
+.uploadBtn {
+  background: #99c2ff;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.uploadBtn:disabled {
+  background: #99c2ff;
+  cursor: not-allowed;
+}
