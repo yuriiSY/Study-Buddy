@@ -17,7 +17,7 @@ genai.configure(api_key=GEMINI_API_KEY)
 
 class SmartHybridAssistant:
     def __init__(self):
-        print("🎯 Starting Smart Hybrid Assistant - Notes First, Intelligence Second!")
+        print("Starting Smart Hybrid Assistant - Notes First, Intelligence Second!")
         
         # Load embedding model for document search
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -25,9 +25,9 @@ class SmartHybridAssistant:
         # Initialize Gemini model
         try:
             self.gemini_model = genai.GenerativeModel('gemini-2.0-flash-exp')
-            print("✅ Gemini model loaded successfully!")
+            print("Gemini model loaded successfully!")
         except Exception as e:
-            print(f"❌ Error loading Gemini: {e}")
+            print(f"Error loading Gemini: {e}")
             raise
         
         # Initialize storage
@@ -59,12 +59,12 @@ class SmartHybridAssistant:
                         if hasattr(shape, "text"):
                             text += shape.text + "\n"
             
-            print(f"📄 Extracted {len(text)} characters from {filename}")
+            print(f"Extracted {len(text)} characters from {filename}")
             self.full_text = text
             return text
             
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"Error: {e}")
             return ""
     
     def chunk_text(self, text):
@@ -97,7 +97,7 @@ class SmartHybridAssistant:
         faiss.normalize_L2(embeddings)
         self.index.add(embeddings.astype(np.float32))
         
-        print(f"✅ Processed {len(chunks)} chunks from {filename}")
+        print(f"Processed {len(chunks)} chunks from {filename}")
         return True
     
     def find_relevant_text(self, question, top_k=5):
@@ -150,7 +150,7 @@ class SmartHybridAssistant:
         context_texts = [item['text'] for item in relevant_texts]
         context = "\n\n".join(context_texts[:3])  # Use top 3 most relevant
         
-        print(f"🔍 Notes sufficiency: {sufficiency} (avg score: {avg_score:.3f})")
+        print(f"Notes sufficiency: {sufficiency} (avg score: {avg_score:.3f})")
         
         if sufficiency == "sufficient":
             # Primary: Use notes with minimal supplementation
@@ -217,11 +217,11 @@ Answer as a helpful tutor:"""
             
             # Add metadata about source
             if sufficiency == "sufficient":
-                source_info = "📚 Primarily from your notes"
+                source_info = "Primarily from your notes"
             elif sufficiency == "partial":
-                source_info = "📚 Based on your notes + general knowledge"
+                source_info = "Based on your notes + general knowledge"
             else:
-                source_info = "🌍 General knowledge (notes don't cover this)"
+                source_info = "General knowledge (notes don't cover this)"
             
             return {
                 'answer': answer,
@@ -232,12 +232,12 @@ Answer as a helpful tutor:"""
             }
             
         except Exception as e:
-            print(f"❌ Gemini error: {e}")
+            print(f"Gemini error: {e}")
             # Fallback: just return the notes content
             if context_texts:
                 return {
                     'answer': "Based on your notes:\n\n" + "\n\n".join(context_texts[:3]),
-                    'source': '📚 Direct from notes (fallback)',
+                    'source': 'Direct from notes (fallback)',
                     'sufficiency': 'partial',
                     'relevance_score': avg_score,
                     'found_chunks': len(relevant_texts)
@@ -245,7 +245,7 @@ Answer as a helpful tutor:"""
             else:
                 return {
                     'answer': "No relevant information found in your notes.",
-                    'source': '❌ No notes content',
+                    'source': 'No notes content',
                     'sufficiency': 'insufficient',
                     'relevance_score': 0,
                     'found_chunks': 0
@@ -411,19 +411,17 @@ def health():
     })
 
 if __name__ == '__main__':
-    print("🎯 SMART HYBRID Study Assistant Ready!")
-    print("📚 Uses your notes FIRST, supplements intelligently when needed!")
-    print("\n📝 Endpoints:")
+    print("\nEndpoints:")
     print("   POST /upload        - Upload study materials")
     print("   POST /ask           - Ask questions (smart hybrid approach)")
     print("   POST /explain       - Explain concepts with notes context")
     print("   GET  /analyze_notes - See what topics your notes cover")
     print("   GET  /health        - Check status")
     
-    print("\n🎯 How it works:")
-    print("   • 🔍 Analyzes if your notes have sufficient information")
-    print("   • 📚 Uses notes content as primary source")
-    print("   • 🧠 Intelligently supplements when notes are insufficient")
-    print("   • 🔗 Connects general knowledge to your notes context")
+    print("\nHow it works:")
+    print("   • Analyzes if your notes have sufficient information")
+    print("   • Uses notes content as primary source")
+    print("   • Intelligently supplements when notes are insufficient")
+    print("   • Connects general knowledge to your notes context")
     
     app.run(debug=True, host='0.0.0.0', port=5000)

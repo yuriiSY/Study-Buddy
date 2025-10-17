@@ -17,7 +17,7 @@ genai.configure(api_key=GEMINI_API_KEY)
 
 class ConciseStudyAssistant:
     def __init__(self):
-        print("🎯 Starting Concise Study Assistant - Short & Focused Answers!")
+        print("Starting Study Assistant")
         
         # Load embedding model for document search
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -25,9 +25,9 @@ class ConciseStudyAssistant:
         # Initialize Gemini model
         try:
             self.gemini_model = genai.GenerativeModel('gemini-2.0-flash-exp')
-            print("✅ Gemini model loaded successfully!")
+            print("Gemini model loaded successfully!")
         except Exception as e:
-            print(f"❌ Error loading Gemini: {e}")
+            print(f"Error loading Gemini: {e}")
             raise
         
         # Initialize storage
@@ -59,12 +59,12 @@ class ConciseStudyAssistant:
                         if hasattr(shape, "text"):
                             text += shape.text + "\n"
             
-            print(f"📄 Extracted {len(text)} characters from {filename}")
+            print(f"Extracted {len(text)} characters from {filename}")
             self.full_text = text
             return text
             
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"Error: {e}")
             return ""
     
     def chunk_text(self, text):
@@ -97,7 +97,7 @@ class ConciseStudyAssistant:
         faiss.normalize_L2(embeddings)
         self.index.add(embeddings.astype(np.float32))
         
-        print(f"✅ Processed {len(chunks)} chunks from {filename}")
+        print(f"Processed {len(chunks)} chunks from {filename}")
         return True
     
     def find_relevant_text(self, question, top_k=3):
@@ -118,7 +118,7 @@ class ConciseStudyAssistant:
         return results
     
     def generate_concise_answer(self, question, relevant_texts):
-        """Generate SHORT, focused answers"""
+        """Generate answers"""
         
         if not relevant_texts:
             # Very short response for no content
@@ -128,7 +128,7 @@ class ConciseStudyAssistant:
         context = "\n".join(relevant_texts[:2])
         
         # STRICT prompt for concise answers
-        prompt = f"""Provide a SHORT answer (2-3 sentences MAX). Use notes first, supplement briefly if needed.
+        prompt = f"""Provide an answer(dont make it too long or out of question topic!). Use notes first, supplement briefly if needed.
 
 Question: {question}
 
@@ -159,12 +159,12 @@ Answer in 2-3 concise sentences:"""
             return relevant_texts[0] if relevant_texts else "Not in notes."
     
     def explain_concept_concise(self, concept):
-        """Explain a concept in 3-4 sentences MAX"""
+        
         relevant_texts = self.find_relevant_text(concept)
         
         context = "\n".join(relevant_texts[:2]) if relevant_texts else "No specific notes content."
         
-        prompt = f"""Explain this concept in 3-4 SHORT sentences MAX. Be direct and focused.
+        prompt = f"""Explain this concept in an easy way in a student friendly manner. Dont go off topic, use notes first, keep it on point and use your knowledge if needed.
 
 Concept: {concept}
 
@@ -197,12 +197,11 @@ Concise Explanation:"""
                 return "Concept not covered in notes."
     
     def qa_short(self, question):
-        """Question-Answer in 1-2 sentences"""
         relevant_texts = self.find_relevant_text(question)
         
         context = "\n".join(relevant_texts[:1]) if relevant_texts else "No notes."
         
-        prompt = f"""Answer in 1-2 SHORT sentences MAX.
+        prompt = f"""Answer in SHORT.
 
 Q: {question}
 
@@ -286,7 +285,6 @@ def ask_question():
 
 @app.route('/explain', methods=['POST'])
 def explain_concept():
-    """Explain a concept - SHORT version"""
     try:
         data = request.json
         concept = data.get('concept', '').strip()
@@ -310,7 +308,6 @@ def explain_concept():
 
 @app.route('/qa', methods=['POST'])
 def qa_short():
-    """Very short Q&A - 1-2 sentences"""
     try:
         data = request.json
         question = data.get('question', '').strip()
@@ -333,27 +330,15 @@ def qa_short():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({
-        'status': 'ready',
-        'has_document': chatbot.current_file is not None,
-        'current_file': chatbot.current_file,
-        'style': 'CONCISE answers (2-3 sentences max)'
-    })
 
 if __name__ == '__main__':
-    print("🎯 CONCISE Study Assistant Ready!")
-    print("📝 I give SHORT, focused answers - no long essays!")
-    print("\n📚 Endpoints:")
+    print("CONCISE Study Assistant Ready!")
+    print("I give SHORT, focused answers - no long essays!")
+    print("\nEndpoints:")
     print("   POST /upload  - Upload study materials")
-    print("   POST /ask     - Ask questions (2-3 sentence answers)")
-    print("   POST /explain - Explain concepts (3-4 sentences)")
-    print("   POST /qa      - Very short Q&A (1-2 sentences)")
-    print("   GET  /health  - Check status")
+    print("   POST /ask     - Ask questions ")
+    print("   POST /explain - Explain concepts")
+    print("   POST /qa      -  short Q&A ")
     
-    print("\n🎯 Response Examples:")
-    print("   ❌ Before: 500+ words, multiple concepts")
-    print("   ✅ Now: 2-3 focused sentences")
     
     app.run(debug=True, host='0.0.0.0', port=5000)
