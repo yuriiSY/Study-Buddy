@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:4000/api",
+  baseURL: "https://study-buddy-2o9t.onrender.com/api",
 });
 
 api.interceptors.request.use((config) => {
