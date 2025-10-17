@@ -12,7 +12,7 @@ import google.generativeai as genai
 app = Flask(__name__)
 
 # Configure Gemini - REPLACE WITH YOUR API KEY
-GEMINI_API_KEY = "AIzaSyBA9ocbFv1TxsxL8qP6A0u7Cusd4jNblIE"
+GEMINI_API_KEY = ""
 genai.configure(api_key=GEMINI_API_KEY)
 
 class ConciseStudyAssistant:
