@@ -3,3 +3,14 @@ psycopg2-binary
 dotenv
 openai
 requests
+PyPDF2
+python-docx
+python-pptx
+sentence-transformers
+faiss-cpu
+google-generativeai
+numpy
+torch
+transformers
+pillow
+werkzeug
