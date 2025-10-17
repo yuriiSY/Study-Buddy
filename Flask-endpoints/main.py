@@ -23,6 +23,21 @@ db_config = {
     'port': int(os.getenv('DB_PORT'))
 }
 
+
+#------------------Get file data from postgres------------------#
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Route to insert embeddings
 @app.route('/insert-embedding', methods=['POST'])
 def insert_embedding():
