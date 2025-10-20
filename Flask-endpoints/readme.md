@@ -30,12 +30,13 @@
    - **URL**: `/upload`
    - **Method**: `POST`
    - **Description**: Upload file type '.pdf' , '.docx' or '.pptx'.
-      - **Request Body**:
-     ```form-data
-     {
-       "file": "your_file"
-     }
-     ```
+      - **Request Body (form-data)**:
+
+        | Key  | Type | Description         | Example Value   |
+        |------|------|---------------------|-----------------|
+        | file | File | The file to upload. | `your_file.pdf` |
+
+---
 
 2. **Chat from uploaded file**:
    - **URL**: `/ask`
