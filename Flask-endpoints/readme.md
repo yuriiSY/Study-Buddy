@@ -12,6 +12,7 @@
    API_KEY=your_gemini_api_key
    ```
    Replace the placeholders with your actual credentials.
+   You can create an API key from [Google AI Studio](https://aistudio.google.com/api-keys)
 
 3. **Run the Flask Application**:
    Start the Flask server:
