@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from dotenv import load_dotenv
 import os
 import PyPDF2
 from docx import Document
@@ -9,10 +10,11 @@ import faiss
 import re
 import google.generativeai as genai
 
+
 app = Flask(__name__)
 
 # Configure Gemini - REPLACE WITH YOUR API KEY
-GEMINI_API_KEY = ""
+GEMINI_API_KEY = os.getenv('API_KEY')
 genai.configure(api_key=GEMINI_API_KEY)
 
 class SmartHybridAssistant:
@@ -154,7 +156,7 @@ class SmartHybridAssistant:
         
         if sufficiency == "sufficient":
             # Primary: Use notes with minimal supplementation
-            prompt = f"""Answer this question using PRIMARILY the provided notes, and only supplement with basic general knowledge if absolutely needed to connect ideas.
+            prompt = f"""Answer this question using the provided notes, and supplement with basic general knowledge if needed to connect ideas.
 
 QUESTION: {question}
 
@@ -163,9 +165,8 @@ STUDENT'S NOTES:
 
 Please provide an answer that:
 1. FIRST uses the information from the notes above
-2. Only adds minimal general knowledge if needed to explain connections
-3. Clearly indicates what comes from the notes vs general knowledge
-4. Stays focused on the topic
+2. Adds  general knowledge as needed to explain in more easy and practical way
+3. Stays focused on the topic
 
 Answer:"""
         
@@ -269,8 +270,7 @@ CONTEXT FROM STUDENT'S NOTES:
 Please provide an explanation that:
 1. First addresses what the notes cover about this concept
 2. Supplements with general knowledge to provide a complete understanding
-3. Shows how the general knowledge relates to the notes content
-4. Helps the student see the bigger picture
+3. Helps the student to understand in a practical and easy way
 
 Explanation:"""
         
