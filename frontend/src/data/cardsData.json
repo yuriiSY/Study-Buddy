@@ -1,21 +1,21 @@
 [
   {
-    "title": "Create New Study Space",
-    "description": "Setup your module, upload materials and start studying with your Tutor AI.",
-    "image": "create_study_space.png",
-    "linkUrl": "/materials"
-  },
-  {
     "title": "Resume Study",
     "description": "Continue studying from where you left.",
     "image": "resume_study.png",
     "linkUrl": "/studyspace"
   },
   {
+    "title": "Create New Study Space",
+    "description": "Setup your module, upload materials and start studying with your Tutor AI.",
+    "image": "create_study_space.png",
+    "linkUrl": "/materials"
+  },
+  {
     "title": "Self - Asessment",
     "description": "Make your concepts stronger by practising brainstorming questions.",
     "image": "self_asessment.png",
-    "linkUrl": "#"
+    "linkUrl": "/selfassesment"
   },
   {
     "title": "Mock Exams",
@@ -27,7 +27,7 @@
     "title": "Smart Revisions",
     "description": "Revise your concepts by Flashcards and get help with hints",
     "image": "smart_revision.png",
-    "linkUrl": "#"
+    "linkUrl": "/smartrevision"
   },
   {
     "title": "Achievements",

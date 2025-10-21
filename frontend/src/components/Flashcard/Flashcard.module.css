@@ -1,0 +1,125 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tag {
+  background-color: #f3f4f6;
+  color: #374151;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+
+.iconBox {
+  margin-left: auto;
+  background-color: #fef9c3;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  font-size: 1rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  min-height: 200px;
+}
+
+.question {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.answer {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #1f2937;
+  background-color: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  width: 100%;
+}
+
+.showBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #1f2937;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.7rem 1.4rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.showBtn:hover {
+  background-color: #111827;
+}
+
+.icon {
+  font-size: 1.1rem;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  width: 750px;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.6rem 1.4rem;
+  border-radius: 0.5rem;
+  border: 1.5px solid #facc15;
+  background-color: white;
+  color: #facc15;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.navBtn:hover {
+  background-color: #fefce8;
+}
+
+.navBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.next {
+  justify-content: flex-end;
+}

@@ -6,7 +6,10 @@ import MaterialUpload from "../MaterialUpload/MaterialUpload";
 import GenerateButton from "../GenerateButton/GenerateButton";
 import { getUserFiles } from "../../api/filesApi";
 
-export default function AvailableMaterials() {
+export default function AvailableMaterials({
+  isUpload = false,
+  type = "materials",
+}) {
   const [files, setFiles] = useState([]);
   const [selectedFileId, setSelectedFileId] = useState(null);
   const navigate = useNavigate();
@@ -29,24 +32,31 @@ export default function AvailableMaterials() {
     setSelectedFileId(id);
   };
 
-  const handleGenerate = () => {
-    if (!selectedFileId) {
-      alert("Please select a file first!");
-      return;
+  // const handleGenerate = () => {
+  //   if (!selectedFileId) {
+  //     alert("Please select a file first!");
+  //     return;
+  //   }
+  //   navigate(`/studyspace/${selectedFileId}`);
+  // };
+
+  const handleClick = () => {
+    switch (type) {
+      case "selfassesment":
+        navigate(`/selfassesment/${selectedFileId}`);
+        break;
+      case "smartrevision":
+        navigate(`/smartrevision/${selectedFileId}`);
+        break;
+      case "materials":
+      default:
+        navigate(`/studyspace/${selectedFileId}`);
+        break;
     }
-    navigate(`/studyspace/${selectedFileId}`);
   };
 
   return (
     <div className={styles.availableMaterialsSection}>
-      <div className={styles.uploadInfoSection}>
-        <div className={styles.upload}></div>
-        <p className={styles.infoTitle}>Upload Your Study Materials</p>
-        <p className={styles.infoText}>
-          Select or upload your materials to create a personalized study plan
-        </p>
-      </div>
-
       <div className={styles.card}>
         <h2 className={styles.heading}>Available Materials</h2>
         <MaterialList
@@ -54,8 +64,11 @@ export default function AvailableMaterials() {
           selectedId={selectedFileId}
           onSelect={handleSelectFile}
         />
-        <MaterialUpload onUploadSuccess={fetchFiles} />
-        <GenerateButton onClick={handleGenerate} />
+        {isUpload ? (
+          <MaterialUpload onUploadSuccess={fetchFiles} />
+        ) : (
+          <GenerateButton onClick={handleClick} />
+        )}
       </div>
     </div>
   );
