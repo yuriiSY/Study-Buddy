@@ -42,12 +42,6 @@
   padding: 0;
 }
 
-@media (max-width: 768px) {
-  .stats {
-    display: none;
-  }
-}
-
 .stats li {
   background-color: #fff;
   color: #333;

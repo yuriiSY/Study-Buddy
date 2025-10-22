@@ -11,7 +11,7 @@
 }
 
 .input {
-  border: 1px solid #656596;
+  border: 1px solid #DD9713;
   border-radius: 8px;
   width: 287px;
   height: 49px;
@@ -31,7 +31,7 @@
   border-radius: 8px;
   width: 287px;
   height: 49px;
-  background: #656596;
+  background: #F0B13A;
   color: #161616;
   font-weight: bold;
   font-size: 14px;
@@ -40,8 +40,9 @@
   margin-top: 24px;
 }
 
+
 .button:hover {
-  background: #656596;
+  background: #DD9713;
 }
 
 .iconContainer {
@@ -60,9 +61,8 @@
 
 .input:hover,
 .input:focus {
-  box-shadow: 0 0 10px
-    linear-gradient(rgba(0, 255, 0, 0.7) 25%, rgba(255, 0, 0, 0.7) 75%);
-  outline: 1px solid #656596;
+  box-shadow: 0 0 10px linear-gradient(rgba(0, 255, 0, .7) 25%, rgba(255, 0, 0, .7) 75%);;
+  outline: 1px solid #DD9713;
 }
 
 .error {
