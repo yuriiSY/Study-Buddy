@@ -1,0 +1,7 @@
+langchain
+sentence-transformers==3.0.1
+langchain-ollama==0.2.2
+pillow==10.4.0
+numpy==1.26.4
+#for mac user use python3.12.7brewm
+#docker exec -it ollama-chatbot ollama pull llama3.2:3b
