@@ -22,3 +22,12 @@ app.use("/api/users", userRoutes);
 app.get("/", (req, res) => {
   res.send("Backend running...");
 });
+
+//ai route
+const app = express();
+app.use(express.json());
+app.use(cors({ origin: "http://localhost:5173", credentials: true })); // adjust for your dev origin
+
+app.use("/api/ai", aiRouter);
+
+export default app;

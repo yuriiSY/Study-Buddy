@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Study Buddy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9fafb;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #2563eb;
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+        }
+
+        .demo-banner {
+            background-color: #facc15;
+            color: #000;
+            text-align: center;
+            padding: 0.75rem;
+            font-weight: bold;
+            border-bottom: 2px solid #eab308;
+        }
+
+        main {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1d4ed8;
+        }
+
+        form {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            resize: vertical;
+        }
+
+        button {
+            margin-top: 1rem;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1e40af;
+        }
+
+        .response {
+            margin-top: 2rem;
+            background-color: #f1f5f9;
+            padding: 1rem;
+            border-radius: 6px;
+            white-space: pre-wrap;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.85rem;
+            margin: 3rem 0 1rem 0;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ✅ Demo Mode Banner (only shows when demo_mode=True) -->
+    {% if demo_mode %}
+    <div class="demo-banner">
+        ⚠️ Demo Mode Active — Responses are simulated, not from the OpenAI API.
+    </div>
+    {% endif %}
+
+    <header>
+        <h1>AI Study Buddy</h1>
+        <p>Your personalized learning assistant</p>
+    </header>
+
+    <main>
+        <form method="post">
+            <label for="userInput"><strong>Ask a question:</strong></label><br><br>
+            <textarea id="userInput" name="userInput" placeholder="Type your question here..."></textarea><br>
+            <button type="submit">Ask AI</button>
+        </form>
+
+        {% if response %}
+        <div class="response">
+            <h3>AI Response:</h3>
+            <p>{{ response }}</p>
+        </div>
+        {% endif %}
+    </main>
+
+    <footer>
+        © 2025 AI Study Buddy | Technological University Dublin
+    </footer>
+</body>
+</html>
