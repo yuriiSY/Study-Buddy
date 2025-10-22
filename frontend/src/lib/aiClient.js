@@ -1,4 +1,4 @@
-export async function askAI(prompt: string): Promise<string> {
+export async function askAI(prompt) {
   const base = import.meta.env.VITE_API_BASE_URL ?? "";
   const res = await fetch(`${base}/api/ai/ask`, {
     method: "POST",

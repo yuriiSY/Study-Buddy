@@ -1,20 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
 import { Route, Routes } from 'react-router-dom';
 // import { AuthModal } from "./components/AuthModal";
 // import { Button } from "./components/Button";
 // import MainMenu from "./components/MainMenu/MainMenu";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage/LoginPage";
-
+import { StudySpacePage } from "./pages/StudySpacePage/StudySpacePage.jsx";
 
 export default function App() {
-  const [isOpen, setIsOpen] = useState(false);
+  // const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="h-screen flex items-center justify-center">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/study" element={<StudySpacePage />} />
       </Routes>
 
       {/* <MainMenu />
