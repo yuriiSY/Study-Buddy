@@ -1,84 +1,82 @@
-﻿  services:
-    db:
-      image: postgres:16
-      container_name: studybuddy_db
-      environment:
-        POSTGRES_DB: 
-        POSTGRES_USER: 
-        POSTGRES_PASSWORD: 
-      # ports:
-      #   - "5432:5432"
-      volumes:
-        - db_data:/var/lib/postgresql/data
-      healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U  -d "]
-        interval: 5s
-        timeout: 5s
-        retries: 20
-  
-    backend:
-      build:
-        context: ./backend
-        dockerfile: dockerfile
-      container_name: studybuddy_backend
-      env_file:
-        - .env
-      environment:
-        DATABASE_URL: postgresql://:@db:5432/?schema=public
-        PORT: 
-        CORS_ALLOWED_ORIGINS: 
-        NODE_ENV: development
-      depends_on:
-        db:
-          condition: service_healthy
-      ports:
-        - ":3001"
-      volumes:
-        - ./backend:/app
-        - /app/node_modules
-      command: npm run dev
-  
-    flask:
-      build:
-        context: ./Flask-endpoints
-        dockerfile: Dockerfile
-      container_name: studybuddy_flask
-      env_file:
-        - .env
-      environment:
-        FLASK_ENV: development
-        FLASK_RUN_PORT: 5000
-        OPENAI_API_KEY: 
-        AI_PROVIDER: 
-      depends_on:
-        db:
-          condition: service_healthy
-      ports:
-        - "5000:5000"
-      volumes:
-        - ./Flask-endpoints:/app
-      command: python -m flask run --host=0.0.0.0 --port=5000
-  
-    frontend:
-      build:
-        context: ./frontend
-        dockerfile: dockerfile
-      container_name: studybuddy_frontend
-      env_file:
-        - .env
-      environment:
-        VITE_API_BASE_URL: 
-        VITE_FLASK_BASE_URL: 
-        PORT: 5173
-      depends_on:
-        - backend
-        - flask
-      ports:
-        - "5173:5173"
-      volumes:
-        - ./frontend:/app
-        - /app/node_modules
-      command: npm run dev -- --host
-  
-  volumes:
-    db_data:
+﻿services:
+  db:
+    image: postgres:16
+    container_name: studybuddy_db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-studybuddy}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    # no host port -> avoids 5432 conflicts on Windows
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-studybuddy}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile     # lowercase matches your repo
+    container_name: studybuddy_backend
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-studybuddy}?schema=public
+      PORT: ${BACKEND_PORT:-3001}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      NODE_ENV: development
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-3001}:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  flask:
+    build:
+      context: ./Flask-endpoints
+      dockerfile: Dockerfile
+    container_name: studybuddy_flask
+    env_file:
+      - .env
+    environment:
+      FLASK_ENV: development
+      FLASK_RUN_PORT: 5000
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AI_PROVIDER: ${AI_PROVIDER:-openai}
+    # no depends_on so Flask can start even if DB isn’t ready
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./Flask-endpoints:/app
+    command: python -m flask run --host=0.0.0.0 --port=5000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile     # lowercase matches your repo
+    container_name: studybuddy_frontend
+    env_file:
+      - .env
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001}
+      VITE_FLASK_BASE_URL: ${VITE_FLASK_BASE_URL:-http://localhost:5000}
+      PORT: 5173
+    depends_on:
+      - backend
+      - flask
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+
+volumes:
+  db_data:
