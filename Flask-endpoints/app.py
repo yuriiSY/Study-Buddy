@@ -2,6 +2,7 @@
 from flask_cors import CORS
 import os
 import requests
+from google import genai
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -10,31 +11,26 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 def health():
     return jsonify(status="ok"), 200
 
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+client = genai.Client(api_key=GEMINI_API_KEY)
+
 @app.post("/api/ai/ask")
 def ai_ask():
     data = request.get_json(silent=True) or {}
     prompt = (data.get("prompt") or "").strip()
     if not prompt:
         return jsonify(error="Missing 'prompt'"), 400
-
-    api_key = (os.getenv("OPENAI_API_KEY") or "").strip()
-    if not api_key:
-        return jsonify(answer=f"(mock) You asked: '{prompt}'. Set OPENAI_API_KEY for real responses.", provider="mock"), 200
+    if not GEMINI_API_KEY:
+        return jsonify(error="Missing GEMINI_API_KEY"), 500
 
     try:
-        url = "https://api.openai.com/v1/chat/completions"
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        body = {
-            "model": "gpt-4o-mini",
-            "messages": [
-                {"role": "system", "content": "You are a helpful study buddy."},
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": 0.2
-        }
-        r = requests.post(url, headers=headers, json=body, timeout=30)
-        r.raise_for_status()
-        return jsonify(answer=r.json()["choices"][0]["message"]["content"], provider="openai"), 200
+        resp = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt
+        )
+        # SDK exposes .text (aka output_text) on the response
+        return jsonify(answer=resp.text, provider="gemini"), 200
     except Exception as e:
         return jsonify(error=str(e)), 500
 
