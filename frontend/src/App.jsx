@@ -13,6 +13,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { WelcomePage } from "./pages/WelcomePage/WelcomePage";
 
 export default function App() {
+  // const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div className="h-screen flex items-center justify-center">
       <Routes>

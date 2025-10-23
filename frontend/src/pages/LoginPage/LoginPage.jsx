@@ -6,13 +6,25 @@ import styles from "./LoginPage.module.css";
 import { RiBookOpenLine } from "react-icons/ri";
 import { toast } from "react-toastify";
 
-import LoginForm from "../../components/LoginForm/LoginForm";
-import RegistrationForm from "../../components/RegistrationForm/RegistrationForm";
-
-export const LoginPage = () => {
-  const dispatch = useDispatch();
+/**
+ * LoginPage
+ *
+ * - Renders email/password fields.
+ * - Calls your backend POST /api/auth/login via login({...}).
+ * - On success, stores the token and navigates to /study (or the originally requested page).
+ * - Shows helpful error messages on failure.
+ *
+ * Backend contract (customize as needed):
+ *   POST { email, password } -> 200 { token, user? } | 4xx { error }
+ */
+export function LoginPage() {
   const navigate = useNavigate();
-  const { isLoggedIn } = useSelector((state) => state.auth);
+  const location = useLocation();
+  const redirectTo = location.state?.from?.pathname || "/study";
+
+  // Form state
+  const [email, setEmail] = useState("");
+  const [pass, setPass]   = useState("");
 
   const [isLogin, setIsLogin] = useState(true);
 
@@ -35,11 +47,18 @@ export const LoginPage = () => {
     }
   };
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      navigate("/");
+  async function onSubmit(e) {
+    e.preventDefault();                // prevent full page reload
+    setErr("");
+
+    if (!email || !pass) {
+      setErr("Please enter both email and password.");
+      return;
     }
-  }, [isLoggedIn, navigate]);
+    if (!isValidEmail(email)) {
+      setErr("Please enter a valid email address.");
+      return;
+    }
 
   return (
     <div className={styles.pageWrapper}>
@@ -92,4 +111,4 @@ export const LoginPage = () => {
       </div>
     </div>
   );
-};
+}

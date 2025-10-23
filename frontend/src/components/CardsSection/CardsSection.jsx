@@ -21,8 +21,6 @@ const images = {
 };
 
 const CardsSection = () => {
-  const latestFileId = localStorage.getItem("latestFileId");
-
   return (
     <div className={styles.cardsSection}>
       <UploadCard

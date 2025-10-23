@@ -8,12 +8,12 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import App from "./App.jsx";
 
-createRoot(document.getElementById("root")).render(
+createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter basename="/Study-Buddy">
+    <BrowserRouter>
       <Provider store={store}>
         <App />
       </Provider>
     </BrowserRouter>
-  </StrictMode>
-);
+  </StrictMode>,
+)
