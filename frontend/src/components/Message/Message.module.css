@@ -1,0 +1,17 @@
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.avatar {
+  font-size: 1.4rem;
+}
+
+.text {
+  background: white;
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 75%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}

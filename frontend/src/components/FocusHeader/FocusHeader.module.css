@@ -1,0 +1,90 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #eef4ff;
+  border: 1px solid #d6e0ff;
+  border-radius: 10px;
+  padding: 10px 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  font-family: "Inter", sans-serif;
+  color: #1b1b1b;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-weight: 600;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.backBtn:hover {
+  opacity: 0.7;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border-radius: 8px;
+  padding: 4px 10px;
+  box-shadow: inset 0 0 0 1px #d6e0ff;
+}
+
+.timer {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #253c78;
+}
+
+.iconBtn {
+  background: none;
+  border: 1px solid #3b4bd1;
+  border-radius: 8px;
+  color: #253c78;
+  padding: 4px 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.iconBtn:hover {
+  background: #e6ecff;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2a2a2a;
+}
+
+.focusEmoji {
+  font-size: 1.2rem;
+}
+
+.focusText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.focusText strong {
+  font-size: 0.95rem;
+}
+
+.focusText small {
+  font-size: 0.8rem;
+  color: #6a6a6a;
+}
