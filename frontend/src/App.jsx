@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage/LoginPage";
@@ -10,11 +10,13 @@ import { FlashcardPage } from "./pages/FlashcardPage/FlashcardPage";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { WelcomePage } from "./pages/WelcomePage/WelcomePage";
 
 export default function App() {
   return (
     <div className="h-screen flex items-center justify-center">
       <Routes>
+        <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/materials" element={<CreateStudySpacePage />} />
