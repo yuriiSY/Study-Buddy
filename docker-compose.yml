@@ -1,82 +1,100 @@
-﻿services:
+﻿name: finalteamproject
+
+services:
   db:
     image: postgres:16
     container_name: studybuddy_db
     environment:
-      POSTGRES_DB: ${DB_NAME:-studybuddy}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: studybuddy
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       PGDATA: /var/lib/postgresql/data/pgdata
-    # no host port -> avoids 5432 conflicts on Windows
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-studybuddy}"]
+      test: ["CMD-SHELL","pg_isready -U postgres -d studybuddy"]
       interval: 5s
       timeout: 5s
       retries: 20
+    restart: unless-stopped
 
   backend:
+    container_name: studybuddy_backend
     build:
       context: ./backend
-      dockerfile: dockerfile     # lowercase matches your repo
-    container_name: studybuddy_backend
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-studybuddy}?schema=public
-      PORT: ${BACKEND_PORT:-3001}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
-      NODE_ENV: development
+      dockerfile: dockerfile
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/studybuddy?schema=public
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
     ports:
-      - "${BACKEND_PORT:-3001}:3001"
+      - "3001:3001"
     volumes:
-      - ./backend:/app
-      - /app/node_modules
-    command: npm run dev
+      - ./backend:/app               # live source
+      - backend_node_modules:/app/node_modules
+    # Install deps into container volume, generate Prisma, migrate, then start dev
+    command: >
+      sh -lc "
+        (npm ci || npm install) &&
+        npx prisma generate &&
+        (npx prisma migrate deploy || npx prisma db push) &&
+        npm run dev
+      "
+    restart: unless-stopped
 
   flask:
+    container_name: studybuddy_flask
     build:
       context: ./Flask-endpoints
       dockerfile: Dockerfile
-    container_name: studybuddy_flask
-    env_file:
-      - .env
     environment:
       FLASK_ENV: development
       FLASK_RUN_PORT: 5000
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      AI_PROVIDER: ${AI_PROVIDER:-openai}
-    # no depends_on so Flask can start even if DB isn’t ready
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
+      BACKEND_PORT: 3001
     ports:
       - "5000:5000"
     volumes:
       - ./Flask-endpoints:/app
     command: python -m flask run --host=0.0.0.0 --port=5000
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
 
   frontend:
+    container_name: studybuddy_frontend
     build:
       context: ./frontend
-      dockerfile: dockerfile     # lowercase matches your repo
-    container_name: studybuddy_frontend
-    env_file:
-      - .env
-    environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001}
-      VITE_FLASK_BASE_URL: ${VITE_FLASK_BASE_URL:-http://localhost:5000}
-      PORT: 5173
+      dockerfile: dockerfile
     depends_on:
-      - backend
-      - flask
+      backend:
+        condition: service_started
+      flask:
+        condition: service_started
+    environment:
+      NODE_ENV: development
+      PORT: 5173
+      VITE_API_BASE_URL: http://localhost:3001
+      VITE_FLASK_BASE_URL: http://localhost:5000
     ports:
       - "5173:5173"
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: npm run dev -- --host
+      - ./frontend:/app              # live source
+      - frontend_node_modules:/app/node_modules
+    # Install deps into container volume, then run Vite dev server bound to 0.0.0.0
+    command: >
+      sh -lc "
+        (npm ci || npm install) &&
+        npm run dev -- --host
+      "
+    restart: unless-stopped
 
 volumes:
   db_data:
+  backend_node_modules:
+  frontend_node_modules:

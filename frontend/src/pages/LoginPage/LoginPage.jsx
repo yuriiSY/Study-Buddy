@@ -1,114 +1,180 @@
-import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { loginUser, registerUser } from "../../store/auth/authSlice";
-import { useNavigate } from "react-router-dom";
-import styles from "./LoginPage.module.css";
-import { RiBookOpenLine } from "react-icons/ri";
-import { toast } from "react-toastify";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+//import styles from "./LoginPage.module.css";
 
-/**
- * LoginPage
- *
- * - Renders email/password fields.
- * - Calls your backend POST /api/auth/login via login({...}).
- * - On success, stores the token and navigates to /study (or the originally requested page).
- * - Shows helpful error messages on failure.
- *
- * Backend contract (customize as needed):
- *   POST { email, password } -> 200 { token, user? } | 4xx { error }
- */
-export function LoginPage() {
+export default function LoginPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const redirectTo = location.state?.from?.pathname || "/study";
 
-  // Form state
   const [email, setEmail] = useState("");
-  const [pass, setPass]   = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const [isLogin, setIsLogin] = useState(true);
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setErrorMsg("");
+    setLoading(true);
 
-  const handleLogin = async (data) => {
-    await dispatch(loginUser(data));
     try {
-      dispatch(loginUser(data)).unwrap();
-      toast.success("🎉 Login successful!");
-    } catch (error) {
-      toast.error(error || "❌ Login failed. Please try again.");
-    }
-  };
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-  const handleRegister = async (formData) => {
-    try {
-      await dispatch(registerUser(formData)).unwrap();
-      toast.success("🎉 Registration successful!");
-    } catch (error) {
-      toast.error(error || "❌ Registration failed. Please try again.");
-    }
-  };
+      // Non-2xx -> surface API error text if present
+      if (!res.ok) {
+        let apiError = "Login failed. Check your credentials.";
+        try {
+          const errJson = await res.json();
+          if (errJson?.error) apiError = errJson.error;
+          if (errJson?.message) apiError = errJson.message;
+        } catch {
+          // ignore JSON parse errors
+        }
+        throw new Error(apiError);
+      }
 
-  async function onSubmit(e) {
-    e.preventDefault();                // prevent full page reload
-    setErr("");
+      // Expecting { token, user } but we handle flexible shapes
+      const data = await res.json();
+      const token = data?.token || data?.accessToken || data?.jwt;
+      if (!token) throw new Error("Server did not return a token.");
 
-    if (!email || !pass) {
-      setErr("Please enter both email and password.");
-      return;
+      // Persist token for later authenticated requests
+      localStorage.setItem("token", token);
+      if (data?.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      // Go to dashboard (adjust path to match your app)
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      setErrorMsg(err.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
     }
-    if (!isValidEmail(email)) {
-      setErr("Please enter a valid email address.");
-      return;
-    }
+  }
 
   return (
-    <div className={styles.pageWrapper}>
-      <div className={styles.card}>
-        <div className={styles.header}>
-          <div className={styles.iconCircle}>
-            <RiBookOpenLine className={styles.icon} />
-          </div>
-          <h2 className={styles.title}>
-            {isLogin ? "Welcome Back" : "Create Account"}
-          </h2>
-          <p className={styles.subtitle}>
-            {isLogin
-              ? "Sign in to continue your learning journey"
-              : "Join Study Buddy and start learning today"}
-          </p>
+    <div
+      style={{
+        maxWidth: 420,
+        margin: "6rem auto",
+        padding: "2rem",
+        border: "1px solid #e5e7eb",
+        borderRadius: 12,
+        boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+        background: "#fff",
+      }}
+    >
+      <h1 style={{ margin: 0, marginBottom: "1rem" }}>Welcome back</h1>
+      <p style={{ marginTop: 0, color: "#4b5563" }}>
+        Sign in to continue to Study Buddy.
+      </p>
+
+      {errorMsg ? (
+        <div
+          role="alert"
+          style={{
+            background: "#FEF2F2",
+            color: "#991B1B",
+            padding: "0.75rem 1rem",
+            borderRadius: 8,
+            marginBottom: "1rem",
+            border: "1px solid #FCA5A5",
+          }}
+        >
+          {errorMsg}
+        </div>
+      ) : null}
+
+      <form onSubmit={handleSubmit}>
+        <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>
+          Email
+        </label>
+        <input
+          type="email"
+          value={email}
+          autoComplete="email"
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          placeholder="you@example.com"
+          style={inputStyle}
+        />
+
+        <label
+          style={{
+            display: "block",
+            fontWeight: 600,
+            marginTop: 14,
+            marginBottom: 6,
+          }}
+        >
+          Password
+        </label>
+        <div style={{ position: "relative" }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            autoComplete="current-password"
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="Your password"
+            style={{ ...inputStyle, paddingRight: 88 }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((s) => !s)}
+            style={ghostBtn}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
         </div>
 
-        <div className={styles.formContainer}>
-          {isLogin ? (
-            <LoginForm onSubmit={handleLogin} />
-          ) : (
-            <RegistrationForm onSubmit={handleRegister} />
-          )}
-        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: "100%",
+            marginTop: 18,
+            padding: "0.75rem 1rem",
+            borderRadius: 10,
+            border: "1px solid transparent",
+            background: loading ? "#9CA3AF" : "#111827",
+            color: "#fff",
+            fontWeight: 600,
+            cursor: loading ? "not-allowed" : "pointer",
+          }}
+        >
+          {loading ? "Signing in…" : "Sign in"}
+        </button>
+      </form>
 
-        <div className={styles.toggleText}>
-          {isLogin ? (
-            <p>
-              Don’t have an account?{" "}
-              <button
-                onClick={() => setIsLogin(false)}
-                className={styles.toggleButton}
-              >
-                Register
-              </button>
-            </p>
-          ) : (
-            <p>
-              Already have an account?{" "}
-              <button
-                onClick={() => setIsLogin(true)}
-                className={styles.toggleButton}
-              >
-                Log In
-              </button>
-            </p>
-          )}
-        </div>
-      </div>
+      <p style={{ marginTop: 18, fontSize: 14, color: "#6b7280" }}>
+        Don’t have an account? <Link to="/register">Create one</Link>
+      </p>
     </div>
   );
 }
+
+// Inline styles for simplicity (replace with your CSS classes if you prefer)
+const inputStyle = {
+  width: "100%",
+  padding: "0.65rem 0.9rem",
+  borderRadius: 10,
+  border: "1px solid #e5e7eb",
+  outline: "none",
+};
+
+const ghostBtn = {
+  position: "absolute",
+  right: 8,
+  top: 8,
+  padding: "0.4rem 0.6rem",
+  borderRadius: 8,
+  border: "1px solid #e5e7eb",
+  background: "#F9FAFB",
+  cursor: "pointer",
+};
