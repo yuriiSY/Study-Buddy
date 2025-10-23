@@ -45,3 +45,45 @@ def ai_ask():
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "5000"))
     app.run(host="0.0.0.0", port=port)
+
+# --- Auth routes (minimal demo)
+from functools import wraps
+from flask import request
+
+def require_bearer_token(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        auth = request.headers.get("Authorization", "")
+        if not auth.startswith("Bearer "):
+            return jsonify(error="Missing or invalid token"), 401
+        token = auth.split(" ", 1)[1].strip()
+        # Simple demo check; replace with real verification (e.g., JWT decode)
+        if not token or not token.startswith(("dev_", "token_")):
+            return jsonify(error="Invalid token"), 401
+        return func(*args, **kwargs)
+    return wrapper
+
+@app.post("/api/auth/login")
+def login_route():
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    password = (data.get("password") or "").strip()
+    if not email or not password:
+        return jsonify(error="Email and password required"), 400
+
+    # TODO: replace with real credential check
+    # For now, accept anything non-empty and return a fake token.
+    token = f"dev_{email[:8].replace('@','_')}"
+    user = {"email": email}
+
+    return jsonify(token=token, user=user), 200
+
+@app.get("/api/profile")
+@require_bearer_token
+def profile_route():
+    # Demo profile (in real life, look up by token/sub)
+    return jsonify(
+        email="student@example.com",
+        name="Study Buddy",
+        plan="free",
+    ), 200

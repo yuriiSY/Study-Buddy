@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 // import { AuthModal } from "./components/AuthModal";
 // import { Button } from "./components/Button";
 // import MainMenu from "./components/MainMenu/MainMenu";
+import RequireAuth from "./components/RequireAuth";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage/LoginPage";
 import { StudySpacePage } from "./pages/StudySpacePage/StudySpacePage.jsx";
@@ -15,7 +16,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/study" element={<StudySpacePage />} />
+        <Route element={<RequireAuth />}>
+          <Route path="/study" element={<StudySpacePage />} />
+        </Route>
+        <Route path="*" element={<div style={{padding:16}}>Not found</div>} />
       </Routes>
 
       {/* <MainMenu />
