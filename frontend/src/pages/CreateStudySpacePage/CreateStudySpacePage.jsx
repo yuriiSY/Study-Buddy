@@ -3,13 +3,13 @@ import AvailableMaterials from "../../components/AvailableMaterials/AvailableMat
 import FeatureHeader from "../../components/FeatureHeader/FeatureHeader";
 import Header from "../../components/Header/Header";
 
-export const UploadeMaterialsPage = () => {
+export const CreateStudySpacePage = ({ type }) => {
   return (
     <>
       <Layout>
         <Header />
         <FeatureHeader />
-        <AvailableMaterials isUpload />
+        <AvailableMaterials type={type} />
       </Layout>
     </>
   );

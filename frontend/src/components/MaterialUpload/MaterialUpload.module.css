@@ -1,7 +1,6 @@
 .uploadBox {
   border-top: 1px solid #eee;
   padding-top: 1rem;
-  margin-bottom: 1.5rem;
 }
 
 .heading {
@@ -37,16 +36,18 @@
 }
 
 .uploadBtn {
-  background: #99c2ff;
+  background: #28324e;
+  width: 100%;
   color: white;
   padding: 10px 16px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
+  margin-top: 1rem;
 }
 
 .uploadBtn:disabled {
-  background: #99c2ff;
+  background: #28324eaa;
   cursor: not-allowed;
 }

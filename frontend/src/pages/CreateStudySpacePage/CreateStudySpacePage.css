@@ -1,0 +1,11 @@
+.homePage {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .homePage {
+    flex-direction: column;
+    gap: 20px;
+  }
+}

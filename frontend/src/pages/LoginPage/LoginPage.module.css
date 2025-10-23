@@ -1,67 +1,74 @@
-.containerPage {
+.pageWrapper {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  justify-content: center;
-  padding-left: 20px;
-  padding-right: 20px;
-  margin-left: auto;
-  margin-right: auto;
-  height: 100vh;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0.8),
-    rgba(74, 74, 140, 0.9)
-  );
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 1rem;
 }
 
-.container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 335px;
-  padding: 24px 24px 24px 24px;
-  transform: translate(-50%, -50%);
-  background: #151515;
-  box-sizing: border-box;
-  border-radius: 10px;
+.card {
+  background-color: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  text-align: center;
 }
 
-.toggleHeader {
-  font-size: 1.5rem;
-  font-weight: 500;
-  margin-bottom: 2rem;
-  color: #666;
-}
-
-.toggleOption {
-  cursor: pointer;
-  transition: color 0.3s, border-bottom 0.3s;
-  padding-bottom: 0.2rem;
-}
-
-.toggleOption:hover {
-  color: #656596;
-}
-
-.separator {
-  margin: 0 0.5rem;
-  color: #fff;
-}
-
-.active {
-  color: #656596;
-  font-weight: 600;
-}
-
-.imageContainer {
-  display: flex;
-  justify-content: center;
+.header {
   margin-bottom: 1.5rem;
 }
 
-.formImage {
-  width: 120px;
-  height: auto;
-  object-fit: contain;
+.iconCircle {
+  width: 60px;
+  height: 60px;
+  background-color: #1f2937;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem auto;
+}
+
+.icon {
+  font-size: 1.8rem;
+  color: #ffffff;
+}
+
+.title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.formContainer {
+  margin-top: 1rem;
+}
+
+.toggleText {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.toggleButton:hover {
+  color: #3730a3;
 }
