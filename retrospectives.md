@@ -38,3 +38,18 @@
 • Additional diagrams are being made for use-cases and the technical architecture  
 • Additional sketches are being drawn to speed up the process of changes rather than full Figma re-designs  
 • Discussions of budget and benefits of the AI are being finalised
+
+
+## Week 5 Retrospectives:
+### What went well
+• UI designs were given feedback by Andrea
+• AI orogress was made getting the chat interface functional
+• Interfaces finally agreed upon for features
+• Report and Presentation submitted on time and went well 
+• Program can be interacted with remotely as it's hosted
+### What to improve
+• Task division for the coming weeks
+• Conforming to group members time schedules (especially over holidays)
+### What actions are being taken
+• Addition discussions typed out and notices made regarding unavailability
+• Task planning towards final report and features is under works.
