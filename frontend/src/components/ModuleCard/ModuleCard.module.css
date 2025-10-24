@@ -1,37 +1,43 @@
 .card {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color: #273da4;
-    width: 250px;
-    height: 150px;
-    padding: 15px;
-    border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #314158;
+  width: 330px;
+  height: 220px;
+  padding: 15px;
+  border-radius: 8px;
 }
 
 .title {
-    font-size: 32px;
-    color: #ffffff;
-    font-weight: 700;
-    display: block;
+  font-size: 32px;
+  color: #ffffff;
+  font-weight: 700;
+  display: block;
+}
+
+.cardTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
 }
 
 .date {
-    display: block;
-    color: #ffffff;
-    border-radius: 12px;
-    border-color: #ffffff;
-    width: 90px;
+  display: block;
+  color: #ffffff;
+  border-radius: 12px;
+  border-color: #ffffff;
+  width: 90px;
 }
 
 .button {
-    background-color: #b57600;
-    border-color: #b57600;
-    border-width: 1px;
-    color: #ffffff;
-    overflow: hidden;
-    width: 100%;
-    border-radius: 8px;
-    cursor: pointer;
-    height: 30px;
+  background-color: #656596;
+  border-color: #b57600;
+  border-width: 1px;
+  color: #ffffff;
+  overflow: hidden;
+  width: 100%;
+  border-radius: 8px;
+  cursor: pointer;
+  height: 30px;
 }

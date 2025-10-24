@@ -41,16 +41,13 @@ export async function login({ email, password }) {
   return data; // { token, user? }
 }
 
-/**
- * Fetch that adds Authorization header automatically.
- * Usage: const res = await authFetch("/api/profile");
- */
-export function authFetch(path, options = {}) {
-  const token = getToken();
-  const headers = new Headers(options.headers || {});
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  if (!headers.has("Content-Type") && options.body) {
-    headers.set("Content-Type", "application/json");
-  }
-  return fetch(`${API_BASE}${path}`, { ...options, headers });
+// Adds Authorization header automatically when a token exists in localStorage
+export async function authFetch(url, options = {}) {
+  const token = localStorage.getItem("token");
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  return fetch(url, { ...options, headers });
 }

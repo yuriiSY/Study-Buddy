@@ -2,5 +2,8 @@
   "dependencies": {
     "@types/react-router-dom": "^5.3.3",
     "react-router-dom": "^7.9.4"
+  },
+  "scripts": {
+  "dev": "vite --host"
   }
 }

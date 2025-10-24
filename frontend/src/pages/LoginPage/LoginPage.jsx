@@ -1,153 +1,184 @@
-// src/pages/LoginPage/LoginPage.jsx
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-// Our auth helpers: real login + token persistence + fetch wrapper if needed
-import { login, setToken, setUser } from "../../lib/auth";
+import { useNavigate, Link } from "react-router-dom";
+//import styles from "./LoginPage.module.css";
 
-/**
- * LoginPage
- *
- * - Renders email/password fields.
- * - Calls your backend POST /api/auth/login via login({...}).
- * - On success, stores the token and navigates to /study (or the originally requested page).
- * - Shows helpful error messages on failure.
- *
- * Backend contract (customize as needed):
- *   POST { email, password } -> 200 { token, user? } | 4xx { error }
- */
-export function LoginPage() {
+export default function LoginPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const redirectTo = location.state?.from?.pathname || "/study";
 
-  // Form state
   const [email, setEmail] = useState("");
-  const [pass, setPass]   = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  // UI state
-  const [busy, setBusy] = useState(false);
-  const [err, setErr]   = useState("");
-  const [showPass, setShowPass] = useState(false);
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setErrorMsg("");
+    setLoading(true);
 
-  function isValidEmail(v) {
-    return /\S+@\S+\.\S+/.test(v);
-  }
-
-  async function onSubmit(e) {
-    e.preventDefault();                // prevent full page reload
-    setErr("");
-
-    if (!email || !pass) {
-      setErr("Please enter both email and password.");
-      return;
-    }
-    if (!isValidEmail(email)) {
-      setErr("Please enter a valid email address.");
-      return;
-    }
-
-    setBusy(true);
     try {
-      // Call real backend (defined in lib/auth.js)
-      const { token, user } = await login({ email, password: pass });
+      const res = await fetch("http://localhost:3001/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // Optional: setToken/setUser already done in login(); these are here if you keep them separate
-      setToken(token);
-      if (user) setUser(user);
+      // Non-2xx -> surface API error text if present
+      if (!res.ok) {
+        let apiError = "Login failed. Check your credentials.";
+        try {
+          const errJson = await res.json();
+          if (errJson?.error) apiError = errJson.error;
+          if (errJson?.message) apiError = errJson.message;
+        } catch {
+          // ignore JSON parse errors
+        }
+        throw new Error(apiError);
+      }
 
-      // Navigate to the intended page (from RequireAuth) or /study
-      navigate(redirectTo, { replace: true });
-    } catch (e) {
-      setErr(e?.message || "Login failed");
+      // Expecting { token, user } but we handle flexible shapes
+      const data = await res.json();
+      const token = data?.token || data?.accessToken || data?.jwt;
+      if (!token) throw new Error("Server did not return a token.");
+
+      // Persist token for later authenticated requests
+      localStorage.setItem("token", token);
+      if (data?.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      // after you get `data` from the response
+      if (data?.token) {
+      localStorage.setItem("token", data.token);
+      }
+
+      // Go to dashboard (adjust path to match your app)
+      navigate("/", { replace: true });
+    } catch (err) {
+      setErrorMsg(err.message || "Something went wrong.");
     } finally {
-      setBusy(false);
+      setLoading(false);
     }
   }
 
   return (
     <div
       style={{
-        width: 360,
-        padding: 24,
-        border: "1px solid #e6e6e6",
+        maxWidth: 420,
+        margin: "6rem auto",
+        padding: "2rem",
+        border: "1px solid #e5e7eb",
         borderRadius: 12,
+        boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
         background: "#fff",
       }}
     >
-      <h2 style={{ marginTop: 0, marginBottom: 16 }}>Sign in</h2>
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Email</span>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            required
-            style={{ padding: 10, borderRadius: 8, border: "1px solid #ddd" }}
-          />
-        </label>
+      <h1 style={{ margin: 0, marginBottom: "1rem" }}>Welcome back</h1>
+      <p style={{ marginTop: 0, color: "#4b5563" }}>
+        Sign in to continue to Study Buddy.
+      </p>
 
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Password</span>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input
-              type={showPass ? "text" : "password"}
-              placeholder="••••••••"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              autoComplete="current-password"
-              required
-              style={{
-                padding: 10,
-                borderRadius: 8,
-                border: "1px solid #ddd",
-                flex: 1,
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPass((s) => !s)}
-              style={{
-                padding: "0 12px",
-                borderRadius: 8,
-                border: "1px solid #ddd",
-                background: "#fafafa",
-                cursor: "pointer",
-              }}
-              aria-label={showPass ? "Hide password" : "Show password"}
-            >
-              {showPass ? "🙈" : "👁️"}
-            </button>
-          </div>
+      {errorMsg ? (
+        <div
+          role="alert"
+          style={{
+            background: "#FEF2F2",
+            color: "#991B1B",
+            padding: "0.75rem 1rem",
+            borderRadius: 8,
+            marginBottom: "1rem",
+            border: "1px solid #FCA5A5",
+          }}
+        >
+          {errorMsg}
+        </div>
+      ) : null}
+
+      <form onSubmit={handleSubmit}>
+        <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>
+          Email
         </label>
+        <input
+          type="email"
+          value={email}
+          autoComplete="email"
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          placeholder="you@example.com"
+          style={inputStyle}
+        />
+
+        <label
+          style={{
+            display: "block",
+            fontWeight: 600,
+            marginTop: 14,
+            marginBottom: 6,
+          }}
+        >
+          Password
+        </label>
+        <div style={{ position: "relative" }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            autoComplete="current-password"
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="Your password"
+            style={{ ...inputStyle, paddingRight: 88 }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((s) => !s)}
+            style={ghostBtn}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
 
         <button
           type="submit"
-          disabled={busy}
+          disabled={loading}
           style={{
-            marginTop: 8,
-            padding: "10px 12px",
-            borderRadius: 8,
-            border: "1px solid #ddd",
-            background: busy ? "#eaeaea" : "#000",
-            color: busy ? "#777" : "#fff",
-            cursor: busy ? "not-allowed" : "pointer",
+            width: "100%",
+            marginTop: 18,
+            padding: "0.75rem 1rem",
+            borderRadius: 10,
+            border: "1px solid transparent",
+            background: loading ? "#9CA3AF" : "#111827",
+            color: "#fff",
+            fontWeight: 600,
+            cursor: loading ? "not-allowed" : "pointer",
           }}
         >
-          {busy ? "Signing in…" : "Sign in"}
+          {loading ? "Signing in…" : "Sign in"}
         </button>
-
-        {err ? (
-          <div style={{ color: "crimson", fontSize: 14 }}>{err}</div>
-        ) : (
-          <div style={{ color: "#666", fontSize: 12 }}>
-            This page calls <code>POST /api/auth/login</code> and redirects to{" "}
-            <code>{redirectTo}</code> on success.
-          </div>
-        )}
       </form>
+
+      <p style={{ marginTop: 18, fontSize: 14, color: "#6b7280" }}>
+        Don’t have an account? <Link to="/register">Create one</Link>
+      </p>
     </div>
   );
 }
+
+// Inline styles for simplicity (replace with your CSS classes if you prefer)
+const inputStyle = {
+  width: "100%",
+  padding: "0.65rem 0.9rem",
+  borderRadius: 10,
+  border: "1px solid #e5e7eb",
+  outline: "none",
+};
+
+const ghostBtn = {
+  position: "absolute",
+  right: 8,
+  top: 8,
+  padding: "0.4rem 0.6rem",
+  borderRadius: 8,
+  border: "1px solid #e5e7eb",
+  background: "#F9FAFB",
+  cursor: "pointer",
+};

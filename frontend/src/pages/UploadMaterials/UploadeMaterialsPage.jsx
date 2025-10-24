@@ -9,7 +9,7 @@ export const UploadeMaterialsPage = () => {
       <Layout>
         <Header />
         <FeatureHeader />
-        <AvailableMaterials />
+        <AvailableMaterials isUpload />
       </Layout>
     </>
   );
