@@ -88,6 +88,7 @@ def answer_question(question, image_path=None):
     """Generate answer with context + optional image."""
     try:
         context_chunks = retrieve(question)
+        #print(context_chunks)
         context = "\n---\n".join(context_chunks) if context_chunks else "No relevant context found."
         inputs = {"context": context, "question": question}
         if image_path:
