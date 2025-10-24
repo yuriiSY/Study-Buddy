@@ -17,7 +17,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("http://localhost:3001/api/auth/signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -46,9 +46,13 @@ export default function LoginPage() {
       if (data?.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
       }
+      // after you get `data` from the response
+      if (data?.token) {
+      localStorage.setItem("token", data.token);
+      }
 
       // Go to dashboard (adjust path to match your app)
-      navigate("/dashboard", { replace: true });
+      navigate("/", { replace: true });
     } catch (err) {
       setErrorMsg(err.message || "Something went wrong.");
     } finally {

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// src/components/DocViewer/DocViewer.jsx
+import React, { useState, useEffect, useCallback } from "react";
 import styles from "./DocViewer.module.css";
 import { useParams } from "react-router-dom";
 import { getFileHtml } from "../../api/filesApi";
@@ -12,6 +13,18 @@ export default function DocxViewer() {
   const pageHeight = 1050;
   const pagePadding = 28;
 
+  // NEW: memoize viewFile so it’s stable and list it as a dependency
+  const viewFile = useCallback(async () => {
+    try {
+      const html = await getFileHtml(id);
+      paginateHtml(html);
+      localStorage.setItem("latestFileId", id);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load file");
+    }
+  }, [id]);
+
   useEffect(() => {
     const savedFile = localStorage.getItem("latestFileId");
     const savedPage = parseInt(localStorage.getItem("latestPageIndex"), 10);
@@ -22,23 +35,12 @@ export default function DocxViewer() {
       setPageIndex(0);
     }
 
-    viewFile();
-  }, [id]);
+    viewFile(); // call the memoized function
+  }, [id, viewFile]); // include viewFile to satisfy exhaustive-deps
 
   useEffect(() => {
     localStorage.setItem("latestPageIndex", pageIndex);
   }, [pageIndex]);
-
-  const viewFile = async () => {
-    try {
-      const html = await getFileHtml(id);
-      paginateHtml(html);
-      localStorage.setItem("latestFileId", id);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to load file");
-    }
-  };
 
   async function paginateHtml(htmlString) {
     const container = document.createElement("div");

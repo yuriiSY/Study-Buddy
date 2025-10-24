@@ -1,3 +1,4 @@
+// src/components/CardsSection/CardsSection.jsx
 import React from "react";
 import Card from "../Card/Card";
 import UploadCard from "../UploadCard/UploadCard";
@@ -20,7 +21,13 @@ const images = {
   "achievments.png": achievementsImg,
 };
 
-const CardsSection = () => {
+export default function CardsSection({ latestFileId: latestFileIdProp }) {
+  // Define latestFileId safely (prop → localStorage → null)
+  const latestFileId =
+    latestFileIdProp ||
+    (typeof window !== "undefined" && localStorage.getItem("latestFileId")) ||
+    null;
+
   return (
     <div className={styles.cardsSection}>
       <UploadCard
@@ -29,27 +36,30 @@ const CardsSection = () => {
         imageUrl={images["create_study_space.png"]}
         linkUrl="/upload"
       />
+
       <div className={styles.cards}>
-        {cardsData.map((card, index) => {
-          let link = card.linkUrl;
+        {Array.isArray(cardsData) &&
+          cardsData.map((card, index) => {
+            // Resolve image (fallback to create_study_space if key is wrong)
+            const img = images[card.image] || images["create_study_space.png"];
 
-          if (card.title === "Resume Study" && latestFileId) {
-            link = `${card.linkUrl}/${latestFileId}`;
-          }
+            // Default link from data; for "Resume Study" include latestFileId when present
+            let link = card.linkUrl;
+            if (card.title === "Resume Study" && latestFileId) {
+              link = `${card.linkUrl}/${latestFileId}`;
+            }
 
-          return (
-            <Card
-              key={index}
-              title={card.title}
-              description={card.description}
-              imageUrl={images[card.image]}
-              linkUrl={link}
-            />
-          );
-        })}
+            return (
+              <Card
+                key={index}
+                title={card.title}
+                description={card.description}
+                imageUrl={img}
+                linkUrl={link}
+              />
+            );
+          })}
       </div>
     </div>
   );
-};
-
-export default CardsSection;
+}
