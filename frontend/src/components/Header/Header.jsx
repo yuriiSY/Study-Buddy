@@ -4,7 +4,6 @@ import avatarImg from "../../assets/avatar.png";
 import logoImg from "../../assets/logo.png";
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
-import { Link } from "react-router-dom";
 
 const Header = () => {
   const [open, setOpen] = useState(false);
@@ -13,6 +12,7 @@ const Header = () => {
 
   const { isLoggedIn } = useSelector((state) => state.auth);
 
+  // Close dropdown if clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -30,16 +30,18 @@ const Header = () => {
 
   return (
     <header className={styles.header}>
+      {/* Logo */}
       <div className={styles.logoSection}>
-        <Link to="/" className={styles.logoLink}>
+        <a href="/" className={styles.logoLink}>
           <img src={logoImg} alt="Study Buddy Logo" className={styles.logo} />
           <div>
             <h1 className={styles.title}>Study Buddy</h1>
             <p className={styles.subtitle}>Your smart learning partner</p>
           </div>
-        </Link>
+        </a>
       </div>
 
+      {/* Stats (visible only when logged in) */}
       {isLoggedIn && (
         <ul className={styles.stats}>
           <li>
@@ -65,6 +67,7 @@ const Header = () => {
         </ul>
       )}
 
+      {/* Right side: User avatar or Sign In */}
       <div className={styles.userSection} ref={menuRef}>
         {isLoggedIn ? (
           <>
@@ -81,9 +84,9 @@ const Header = () => {
 
             {open && (
               <div className={styles.dropdown}>
-                <Link to="/account" className={styles.menuItem}>
+                <a href="/account" className={styles.menuItem}>
                   My Account
-                </Link>
+                </a>
                 <hr className={styles.divider} />
                 <button onClick={handleLogout} className={styles.logout}>
                   Logout
@@ -93,9 +96,9 @@ const Header = () => {
           </>
         ) : (
           <div className={styles.authLinks}>
-            <Link to="/login" className={styles.loginLink}>
+            <a href="/login" className={styles.loginLink}>
               Sign In
-            </Link>
+            </a>
           </div>
         )}
       </div>

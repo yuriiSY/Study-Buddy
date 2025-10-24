@@ -46,16 +46,3 @@
   justify-content: center;
   padding-left: 10px;
 }
-
-@media (max-width: 768px) {
-  .card {
-    width: 100%;
-    justify-content: start;
-  }
-
-  .cardTitle {
-    padding-left: 10px;
-    justify-content: start;
-    gap: 15px;
-  }
-}

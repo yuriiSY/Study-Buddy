@@ -6,7 +6,7 @@ export const loginUser = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "https://study-buddy-2o9t.onrender.com/api/auth/signin",
+        "http://localhost:4000/api/auth/signin",
         credentials
       );
       return response.data;
@@ -21,7 +21,7 @@ export const registerUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "https://study-buddy-2o9t.onrender.com/api/auth/signup",
+        "http://localhost:4000/api/auth/signup",
         userData
       );
       return response.data;
