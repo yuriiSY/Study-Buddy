@@ -1,13 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "../pages/Home";
 
-export default function App() {
+export default function AppRoutes() {
   return (
-    <div className="h-screen flex items-center justify-center">
+    <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<Home />} />
       </Routes>
-    </div>
+    </BrowserRouter>
   );
 }

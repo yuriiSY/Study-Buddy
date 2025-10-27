@@ -26,19 +26,19 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     container_name: backend_app
     working_dir: /app
     command: npm run dev
     ports:
-      - "3001:3001"
+      - "5000:5000"
     volumes:
       - .:/app
     env_file:
       - .env
     depends_on:
-      - db
+      - postgres
 
   frontend:
     build:
