@@ -1,21 +1,18 @@
-﻿FROM node:20-alpine
-RUN apk add --no-cache openssl libc6-compat
+FROM node:20-slim
+
 WORKDIR /app
 
-# 1) Copy package manifests
+# Install system deps Prisma needs
+RUN apt-get update \
+    && apt-get install -y openssl \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY package*.json ./
+RUN npm ci
 
-# 2) Copy Prisma schema BEFORE install so postinstall can find it
-COPY prisma ./prisma
-
-# 3) Install deps (this may run "postinstall": "prisma generate" if you have it)
-RUN npm ci || npm install
-
-# 4) Safety: run generate explicitly too (no-op if already run)
-RUN npx prisma generate || true
-
-# 5) Copy the rest of the app
 COPY . .
 
-EXPOSE 3001
-CMD ["npm","run","dev"]
+RUN npx prisma generate
+
+EXPOSE 5000
+CMD ["npm", "run", "dev"]

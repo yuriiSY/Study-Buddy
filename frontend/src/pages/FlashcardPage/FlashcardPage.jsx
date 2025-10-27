@@ -1,4 +1,5 @@
 // import React, { useState } from "react";
+
 // import Sidebar from "../../components/Sidebar/Sidebar";
 import Flashcard from "../../components/Flashcard/Flashcard";
 import Layout from "../../components/Layout/Layout";
@@ -23,11 +24,32 @@ const cardsData = [
 ];
 
 export const FlashcardPage = () => {
-  const handleFinish = (stats) => console.log("Finished:", stats);
+  // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // const [selectedFeature, setSelectedFeature] = useState(null);
+
+  // const modules = [
+  //   { title: "Module 1. Node.js Basics" },
+  //   { title: "Module 2. Express" },
+  //   { title: "Module 3. MongoDB" },
+  // ];
+
+  // const handleFeatureSelect = (module, feature) => {
+  //   setSelectedFeature(`${feature} in ${module.title}`);
+  //   console.log(`Selected ${feature} for ${module.title}`);
+  // };
+
+  const handleFinish = () => alert("You finished all flashcards!");
+
   return (
     <Layout>
       <Header />
-      <Flashcard cards={cardsData} onFinish={handleFinish} />
+      <Flashcard cards={cardsData} onFinish={handleFinish} />;
+      {/* <Sidebar
+        modules={modules}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onFeatureSelect={handleFeatureSelect}
+      /> */}
     </Layout>
   );
 };

@@ -1,7 +1,0 @@
-﻿node_modules
-.env
-.vscode
-.git
-dist
-coverage
-
