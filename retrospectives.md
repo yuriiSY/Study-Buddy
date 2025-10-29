@@ -53,3 +53,20 @@
 ### What actions are being taken
 • Addition discussions typed out and notices made regarding unavailability
 • Task planning towards final report and features is under works.
+
+
+## Week 6 Retrospectives:
+### What went well
+• Interface updates are being pushed from figma to live
+• Survey & questionnaires samples are created
+• A target userbase is set for the first round of surveys
+• AI is making improvements in timing
+### What to improve
+• Task scheduling
+• Communication this week was slightly reduced
+### What actions are being taken
+• User evaluation report is in progress
+• Further frontend features are under development
+• Set meeting data for surveying students
+• AI optimisation continues
+
