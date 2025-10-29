@@ -4,6 +4,7 @@ import {
   uploadFiles,
   getUserFiles,
   getFileHtml,
+  getUserModules,
 } from "../controllers/uploadController.js";
 
 const router = express.Router();
