@@ -15,9 +15,9 @@ import requests
 VECTOR_FILE = "vectors.json"            # Pre-generated vector store
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
 OLLAMA_MODEL = "llama3.2:3b"            # Multimodal model
-OLLAMA_BASE_URL = "http://localhost:11434"  # Ollama server URL
+OLLAMA_BASE_URL = "http://ollama-chatbot:11434"  # Ollama server URL
 
-TABLE_NAME = "embeddings"
+TABLE_NAME = "langchain_pg_embedding"  # pgvector table name
 
 
 #---------Flask App Setup---------
@@ -70,7 +70,7 @@ def retrieve_by_file_ids(file_ids, query, k=4):
 
 
  # ---------- LLM (direct /api/chat call) ----------
-template = """
+PROMPT_TEMPLATE = """
 You are a helpful AI. Use the CONTEXT from the selected files to answer.
 
 CONTEXT:
@@ -81,24 +81,43 @@ QUESTION:
 
 End with: SOURCE: [file(s)]
 """
-prompt = ChatPromptTemplate.from_template(template)
+prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
 
 def ollama_chat(context: str, question: str) -> str:
+    """
+    Calls Ollama REST API v0.1.32 /api/chat endpoint inside Docker.
+    Returns the response text or error string.
+    """
+    url = f"{OLLAMA_BASE_URL}/api/chat"
+    
     payload = {
         "model": OLLAMA_MODEL,
         "messages": [
-            {"role": "system", "content": prompt.format(context=context, question=question)}
+            {
+                "role": "system",
+                "content": PROMPT_TEMPLATE.format(context=context, question=question)
+            }
         ],
         "stream": False
     }
-    try:
-        r = requests.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload, timeout=120)
-        r.raise_for_status()
-        return r.json()["message"]["content"]
-    except Exception as e:
-        print(f"Ollama error: {e}")
-        return f"Error: {str(e)}"
 
+    try:
+        response = requests.post(url, json=payload, timeout=60)
+        response.raise_for_status()  # Raises HTTPError for 4xx/5xx responses
+        data = response.json()
+
+        # v0.1.32 returns 'message' object
+        return data.get("message", {}).get("content", "No content in response.")
+
+    except requests.exceptions.HTTPError as http_err:
+        return f"HTTP error: {http_err}"
+    except requests.exceptions.ConnectionError as conn_err:
+        return f"Connection error: {conn_err}"
+    except requests.exceptions.Timeout as timeout_err:
+        return f"Timeout error: {timeout_err}"
+    except Exception as e:
+        return f"Unexpected error: {e}"
+    
 # ------------------- ENDPOINTS -------------------
 
 @app.route('/', methods=['GET'])
@@ -151,8 +170,8 @@ def list_file_ids():
     try:
         cur = conn.cursor()  # ← Use the global `conn` from startup
         cur.execute(sql.SQL("""
-            SELECT DISTINCT metadata->>'file_id' AS file_id,
-                   metadata->>'file_name' AS file_name
+            SELECT DISTINCT langchain_pg_embedding.cmetadata->>'file_id' AS file_id,
+                   langchain_pg_embedding.cmetadata->>'file_name' AS file_name
             FROM {table}
             ORDER BY file_name
         """).format(table=sql.Identifier(TABLE_NAME)))
@@ -167,29 +186,21 @@ def list_file_ids():
 # Ask question using multiple file_ids
 @app.route('/ask', methods=['POST'])
 def ask():
-    try:
-        data = request.get_json()
-        if not data or 'question' not in data:
-            return jsonify({"error": "Missing 'question'"}), 400
-        question = data['question'].strip()
-        file_ids = data.get('file_ids', [])
-        if not isinstance(file_ids, list):
-            return jsonify({"error": "'file_ids' must be array"}), 400
+    data = request.get_json()
+    question = data.get("question", "").strip()
+    file_ids = data.get("file_ids", [])
 
-        context_chunks = retrieve_by_file_ids(file_ids, question, k=6)
-        context = "\n---\n".join(context_chunks) if context_chunks else "No relevant context."
+    context_chunks = retrieve_by_file_ids(file_ids, question, k=6)
+    context = "\n---\n".join(context_chunks) if context_chunks else "No relevant context."
 
-        answer = ollama_chat(context, question)          #  CALL
+    answer = ollama_chat(context, question)
 
-        return jsonify({
-            "question": question,
-            "answer": answer,
-            "file_ids_used": file_ids,
-            "chunks": len(context_chunks)
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+    return jsonify({
+        "question": question,
+        "answer": answer,
+        "file_ids_used": file_ids,
+        "chunks": len(context_chunks)
+    })
 
 
 if __name__ == "__main__":
