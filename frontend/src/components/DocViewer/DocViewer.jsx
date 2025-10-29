@@ -1,29 +1,29 @@
 import React, { useState, useEffect } from "react";
 import styles from "./DocViewer.module.css";
-import { useParams } from "react-router-dom";
 import { getFileHtml } from "../../api/filesApi";
 
-export default function DocxViewer() {
+export default function DocxViewer({ moduleId, fileId }) {
   const [pages, setPages] = useState([]);
   const [pageIndex, setPageIndex] = useState(0);
-  const { id } = useParams();
 
   const pageWidth = 800;
   const pageHeight = 1050;
   const pagePadding = 28;
 
   useEffect(() => {
+    if (!fileId) return;
+
     const savedFile = localStorage.getItem("latestFileId");
     const savedPage = parseInt(localStorage.getItem("latestPageIndex"), 10);
 
-    if (savedFile === id && !isNaN(savedPage)) {
+    if (savedFile === String(fileId) && !isNaN(savedPage)) {
       setPageIndex(savedPage);
     } else {
       setPageIndex(0);
     }
 
     viewFile();
-  }, [id]);
+  }, [fileId]);
 
   useEffect(() => {
     localStorage.setItem("latestPageIndex", pageIndex);
@@ -31,9 +31,9 @@ export default function DocxViewer() {
 
   const viewFile = async () => {
     try {
-      const html = await getFileHtml(id);
+      const html = await getFileHtml(moduleId, fileId);
       paginateHtml(html);
-      localStorage.setItem("latestFileId", id);
+      localStorage.setItem("latestFileId", fileId);
     } catch (err) {
       console.error(err);
       alert("Failed to load file");
@@ -55,9 +55,7 @@ export default function DocxViewer() {
         (img) =>
           new Promise((resolve) => {
             if (img.complete) resolve();
-            else {
-              img.onload = img.onerror = resolve;
-            }
+            else img.onload = img.onerror = resolve;
           })
       )
     );
@@ -83,35 +81,6 @@ export default function DocxViewer() {
           pageEl.removeChild(last);
           container.insertBefore(last, container.firstChild);
           break;
-        }
-      }
-
-      if (pageEl.childNodes.length === 0 && container.childNodes.length > 0) {
-        const node = container.childNodes[0];
-        if (node.nodeType === Node.TEXT_NODE) {
-          let text = node.nodeValue;
-          let low = 0,
-            high = text.length,
-            cut = 0;
-          while (low < high) {
-            const mid = Math.floor((low + high) / 2);
-            const attempt = document.createElement("div");
-            attempt.style.width = `${pageWidth - pagePadding * 2}px`;
-            attempt.textContent = text.slice(0, mid);
-            document.body.appendChild(attempt);
-            const h = attempt.getBoundingClientRect().height;
-            document.body.removeChild(attempt);
-            if (h <= pageHeight - pagePadding * 2) {
-              low = mid + 1;
-              cut = mid;
-            } else high = mid - 1;
-          }
-          const part = text.slice(0, cut);
-          const rest = text.slice(cut);
-          pageEl.appendChild(document.createTextNode(part));
-          node.nodeValue = rest;
-        } else {
-          pageEl.appendChild(container.childNodes[0]);
         }
       }
 

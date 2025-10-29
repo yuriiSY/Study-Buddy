@@ -3,8 +3,8 @@
   flex-direction: column;
   justify-content: space-between;
   background-color: #314158;
-  width: 330px;
-  height: 220px;
+  width: 450px;
+  min-height: 280px;
   padding: 15px;
   border-radius: 8px;
 }

@@ -3,6 +3,22 @@
   align-items: center;
 }
 
+.modulesGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.content {
+  width: 100%;
+}
+
+.modulesSection {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
 @media (max-width: 768px) {
   .homePage {
     flex-direction: column;

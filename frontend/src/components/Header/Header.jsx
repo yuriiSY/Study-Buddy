@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
 import { Link } from "react-router-dom";
 
-const Header = () => {
+const Header = ({ onMenuClick, hasSidebar = false }) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef();
   const dispatch = useDispatch();
@@ -30,14 +30,21 @@ const Header = () => {
 
   return (
     <header className={styles.header}>
-      <div className={styles.logoSection}>
-        <Link to="/" className={styles.logoLink}>
-          <img src={logoImg} alt="Study Buddy Logo" className={styles.logo} />
-          <div>
-            <h1 className={styles.title}>Study Buddy</h1>
-            <p className={styles.subtitle}>Your smart learning partner</p>
-          </div>
-        </Link>
+      <div className={styles.left}>
+        {hasSidebar && (
+          <button className={styles.menuBtn} onClick={onMenuClick}>
+            ☰
+          </button>
+        )}
+        <div className={styles.logoSection}>
+          <Link to="/" className={styles.logoLink}>
+            <img src={logoImg} alt="Study Buddy Logo" className={styles.logo} />
+            <div>
+              <h1 className={styles.title}>Study Buddy</h1>
+              <p className={styles.subtitle}>Your smart learning partner</p>
+            </div>
+          </Link>
+        </div>
       </div>
 
       {isLoggedIn && (

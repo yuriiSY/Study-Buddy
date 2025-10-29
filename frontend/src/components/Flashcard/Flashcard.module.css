@@ -11,6 +11,7 @@
   border-radius: 1rem;
   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
   width: 100%;
+  height: 800px;
   padding: 2.5rem;
   display: flex;
   flex-direction: column;
@@ -106,15 +107,15 @@
   font-weight: 500;
   padding: 0.6rem 1.4rem;
   border-radius: 0.5rem;
-  border: 1.5px solid #facc15;
+  border: 1.5px solid #656596;
   background-color: white;
-  color: #facc15;
+  color: #656596;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .navBtn:hover {
-  background-color: #fefce8;
+  background-color: #8e8ebb;
 }
 
 .navBtn:disabled {

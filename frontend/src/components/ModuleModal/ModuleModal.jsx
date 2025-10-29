@@ -1,44 +1,11 @@
 import React, { useState } from "react";
 import styles from "./ModuleModal.module.css";
-
-const existingFiles = [
-  {
-    name: "Organic Chemistry Notes.pdf",
-    type: "PDF",
-    size: "3.1 MB",
-    date: "Oct 17, 2025",
-  },
-  {
-    name: "World History Timeline.docx",
-    type: "DOCX",
-    size: "1.8 MB",
-    date: "Oct 16, 2025",
-  },
-  {
-    name: "Physics Formulas.pdf",
-    type: "PDF",
-    size: "1.2 MB",
-    date: "Oct 15, 2025",
-  },
-  {
-    name: "Biology Diagrams.png",
-    type: "Image",
-    size: "4.5 MB",
-    date: "Oct 14, 2025",
-  },
-  {
-    name: "Statistics Study Guide.pdf",
-    type: "PDF",
-    size: "2.8 MB",
-    date: "Oct 13, 2025",
-  },
-];
+import api from "../../api/axios";
 
 const ModuleModal = ({ isOpen, onClose, onCreate }) => {
-  const [tab, setTab] = useState("library");
   const [moduleName, setModuleName] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -47,25 +14,41 @@ const ModuleModal = ({ isOpen, onClose, onCreate }) => {
     setUploadedFiles((prev) => [...prev, ...files]);
   };
 
-  const toggleFileSelection = (fileName) => {
-    setSelectedFiles((prev) =>
-      prev.includes(fileName)
-        ? prev.filter((name) => name !== fileName)
-        : [...prev, fileName]
-    );
-  };
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!moduleName.trim()) {
       alert("Please enter a module name.");
       return;
     }
-    const filesToInclude =
-      tab === "library"
-        ? existingFiles.filter((f) => selectedFiles.includes(f.name))
-        : uploadedFiles;
-    onCreate({ moduleName, files: filesToInclude });
-    onClose();
+    if (uploadedFiles.length === 0) {
+      alert("Please upload at least one file.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("moduleName", moduleName);
+      uploadedFiles.forEach((file) => formData.append("files", file));
+
+      const res = await api.post("/files/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      console.log("Upload successful:", res.data);
+
+      if (onCreate && res.data?.module) {
+        onCreate(res.data.module);
+      }
+
+      setModuleName("");
+      setUploadedFiles([]);
+      onClose();
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Upload failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,8 +60,7 @@ const ModuleModal = ({ isOpen, onClose, onCreate }) => {
 
         <h2 className={styles.title}>Create New Study Module</h2>
         <p className={styles.subtitle}>
-          Select existing files from your library or upload new materials. You
-          can combine multiple files into one module.
+          Upload your study materials to create a new module.
         </p>
 
         <div className={styles.formGroup}>
@@ -90,86 +72,50 @@ const ModuleModal = ({ isOpen, onClose, onCreate }) => {
             placeholder="e.g., Calculus I - Chapter 3"
             value={moduleName}
             onChange={(e) => setModuleName(e.target.value)}
+            disabled={loading}
           />
         </div>
 
-        {/* Tabs */}
-        <div className={styles.tabs}>
-          <button
-            className={`${styles.tabButton} ${
-              tab === "library" ? styles.activeTab : ""
-            }`}
-            onClick={() => setTab("library")}
-          >
-            File Library
-          </button>
-          <button
-            className={`${styles.tabButton} ${
-              tab === "upload" ? styles.activeTab : ""
-            }`}
-            onClick={() => setTab("upload")}
-          >
-            Upload New
-          </button>
+        <div className={styles.uploadSection}>
+          <input
+            id="fileInput"
+            type="file"
+            multiple
+            className={styles.hiddenFileInput}
+            onChange={handleFileUpload}
+            disabled={loading}
+          />
+          <label htmlFor="fileInput" className={styles.uploadButton}>
+            📤 Upload Files
+          </label>
+
+          {uploadedFiles.length > 0 && (
+            <ul className={styles.uploadList}>
+              {uploadedFiles.map((file, i) => (
+                <li key={i} className={styles.uploadedFile}>
+                  <span className={styles.fileIcon}>📄</span> {file.name}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
-        {/* Tab content */}
-        {tab === "library" ? (
-          <div className={styles.fileList}>
-            {existingFiles.map((file, i) => (
-              <label key={i} className={styles.fileItem}>
-                <input
-                  type="checkbox"
-                  checked={selectedFiles.includes(file.name)}
-                  onChange={() => toggleFileSelection(file.name)}
-                />
-                <div className={styles.fileInfo}>
-                  <span className={styles.fileName}>{file.name}</span>
-                  <span className={styles.fileMeta}>
-                    {file.type} • {file.size} • {file.date}
-                  </span>
-                </div>
-              </label>
-            ))}
-          </div>
-        ) : (
-          <div className={styles.uploadSection}>
-            <input
-              type="file"
-              multiple
-              className={styles.fileInput}
-              onChange={handleFileUpload}
-            />
-            {uploadedFiles.length > 0 && (
-              <ul className={styles.uploadList}>
-                {uploadedFiles.map((file, i) => (
-                  <li key={i}>{file.name}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-
-        {/* Footer */}
         <div className={styles.footer}>
-          <span>
-            Total files:{" "}
-            {tab === "library" ? selectedFiles.length : uploadedFiles.length}
-          </span>
+          <span>Total files: {uploadedFiles.length}</span>
           <div className={styles.actions}>
-            <button className={styles.cancelButton} onClick={onClose}>
+            <button
+              className={styles.cancelButton}
+              onClick={onClose}
+              disabled={loading}
+            >
               Cancel
             </button>
             <button
               className={styles.createButton}
               onClick={handleSubmit}
-              disabled={
-                tab === "library"
-                  ? selectedFiles.length === 0
-                  : uploadedFiles.length === 0
-              }
+              disabled={uploadedFiles.length === 0 || loading}
             >
-              Create Module
+              {loading ? "Uploading..." : "Create Module"}
             </button>
           </div>
         </div>

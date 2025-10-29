@@ -25,25 +25,27 @@ If differentiation breaks something into smaller parts (like finding rate of cha
   };
 
   return (
-    <div className={styles.chatContainer}>
-      <h2 className={styles.title}>AI Tutor</h2>
-      <div className={styles.chatBox}>
-        {messages.map((msg, idx) => (
-          <Message key={idx} sender={msg.sender} text={msg.text} />
-        ))}
+    <div className={styles.wrapper}>
+      <div className={styles.chatContainer}>
+        <h2 className={styles.title}>AI Tutor</h2>
+        <div className={styles.chatBox}>
+          {messages.map((msg, idx) => (
+            <Message key={idx} sender={msg.sender} text={msg.text} />
+          ))}
+        </div>
+        <form onSubmit={sendMessage} className={styles.inputArea}>
+          <input
+            type="text"
+            placeholder='Ask about: "∫ f(x) dx = F(x) + C"'
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className={styles.input}
+          />
+          <button type="submit" className={styles.sendBtn}>
+            ➤
+          </button>
+        </form>
       </div>
-      <form onSubmit={sendMessage} className={styles.inputArea}>
-        <input
-          type="text"
-          placeholder='Ask about: "∫ f(x) dx = F(x) + C"'
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className={styles.input}
-        />
-        <button type="submit" className={styles.sendBtn}>
-          ➤
-        </button>
-      </form>
     </div>
   );
 };

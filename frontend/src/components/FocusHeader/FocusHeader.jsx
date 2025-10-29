@@ -25,12 +25,12 @@ const FocusHeader = ({ sessionName = "Session 1" }) => {
 
   return (
     <div className={styles.header}>
-      <div className={styles.left}>
+      {/* <div className={styles.left}>
         <button className={styles.backBtn}>
           <ArrowLeft size={18} />
           <span>Back to Dashboard</span>
         </button>
-      </div>
+      </div> */}
 
       <div className={styles.center}>
         <span className={styles.timer}>{formatTime(time)}</span>
@@ -42,13 +42,13 @@ const FocusHeader = ({ sessionName = "Session 1" }) => {
         </button>
       </div>
 
-      <div className={styles.right}>
+      {/* <div className={styles.right}>
         <span className={styles.focusEmoji}>📚</span>
         <div className={styles.focusText}>
           <strong>Focus Time</strong>
           <small>{sessionName}</small>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
