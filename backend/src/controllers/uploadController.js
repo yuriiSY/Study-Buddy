@@ -86,6 +86,18 @@ export const getUserModules = async (req, res) => {
   }
 };
 
+export const getFilesByModule = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const moduleId = parseInt(req.params.moduleId);
+    const files = await uploadService.getFilesByModuleId(userId, moduleId);
+    res.json({ files });
+  } catch (error) {
+    console.error("Error fetching files by module:", error);
+    res.status(500).json({ error: "Failed to fetch files for this module" });
+  }
+};
+
 export const getFileHtml = async (req, res) => {
   try {
     const userId = req.user.id;
