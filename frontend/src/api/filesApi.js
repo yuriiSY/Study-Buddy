@@ -5,7 +5,7 @@ export const getUserFiles = async () => {
   return res.data.files;
 };
 
-export const getFileHtml = async (id) => {
-  const res = await api.get(`/files/${id}`);
+export const getFileHtml = async (moduleId, fileId) => {
+  const res = await api.get(`/files/modules/${moduleId}/files/${fileId}`);
   return res.data.html;
 };

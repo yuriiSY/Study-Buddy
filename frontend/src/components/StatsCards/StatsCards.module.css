@@ -1,0 +1,50 @@
+.container {
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1791px;
+  margin: 0 auto;
+}
+
+.card {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  background: #f9fafb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  min-height: 280px;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.icon {
+  margin-bottom: 0.75rem;
+}
+
+.value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.label {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+  color: #111827;
+}
+
+.subtext {
+  color: #6b7280;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}

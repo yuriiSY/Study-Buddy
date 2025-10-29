@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import Flashcard from "../../components/Flashcard/Flashcard";
 import WorkspaceLayout from "../../components/WorkspaceLayout/WorkspaceLayout";
 import MCQTest from "../../components/MCQTest/MCQTest";
@@ -6,6 +7,7 @@ import DocxViewer from "../../components/DocViewer/DocViewer";
 import Chat from "../../components/Chat/Chat";
 import styles from "../StudySpacePage/StudySpacePage.module.css";
 import FocusHeader from "../../components/FocusHeader/FocusHeader";
+import api from "../../api/axios";
 
 const cardsData = [
   {
@@ -42,19 +44,38 @@ const sampleQuestions = [
 ];
 
 export const FlashcardPage = () => {
+  const { moduleId } = useParams();
   const [selectedFeature, setSelectedFeature] = useState(null);
-  const [selectedModule, setSelectedModule] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [modules, setModules] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const modules = [
-    { title: "File 1. Node.js Basics" },
-    { title: "File 2. Express" },
-    { title: "File 3. MongoDB" },
-  ];
+  useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        const res = await api.get(`/files/modules/${moduleId}/files`);
+        const backendFiles = res.data.files || [];
 
-  const handleFeatureSelect = (module, feature) => {
+        const formattedModules = backendFiles.map((file, index) => ({
+          title: `File ${index + 1}. ${file.filename}`,
+          id: file.id,
+        }));
+
+        setModules(formattedModules);
+      } catch (err) {
+        console.error("Failed to fetch files:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFiles();
+  }, [moduleId]);
+
+  const handleFeatureSelect = (file, feature) => {
     setSelectedFeature(feature);
-    setSelectedModule(module);
-    console.log(`Selected ${feature} for ${module.title}`);
+    setSelectedFile(file);
+    console.log(`Selected ${feature} for ${file.title}`);
   };
 
   const handleSubmit = (answers) => {
@@ -70,14 +91,16 @@ export const FlashcardPage = () => {
       case "AI Buddy":
         return (
           <div className={styles.studySpaceContainer}>
-            <DocxViewer />
+            <DocxViewer fileId={selectedFile?.id} moduleId={moduleId} />
             <Chat />
           </div>
         );
       default:
-        return <DocxViewer />;
+        return <DocxViewer fileId={selectedFile?.id} moduleId={moduleId} />;
     }
   };
+
+  if (loading) return <p>Loading files...</p>;
 
   return (
     <WorkspaceLayout

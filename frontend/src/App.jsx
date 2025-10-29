@@ -31,7 +31,7 @@ export default function App() {
         <Route path="/upload" element={<UploadeMaterialsPage />} />
         <Route path="/studyspace/:id" element={<StudySpacePage />} />
         <Route path="/selfassesment/:id" element={<TestPage />} />
-        <Route path="/smartrevision/:id" element={<FlashcardPage />} />
+        <Route path="/modules/:moduleId" element={<FlashcardPage />} />
       </Routes>
       <ToastContainer
         position="top-right"

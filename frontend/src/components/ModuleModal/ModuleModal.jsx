@@ -36,7 +36,9 @@ const ModuleModal = ({ isOpen, onClose, onCreate }) => {
 
       console.log("Upload successful:", res.data);
 
-      if (onCreate) onCreate(res.data);
+      if (onCreate && res.data?.module) {
+        onCreate(res.data.module);
+      }
 
       setModuleName("");
       setUploadedFiles([]);
