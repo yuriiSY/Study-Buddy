@@ -14,7 +14,7 @@
 .modal {
   background: #fff;
   width: 720px;
-  max-height: 600px;
+  max-height: 1200px;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 24px;
@@ -101,7 +101,7 @@ label {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 250px;
+  max-height: 500px;
   overflow-y: auto;
   padding-right: 6px;
 }
@@ -155,7 +155,6 @@ label {
   color: #444;
 }
 
-/* Footer */
 .footer {
   display: flex;
   align-items: center;
@@ -204,4 +203,46 @@ label {
 .createButton:disabled {
   background: #9ca3af;
   cursor: not-allowed;
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+.uploadButton {
+  display: inline-block;
+  background-color: #4a6cf7;
+  color: white;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.uploadButton:hover {
+  background-color: #3652d9;
+}
+
+.uploadList {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.uploadedFile {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  background-color: #f9f9fb;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.fileIcon {
+  margin-right: 8px;
+  font-size: 16px;
 }

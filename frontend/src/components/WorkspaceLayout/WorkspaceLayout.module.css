@@ -1,0 +1,115 @@
+.workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f9fafb;
+}
+
+.layoutWrapper {
+  display: flex;
+  flex: 1;
+  position: relative; /* needed for overlay positioning */
+}
+
+/* === Sidebar base === */
+.layoutWrapper > :first-child {
+  background: #f8f9fc;
+  border-right: 1px solid #e2e8f0;
+  z-index: 20;
+  transition: all 0.3s ease;
+}
+
+/* === Main content === */
+.main {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  height: calc(100vh - 84px);
+  background: #f9fafb;
+  transition: margin-left 0.3s ease;
+}
+
+/* 🖥️ Desktop (≥1024px) — sidebar fixed left */
+@media (min-width: 1024px) {
+  .layoutWrapper > :first-child {
+    position: fixed;
+    top: 84px;
+    left: 0;
+    height: calc(100vh - 84px);
+    width: 260px;
+  }
+
+  .main {
+    margin-left: 260px;
+    padding: 32px;
+  }
+}
+
+/* 📱 Tablet (768–1023px) — overlay left 260px wide */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .layoutWrapper > :first-child {
+    position: fixed;
+    top: 84px;
+    left: 0;
+    width: 260px;
+    height: calc(100vh - 84px);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .sidebarOpen .layoutWrapper > :first-child {
+    transform: translateX(0);
+  }
+
+  .sidebarOpen::before {
+    content: "";
+    position: fixed;
+    top: 84px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 84px);
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 10;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: 16px;
+  }
+}
+
+/* 📱 Mobile (<768px) — sidebar covers entire screen */
+@media (max-width: 767px) {
+  .layoutWrapper > :first-child {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    transform: translateX(-100%);
+    background: #f8f9fc;
+    transition: transform 0.3s ease;
+    z-index: 30;
+    box-shadow: none;
+  }
+
+  /* Open state */
+  .sidebarOpen .layoutWrapper > :first-child {
+    transform: translateX(0);
+  }
+
+  /* Overlay (optional dark backdrop for visual focus) */
+  .sidebarOpen::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 20;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: 16px;
+  }
+}

@@ -5,33 +5,47 @@ import fs from "fs";
 
 const prisma = new PrismaClient();
 
-export const uploadFile = async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-
-  const filePath = req.file.path;
-  const fileName = req.file.originalname;
+export const uploadFiles = async (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ error: "No files uploaded" });
+  }
 
   try {
-    const html = await convertDocxToHtml(filePath);
+    const uploadedResults = [];
 
-    fs.unlink(filePath, () => {});
+    for (const file of req.files) {
+      const filePath = file.path;
+      const fileName = file.originalname;
 
-    const savedFile = await prisma.file.create({
-      data: {
-        filename: fileName,
-        html,
-        userId: req.user.id,
-      },
-    });
+      let html = "";
+
+      if (
+        file.mimetype ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        html = await convertDocxToHtml(filePath);
+      }
+
+      fs.unlink(filePath, () => {});
+
+      const savedFile = await prisma.file.create({
+        data: {
+          filename: fileName,
+          html,
+          userId: req.user.id,
+        },
+      });
+
+      uploadedResults.push(savedFile);
+    }
 
     res.json({
-      message: "File uploaded and saved successfully",
-      file: savedFile,
+      message: "Files uploaded successfully",
+      files: uploadedResults,
     });
   } catch (err) {
-    fs.unlink(filePath, () => {});
-    console.error("Conversion failed:", err);
-    res.status(500).json({ error: "Conversion failed" });
+    console.error("Upload failed:", err);
+    res.status(500).json({ error: "Upload failed" });
   }
 };
 
@@ -43,6 +57,17 @@ export const getUserFiles = async (req, res) => {
   } catch (error) {
     console.error("Error fetching files:", error);
     res.status(500).json({ error: "Failed to fetch files" });
+  }
+};
+
+export const getUserModules = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const modules = await uploadService.getModulesByUserId(userId);
+    res.json({ modules });
+  } catch (error) {
+    console.error("Error fetching modules:", error);
+    res.status(500).json({ error: "Failed to fetch modules" });
   }
 };
 

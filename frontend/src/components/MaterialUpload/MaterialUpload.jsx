@@ -23,8 +23,6 @@ export default function MaterialUpload({ onUploadSuccess }) {
     if (!selectedFile) return alert("Choose a file first");
 
     const form = new FormData();
-    form.append("file", selectedFile);
-    form.append("ocr", ocr);
 
     setLoading(true);
     try {

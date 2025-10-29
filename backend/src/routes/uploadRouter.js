@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import {
-  uploadFile,
+  uploadFiles,
   getUserFiles,
   getFileHtml,
 } from "../controllers/uploadController.js";
@@ -9,7 +9,8 @@ import {
 const router = express.Router();
 const upload = multer({ dest: "uploads/" });
 
-router.post("/upload", upload.single("file"), uploadFile);
+router.post("/upload", upload.array("files", 10), uploadFiles);
+router.get("/modules", getUserModules);
 router.get("/", getUserFiles);
 router.get("/:id", getFileHtml);
 

@@ -5,13 +5,37 @@
   background-color: #656596;
   color: #fff;
   padding: 1rem 2rem;
-  border-radius: 12px;
+  height: 84px;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menuBtn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: #fff;
+  cursor: pointer;
+  padding: 0 1rem 0 0;
 }
 
 .logoSection {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .logo {
@@ -42,12 +66,6 @@
   padding: 0;
 }
 
-@media (max-width: 768px) {
-  .stats {
-    display: none;
-  }
-}
-
 .stats li {
   background-color: #fff;
   color: #333;
@@ -60,47 +78,10 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-.userMenu {
-  display: flex;
-  align-items: center;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid #fff;
-}
-
-.logoLink {
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  cursor: pointer;
-}
-
 .statLink {
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-}
-
-.loginLink {
-  text-decoration: none;
-  color: #fff;
-  background-color: #4a4a8c;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.authLinks {
-  display: flex;
-  gap: 8px;
 }
 
 .userSection {
@@ -119,11 +100,6 @@
   height: 40px;
   border-radius: 50%;
   border: 2px solid white;
-}
-
-.arrow {
-  color: #fff;
-  font-size: 12px;
 }
 
 .dropdown {
@@ -172,6 +148,21 @@
   background: #ffecec;
 }
 
+.authLinks {
+  display: flex;
+  gap: 8px;
+}
+
+.loginLink {
+  text-decoration: none;
+  color: #fff;
+  background-color: #4a4a8c;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -180,5 +171,19 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 1023px) {
+  .stats {
+    display: none;
+  }
+
+  .menuBtn {
+    display: block;
+  }
+
+  .logoSection {
+    display: none;
   }
 }

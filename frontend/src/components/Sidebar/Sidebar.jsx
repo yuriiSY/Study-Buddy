@@ -3,6 +3,7 @@ import styles from "./Sidebar.module.css";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 const studyFeatures = [
+  { name: "Notes", icon: "📘" },
   { name: "Flashcards", icon: "📘" },
   { name: "AI Buddy", icon: "🧠" },
   { name: "Quiz", icon: "📝" },
@@ -18,7 +19,7 @@ const Sidebar = ({ modules, isOpen, onClose, onFeatureSelect }) => {
   return (
     <div className={`${styles.sidebar} ${isOpen ? styles.open : ""}`}>
       <div className={styles.header}>
-        <h2 className={styles.title}>Modules</h2>
+        <h2 className={styles.title}>Files</h2>
         <button className={styles.closeBtn} onClick={onClose}>
           ✕
         </button>
