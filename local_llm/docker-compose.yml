@@ -1,5 +1,8 @@
 version: '3.8'
 
+networks:
+  chatbot_network:
+
 services:
   ollama:
     image: ollama/ollama:latest
@@ -10,21 +13,57 @@ services:
       - ollama_data:/root/.ollama
     environment:
       - OLLAMA_HOST=0.0.0.0
+    networks:
+      - chatbot_network
     restart: unless-stopped
+
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: postgres-pgvector
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d mydb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_ui
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: secret
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
 
   chatbot:
     build: .
     container_name: chatbot-app
+    ports:
+      - "3000:3000"
     volumes:
       - .:/app
       - ./docs:/app/docs
     depends_on:
-      - ollama
-    environment:
-      - OLLAMA_BASE_URL=http://ollama:11434
+      ollama:
+        condition: service_started
+      postgres:
+        condition: service_healthy
     stdin_open: true
     tty: true
     restart: unless-stopped
 
 volumes:
   ollama_data:
+  pgdata:
