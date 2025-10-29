@@ -10,7 +10,19 @@ export const uploadFiles = async (req, res) => {
     return res.status(400).json({ error: "No files uploaded" });
   }
 
+  const { moduleName } = req.body;
+  if (!moduleName || !moduleName.trim()) {
+    return res.status(400).json({ error: "Module name is required" });
+  }
+
   try {
+    const module = await prisma.module.create({
+      data: {
+        title: moduleName,
+        userId: req.user.id,
+      },
+    });
+
     const uploadedResults = [];
 
     for (const file of req.files) {
@@ -32,7 +44,7 @@ export const uploadFiles = async (req, res) => {
         data: {
           filename: fileName,
           html,
-          userId: req.user.id,
+          moduleId: module.id,
         },
       });
 
@@ -40,8 +52,11 @@ export const uploadFiles = async (req, res) => {
     }
 
     res.json({
-      message: "Files uploaded successfully",
-      files: uploadedResults,
+      message: "Module created and files uploaded successfully",
+      module: {
+        ...module,
+        files: uploadedResults,
+      },
     });
   } catch (err) {
     console.error("Upload failed:", err);
