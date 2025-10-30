@@ -1,7 +1,12 @@
 import { PrismaClient } from "@prisma/client";
 import { convertDocxToHtml } from "../services/uploadService.js";
 import * as uploadService from "../services/uploadService.js";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs";
 
 const prisma = new PrismaClient();
@@ -85,6 +90,33 @@ export const uploadFiles = async (req, res) => {
   } catch (err) {
     console.error("Upload failed:", err);
     res.status(500).json({ error: "Upload failed" });
+  }
+};
+
+export const getFileUrl = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+
+    const file = await uploadService.getOriginalFileById(fileId);
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: file.s3Key,
+    });
+
+    const signedUrl = await getSignedUrl(s3, command, { expiresIn: 300 }); // 5 min
+
+    res.json({
+      id: file.id,
+      filename: file.filename,
+      url: signedUrl,
+      expiresIn: "5 minutes",
+    });
+  } catch (err) {
+    console.error("❌ Error generating file URL:", err);
+    res
+      .status(err.message === "File not found" ? 404 : 500)
+      .json({ error: err.message });
   }
 };
 

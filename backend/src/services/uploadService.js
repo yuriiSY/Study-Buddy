@@ -47,6 +47,18 @@ export const getModulesByUserId = async (userId) => {
   });
 };
 
+export const getOriginalFileById = async (fileId) => {
+  const file = await prisma.file.findUnique({
+    where: { id: Number(fileId) },
+  });
+
+  if (!file) {
+    throw new Error("File not found");
+  }
+
+  return file;
+};
+
 export const convertDocxToHtml = async (filePath) => {
   const resolvedPath = path.resolve(filePath);
 
