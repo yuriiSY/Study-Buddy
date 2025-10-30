@@ -12,7 +12,7 @@ export const getFilesByModuleId = async (userId, moduleId) => {
         userId: userId,
       },
     },
-    orderBy: { uploadedAt: "desc" },
+    orderBy: { createdAt: "desc" },
   });
 };
 
