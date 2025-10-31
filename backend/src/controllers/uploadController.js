@@ -24,18 +24,32 @@ export const uploadFiles = async (req, res) => {
     return res.status(400).json({ error: "No files uploaded" });
   }
 
-  const { moduleName } = req.body;
-  if (!moduleName || !moduleName.trim()) {
-    return res.status(400).json({ error: "Module name is required" });
-  }
+  const { moduleName, moduleId } = req.body;
 
   try {
-    const module = await prisma.module.create({
-      data: {
-        title: moduleName,
-        userId: req.user.id,
-      },
-    });
+    let module;
+
+    if (moduleId) {
+      module = await prisma.module.findUnique({
+        where: { id: Number(moduleId) },
+        include: { files: true },
+      });
+
+      if (!module) {
+        return res.status(404).json({ error: "Module not found" });
+      }
+    } else {
+      if (!moduleName || !moduleName.trim()) {
+        return res.status(400).json({ error: "Module name is required" });
+      }
+
+      module = await prisma.module.create({
+        data: {
+          title: moduleName,
+          userId: req.user.id,
+        },
+      });
+    }
 
     const uploadedResults = [];
 
@@ -80,12 +94,16 @@ export const uploadFiles = async (req, res) => {
       uploadedResults.push(savedFile);
     }
 
+    const updatedModule = await prisma.module.findUnique({
+      where: { id: module.id },
+      include: { files: true },
+    });
+
     res.json({
-      message: "Module created and files uploaded successfully",
-      module: {
-        ...module,
-        files: uploadedResults,
-      },
+      message: moduleId
+        ? "Files added to existing module successfully"
+        : "Module created and files uploaded successfully",
+      module: updatedModule,
     });
   } catch (err) {
     console.error("Upload failed:", err);
