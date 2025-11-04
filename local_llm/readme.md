@@ -1,15 +1,16 @@
 
-## Install one by ine in bash
-```bash
-docker exec -it ollama-chatbot ollama pull llama3.2:3b
-docker exec -it ollama-chatbot ollama list  # Should list llama3.2:3b
-docker compose up
+## Instructions
 
-```
-## Run in other terminal
+docker compose up --build
 
-```bash
-pip install -r requirements.txt
-python embeddings.py # create vectors.json from ur file
-python chatbot.py
-```
+## pull ollama model 
+docker exec -it ollama bash
+
+-->ollama pull llama3
+
+check if the model is installed:
+--> ollama list
+
+visit http://localhost:3000/test-ollama-direct (get request) to check if the model is giving  any response
+
+
