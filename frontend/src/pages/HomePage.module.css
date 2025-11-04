@@ -1,6 +1,7 @@
 .homePage {
   display: flex;
   align-items: center;
+  height: calc(100vh - 84px);
 }
 
 .modulesGrid {
@@ -11,6 +12,10 @@
 }
 
 .content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
   width: 100%;
 }
 

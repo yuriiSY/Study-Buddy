@@ -2,37 +2,71 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage/LoginPage";
-import { UploadeMaterialsPage } from "./pages/UploadMaterials/UploadeMaterialsPage";
-import { StudySpacePage } from "./pages/StudySpacePage/StudySpacePage";
-import { CreateStudySpacePage } from "./pages/CreateStudySpacePage/CreateStudySpacePage";
-import { TestPage } from "./pages/TestPage/TestPage";
-import { FlashcardPage } from "./pages/FlashcardPage/FlashcardPage";
-
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { StudySpacePage } from "./pages/StudySpace/StudySpacePage";
 import { WelcomePage } from "./pages/WelcomePage/WelcomePage";
+import { ToastContainer } from "react-toastify";
+import TestPage from "./pages/TestPage";
+import "react-toastify/dist/ReactToastify.css";
+
+import PrivateRoute from "./routes/PrivateRoute";
+import PublicRoute from "./routes/PublicRoute";
 
 export default function App() {
   return (
     <div className="h-screen flex items-center justify-center">
       <Routes>
-        <Route path="/welcome" element={<WelcomePage />} />
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/materials" element={<CreateStudySpacePage />} />
+        {/* Public routes */}
         <Route
-          path="/selfassesment"
-          element={<CreateStudySpacePage type="selfassesment" />}
+          path="/welcome"
+          element={
+            <PublicRoute>
+              <WelcomePage />
+            </PublicRoute>
+          }
         />
         <Route
-          path="/smartrevision"
-          element={<CreateStudySpacePage type="smartrevision" />}
+          path="/login"
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          }
         />
-        <Route path="/upload" element={<UploadeMaterialsPage />} />
-        <Route path="/studyspace/:id" element={<StudySpacePage />} />
-        <Route path="/selfassesment/:id" element={<TestPage />} />
-        <Route path="/modules/:moduleId" element={<FlashcardPage />} />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <LoginPage isRegister />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/test"
+          element={
+            <PublicRoute>
+              <TestPage />
+            </PublicRoute>
+          }
+        />
+        {/* Private routes */}
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <HomePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/modules/:moduleId"
+          element={
+            <PrivateRoute>
+              <StudySpacePage />
+            </PrivateRoute>
+          }
+        />
       </Routes>
+
       <ToastContainer
         position="top-right"
         autoClose={3000}

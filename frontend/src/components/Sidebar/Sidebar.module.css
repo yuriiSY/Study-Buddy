@@ -102,6 +102,34 @@
   font-size: 1.1rem;
 }
 
+.footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f9fafb;
+  text-align: center;
+}
+
+.addFileBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background-color: #6366f1;
+  color: white;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.addFileBtn:hover {
+  background-color: #4f46e5;
+}
+
 @media (max-width: 1023px) {
   .closeBtn {
     display: block;

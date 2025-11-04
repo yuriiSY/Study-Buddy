@@ -47,7 +47,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
         </div>
       </div>
 
-      {isLoggedIn && (
+      {/* {isLoggedIn && (
         <ul className={styles.stats}>
           <li>
             <a className={styles.statLink} href="#">
@@ -70,7 +70,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
             </a>
           </li>
         </ul>
-      )}
+      )} */}
 
       <div className={styles.userSection} ref={menuRef}>
         {isLoggedIn ? (
