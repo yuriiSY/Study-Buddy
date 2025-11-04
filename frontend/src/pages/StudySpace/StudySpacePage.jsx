@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import Flashcard from "../../components/Flashcard/Flashcard";
 import WorkspaceLayout from "../../components/WorkspaceLayout/WorkspaceLayout";
 import MCQTest from "../../components/MCQTest/MCQTest";
 import DocxViewer from "../../components/DocViewer/DocViewer";
 import Chat from "../../components/Chat/Chat";
-import styles from "../StudySpacePage/StudySpacePage.module.css";
+import styles from "./StudySpacePage.module.css";
 import FocusHeader from "../../components/FocusHeader/FocusHeader";
+import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import CustomPdfViewer from "../../components/CustomDocViewer/CustomDocViewer";
+
 import api from "../../api/axios";
 
 const cardsData = [
@@ -43,32 +46,50 @@ const sampleQuestions = [
   },
 ];
 
-export const FlashcardPage = () => {
+export const StudySpacePage = () => {
   const { moduleId } = useParams();
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchFiles = async () => {
-      try {
-        const res = await api.get(`/files/modules/${moduleId}/files`);
-        const backendFiles = res.data.files || [];
+  const docs = useMemo(
+    () => [
+      {
+        uri: "/asd.pdf",
+        fileType: "pdf",
+        fileName: "sample.pdf",
+      },
+    ],
+    []
+  );
 
-        const formattedModules = backendFiles.map((file, index) => ({
-          title: `File ${index + 1}. ${file.filename}`,
-          id: file.id,
-        }));
+  const Viewer = React.memo(() => <CustomPdfViewer />);
 
-        setModules(formattedModules);
-      } catch (err) {
-        console.error("Failed to fetch files:", err);
-      } finally {
-        setLoading(false);
+  const fetchFiles = async () => {
+    try {
+      const res = await api.get(`/files/modules/${moduleId}/files`);
+      const backendFiles = res.data.files || [];
+
+      const formattedModules = backendFiles.map((file, index) => ({
+        title: `File ${index + 1}. ${file.filename}`,
+        id: file.id,
+      }));
+
+      setModules(formattedModules);
+
+      if (!selectedFile && formattedModules.length > 0) {
+        setSelectedFile(formattedModules[0]);
+        setSelectedFeature("Notes");
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch files:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchFiles();
   }, [moduleId]);
 
@@ -97,6 +118,11 @@ export const FlashcardPage = () => {
         );
       default:
         return <DocxViewer fileId={selectedFile?.id} moduleId={moduleId} />;
+      // return (
+      //   <div style={{ width: "100%", height: "500px" }}>
+      //     <Viewer docs={docs} />
+      //   </div>
+      // );
     }
   };
 
@@ -106,10 +132,20 @@ export const FlashcardPage = () => {
     <WorkspaceLayout
       modules={modules}
       onFeatureSelect={handleFeatureSelect}
+      selectedModuleId={moduleId}
+      onFilesAdded={fetchFiles}
       hasSidebar={true}
     >
-      <FocusHeader />
+      {/* <FocusHeader /> */}
       {renderContent()}
+      {/* <button
+        onClick={async () => {
+          const res = await api.get(`/files/modules/8`);
+          window.open(res.data.url, "_blank");
+        }}
+      >
+        Download File
+      </button> */}
     </WorkspaceLayout>
   );
 };
