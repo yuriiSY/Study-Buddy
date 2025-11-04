@@ -5,7 +5,7 @@ import StudySection from "../../components/StudySection/StudySection";
 
 import intoImg1 from "../../assets/introImg1.png";
 import intoImg2 from "../../assets/introImg2.png";
-import intoImg3 from "../../assets/introImg3.png";
+import intoImg3 from "../../assets/introImg2.png";
 
 export const WelcomePage = () => {
   const studySections = [
@@ -39,8 +39,8 @@ export const WelcomePage = () => {
   ];
   return (
     <>
+      <Header />
       <Layout>
-        <Header />
         <StudyOptions />
         {studySections.map((section, index) => (
           <StudySection

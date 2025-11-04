@@ -6,6 +6,8 @@ import { Provider } from "react-redux";
 import { store } from "./store/store.js";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import "react-pdf/dist/Page/TextLayer.css";
+import "react-pdf/dist/Page/AnnotationLayer.css";
 import App from "./App.jsx";
 
 createRoot(document.getElementById("root")).render(

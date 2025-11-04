@@ -1,0 +1,9 @@
+.react-doc-viewer-header-bar {
+  position: absolute;
+  bottom: 0;
+  top: auto !important;
+  width: 100%;
+  background-color: white;
+  border-top: 1px solid #ddd;
+  z-index: 10;
+}

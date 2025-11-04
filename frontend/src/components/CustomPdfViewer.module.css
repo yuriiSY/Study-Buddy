@@ -1,0 +1,65 @@
+.viewerWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f6fa;
+  padding: 2rem;
+}
+
+.pdfContainer {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  padding: 2rem;
+  width: 900px; /* increased from 750px */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pdfDocument {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background: white;
+}
+
+.navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.navButton {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.navButton:hover {
+  background-color: #1d4ed8;
+}
+
+.disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.pageIndicator {
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
