@@ -1,77 +1,25 @@
-version: '3.8'
-
-networks:
-  chatbot_network:
-
+version: "3.9"
 
 services:
   ollama:
-    image: ollama/ollama:0.1.32
-    container_name: ollama-chatbot
+    image: ollama/ollama:latest  
+    container_name: ollama
     ports:
       - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    networks:
-      - chatbot_network
-    environment:
-       - OLLAMA_HOST=0.0.0.0
-       - OLLAMA_ORIGINS=*
+    command: serve
     restart: unless-stopped
 
-  postgres:
-    image: ankane/pgvector:latest
-    container_name: postgres-pgvector
-    restart: always
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: mydb
-    networks:
-      - chatbot_network
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d mydb"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin_ui
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: secret
-    networks:
-      - chatbot_network
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-
-  chatbot:
+  flask-api:
     build: .
-    container_name: chatbot-app
+    container_name: flask-api
     ports:
       - "3000:3000"
-    volumes:
-      - .:/app
-      - ./docs:/app/docs
+    environment:
+      OLLAMA_BASE_URL: "http://ollama:11434"  # Use service name as host
+      DB_HOST: "dpg-d3ojnuje5dus73aqads0-a.frankfurt-postgres.render.com"
+      DB_PORT: 5432
+      DB_NAME: "mydb_uykg"
+      DB_USER: "admin"
+      DB_PASSWORD: "H8XZD0E3gugc5WGIFZlZaRrdu2M7AveU"
     depends_on:
-      ollama:
-        condition: service_started
-      postgres:
-        condition: service_healthy
-    networks:
-      - chatbot_network
-    stdin_open: true
-    tty: true
-    restart: unless-stopped
-
-volumes:
-  ollama_data:
-  pgdata:
+      - ollama

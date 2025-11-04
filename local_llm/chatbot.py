@@ -1,38 +1,41 @@
 import uuid
+import time
+import requests
 from flask_cors import CORS
 import psycopg2 as db
-from psycopg2 import sql
 from flask import Flask, request, jsonify
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_postgres import PGVector;
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_ollama.llms import OllamaLLM
+from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-import requests
-
+import os
 
 # ---------------- CONFIG ----------------
-VECTOR_FILE = "vectors.json"            # Pre-generated vector store
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
-OLLAMA_MODEL = "llama3.2:3b"            # Multimodal model
-OLLAMA_BASE_URL = "http://ollama-chatbot:11434"  # Ollama server URL
+OLLAMA_MODEL = "llama3:latest"
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://ollama:11434")
+TABLE_NAME = "langchain_pg_embedding"
 
-TABLE_NAME = "langchain_pg_embedding"  # pgvector table name
-
+# Hosted DB credentials
+DB_HOST = os.environ.get("DB_HOST")
+DB_PORT = os.environ.get("DB_PORT")
+DB_NAME = os.environ.get("DB_NAME")
+DB_USER = os.environ.get("DB_USER")
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
 
 #---------Flask App Setup---------
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
-# ---------- Connect to pgvector ----------
-print("Connecting to PostgreSQL (pgvector)...")
+# ---------- Connect to hosted PostgreSQL ----------
+print("Connecting to hosted PostgreSQL...")
 try:
     conn = db.connect(
-        host="postgres-pgvector",
-        port=5432,
-        dbname="mydb",
-        user="admin",
-        password="secret"
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        sslmode="require"
     )
     print("Connected to PostgreSQL!")
 except Exception as e:
@@ -44,86 +47,91 @@ embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
 EMBED_DIM = len(embeddings.embed_query("test"))
 print(f"Embedding dimension: {EMBED_DIM}")
 
-# ---------- PGVector (from_params + embed_dim) ----------
+# ---------- PGVector ----------
 vector_store = None
 def get_vector_store():
     global vector_store
     if vector_store is None:
         vector_store = PGVector(
-            connection="postgresql+psycopg2://admin:secret@postgres-pgvector:5432/mydb",
+            connection=f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?sslmode=require",
             collection_name=TABLE_NAME,
             embeddings=embeddings,
             distance_strategy="cosine",
-            embedding_length=EMBED_DIM,        
+            embedding_length=EMBED_DIM
         )
     return vector_store
 
 def retrieve_by_file_ids(file_ids, query, k=4):
-    """Retrieve top-k chunks from given file_ids only."""
     store = get_vector_store()
     if not file_ids:
         return []
-    # LangChain filter: metadata.file_id IN (...)
     filter_cond = {"file_id": {"$in": file_ids}}
     docs = store.similarity_search(query, k=k, filter=filter_cond)
     return [doc.page_content for doc in docs]
 
+# ---------- LLM (Ollama API call) ----------
 
- # ---------- LLM (direct /api/chat call) ----------
-PROMPT_TEMPLATE = """
-You are a helpful AI. Use the CONTEXT from the selected files to answer.
-
-CONTEXT:
-{context}
-
-QUESTION:
-{question}
-
-End with: SOURCE: [file(s)]
-"""
-prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-
-def ollama_chat(context: str, question: str) -> str:
-    """
-    Calls Ollama REST API v0.1.32 /api/chat endpoint inside Docker.
-    Returns the response text or error string.
-    """
+def ollama_chat(context: str, question: str, max_wait_sec: int = 60) -> str:
     url = f"{OLLAMA_BASE_URL}/api/chat"
-    
     payload = {
         "model": OLLAMA_MODEL,
         "messages": [
             {
-                "role": "system",
-                "content": PROMPT_TEMPLATE.format(context=context, question=question)
+                "role": "system", 
+                "content": "You are a helpful AI. Use the provided context to answer questions. Always cite your sources."
+            },
+            {
+                "role": "user",
+                "content": f"CONTEXT:\n{context}\n\nQUESTION:\n{question}\n\nAnswer based on the context above. End with: SOURCE: [file(s)]"
             }
         ],
         "stream": False
     }
 
+    print(f"Sending request to Ollama at: {url}")
+
     try:
         response = requests.post(url, json=payload, timeout=60)
-        response.raise_for_status()  # Raises HTTPError for 4xx/5xx responses
-        data = response.json()
-
-        # v0.1.32 returns 'message' object
-        return data.get("message", {}).get("content", "No content in response.")
-
-    except requests.exceptions.HTTPError as http_err:
-        return f"HTTP error: {http_err}"
-    except requests.exceptions.ConnectionError as conn_err:
-        return f"Connection error: {conn_err}"
-    except requests.exceptions.Timeout as timeout_err:
-        return f"Timeout error: {timeout_err}"
+        print(f"Ollama response status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Ollama response keys: {list(data.keys())}")
+            
+            # Extract content from the response structure we can see in the test
+            if "message" in data and "content" in data["message"]:
+                content = data["message"]["content"]
+                print(f"Successfully extracted content: {content}")
+                return content
+            else:
+                print(f"Unexpected response structure: {data}")
+                return "Error: Could not extract response content from Ollama"
+        else:
+            error_msg = f"Ollama API returned status {response.status_code}: {response.text}"
+            print(error_msg)
+            return error_msg
+            
+    except requests.exceptions.ConnectionError as e:
+        error_msg = f"Cannot connect to Ollama at {url}: {e}"
+        print(error_msg)
+        return error_msg
+    except requests.exceptions.Timeout as e:
+        error_msg = f"Ollama API timeout: {e}"
+        print(error_msg)
+        return error_msg
+    except requests.exceptions.RequestException as e:
+        error_msg = f"Ollama API request error: {e}"
+        print(error_msg)
+        return error_msg
     except Exception as e:
-        return f"Unexpected error: {e}"
+        error_msg = f"Unexpected error: {e}"
+        print(error_msg)
+        return error_msg
     
 # ------------------- ENDPOINTS -------------------
-
 @app.route('/', methods=['GET'])
 def health():
     return jsonify({"status": "ok"}), 200
-
 
 @app.route('/upload-files', methods=['POST'])
 def upload_files():
@@ -149,41 +157,33 @@ def upload_files():
         chunks = splitter.split_text(raw_text)
 
         texts = chunks
-        metadatas = [{
-            "file_id": file_id,
-            "file_name": file.filename,
-            "chunk_index": i
-        } for i in range(len(chunks))]
+        metadatas = [{"file_id": file_id, "file_name": file.filename, "chunk_index": i} for i in range(len(chunks))]
         ids = [str(uuid.uuid4()) for _ in chunks]
 
         store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
-        results.append({
-            "file_name": file.filename,
-            "file_id": file_id,
-            "chunks": len(chunks)
-        })
+        results.append({"file_name": file.filename, "file_id": file_id, "chunks": len(chunks)})
 
     return jsonify({"uploaded": results}), 201
-# List all file_ids and names
+
 @app.route('/file-ids', methods=['GET'])
 def list_file_ids():
     try:
-        cur = conn.cursor()  # ← Use the global `conn` from startup
-        cur.execute(sql.SQL("""
-            SELECT DISTINCT langchain_pg_embedding.cmetadata->>'file_id' AS file_id,
-                   langchain_pg_embedding.cmetadata->>'file_name' AS file_name
-            FROM {table}
+        cur = conn.cursor()
+        cur.execute(f"""
+            SELECT DISTINCT {TABLE_NAME}.cmetadata->>'file_id' AS file_id,
+                            {TABLE_NAME}.cmetadata->>'file_name' AS file_name
+            FROM {TABLE_NAME}
             ORDER BY file_name
-        """).format(table=sql.Identifier(TABLE_NAME)))
+        """)
         rows = cur.fetchall()
         cur.close()
-
+        conn.commit()
         files = [{"file_id": r[0], "file_name": r[1]} for r in rows]
         return jsonify({"files": files})
     except Exception as e:
+        conn.rollback()
         return jsonify({"error": str(e)}), 500
 
-# Ask question using multiple file_ids
 @app.route('/ask', methods=['POST'])
 def ask():
     data = request.get_json()
@@ -194,7 +194,6 @@ def ask():
     context = "\n---\n".join(context_chunks) if context_chunks else "No relevant context."
 
     answer = ollama_chat(context, question)
-
     return jsonify({
         "question": question,
         "answer": answer,
@@ -203,6 +202,38 @@ def ask():
     })
 
 
+
+@app.route('/test-ollama-direct', methods=['GET'])
+def test_ollama_direct():
+    """Test endpoint to see raw Ollama response"""
+    import json
+    url = f"{OLLAMA_BASE_URL}/api/chat"
+    payload = {
+        "model": OLLAMA_MODEL,
+        "messages": [
+            {"role": "user", "content": "What is 2+2? Answer very briefly."}
+        ],
+        "stream": False
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=30)
+        
+        # Fix JSON detection
+        content_type = response.headers.get('content-type', '')
+        is_json = 'application/json' in content_type
+        
+        return jsonify({
+            "status_code": response.status_code,
+            "headers": dict(response.headers),
+            "content_type": content_type,
+            "is_json": is_json,
+            "raw_response": response.text,
+            "parsed_json": response.json() if is_json else "Not JSON"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
 if __name__ == "__main__":
     print("Starting Flask API")
     app.run(host="0.0.0.0", port=3000, debug=True)
