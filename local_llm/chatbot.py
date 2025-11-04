@@ -78,7 +78,7 @@ def ollama_chat(context: str, question: str, max_wait_sec: int = 60) -> str:
         "messages": [
             {
                 "role": "system", 
-                "content": "You are a helpful AI. Use the provided context to answer questions. Always cite your sources."
+                "content": "You are a helpful AI using stdent notes as a context you teach students. Use your knowledge/logic to explain in simple way only if required. Use the provided context to answer questions. Always cite your sources."
             },
             {
                 "role": "user",
