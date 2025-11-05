@@ -1,17 +1,26 @@
-import styles from './ModuleCard.module.css';
+import styles from "./ModuleCard.module.css";
+import { useNavigate } from "react-router-dom";
 
- const ModuleCard = () => {
+const ModuleCard = ({ title, date, id }) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/modules/${id}`);
+  };
+
   return (
     <div className={styles.card}>
-        <div className={styles.cardDate}>
-            <p className={styles.date}>20/08/2001</p>
-        </div>
-        <div className={styles.cardTitle}>
-            <p className={styles.title}>Mathematics</p>
-            <button className={styles.button}>Keep learning</button>
-        </div>
+      <div className={styles.cardDate}>
+        <p className={styles.date}>{date}</p>
+      </div>
+      <div className={styles.cardTitle}>
+        <p className={styles.title}>{title}</p>
+        <button className={styles.button} onClick={handleClick}>
+          Keep learning
+        </button>
+      </div>
     </div>
   );
-}
+};
 
 export default ModuleCard;

@@ -1,0 +1,1 @@
+-- Placeholder migration to resolve failed migration on Render

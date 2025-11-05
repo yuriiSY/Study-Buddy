@@ -3,7 +3,7 @@ const { Pool } = pkg;
 
 const pool = new Pool({
   user: "admin",
-  host: "localhost", // if running Node outside Docker
+  host: "localhost",
   database: "mydb",
   password: "secret",
   port: 5432,

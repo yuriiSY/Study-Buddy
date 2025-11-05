@@ -1,24 +1,83 @@
-import React, { useState } from "react";
-import { Route, Routes } from 'react-router-dom';
-// import { AuthModal } from "./components/AuthModal";
-// import { Button } from "./components/Button";
-// import MainMenu from "./components/MainMenu/MainMenu";
+import React from "react";
+import { Route, Routes } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage/LoginPage";
+import { StudySpacePage } from "./pages/StudySpace/StudySpacePage";
+import { WelcomePage } from "./pages/WelcomePage/WelcomePage";
+import { ToastContainer } from "react-toastify";
+import TestPage from "./pages/TestPage";
+import "react-toastify/dist/ReactToastify.css";
 
+import PrivateRoute from "./routes/PrivateRoute";
+import PublicRoute from "./routes/PublicRoute";
 
 export default function App() {
-
   return (
     <div className="h-screen flex items-center justify-center">
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
+        {/* Public routes */}
+        <Route
+          path="/welcome"
+          element={
+            <PublicRoute>
+              <WelcomePage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <LoginPage isRegister />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/test"
+          element={
+            <PublicRoute>
+              <TestPage />
+            </PublicRoute>
+          }
+        />
+        {/* Private routes */}
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <HomePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/modules/:moduleId"
+          element={
+            <PrivateRoute>
+              <StudySpacePage />
+            </PrivateRoute>
+          }
+        />
       </Routes>
 
-      {/* <MainMenu />
-      <Button onClick={() => setIsOpen(true)}>Open Auth Modal</Button>
-      <AuthModal isOpen={isOpen} onClose={() => setIsOpen(false)} /> */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
     </div>
   );
 }

@@ -41,7 +41,7 @@ const signin = async (req, res) => {
     return res.status(401).json({ message: "Invalid email or password" });
   }
 
-  const { _id: id } = user;
+  const { id: id } = user;
 
   const payload = {
     id,

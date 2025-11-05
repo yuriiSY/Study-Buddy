@@ -1,5 +1,6 @@
 import React from "react";
 import Card from "../Card/Card";
+import UploadCard from "../UploadCard/UploadCard";
 import cardsData from "../../data/cardsData.json";
 import styles from "./CardsSection.module.css";
 
@@ -20,17 +21,35 @@ const images = {
 };
 
 const CardsSection = () => {
+  const latestFileId = localStorage.getItem("latestFileId");
+
   return (
     <div className={styles.cardsSection}>
-      {cardsData.map((card, index) => (
-        <Card
-          key={index}
-          title={card.title}
-          description={card.description}
-          imageUrl={images[card.image]}
-          linkUrl={card.linkUrl}
-        />
-      ))}
+      <UploadCard
+        title="Upload Study Material"
+        description="Upload your PDFs, notes, or reference materials for future sessions."
+        imageUrl={images["create_study_space.png"]}
+        linkUrl="/upload"
+      />
+      <div className={styles.cards}>
+        {cardsData.map((card, index) => {
+          let link = card.linkUrl;
+
+          if (card.title === "Resume Study" && latestFileId) {
+            link = `${card.linkUrl}/${latestFileId}`;
+          }
+
+          return (
+            <Card
+              key={index}
+              title={card.title}
+              description={card.description}
+              imageUrl={images[card.image]}
+              linkUrl={link}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 };
