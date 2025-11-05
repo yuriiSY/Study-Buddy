@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from "./Sidebar.module.css";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 
 const studyFeatures = [
   { name: "Notes", icon: "📘" },
@@ -9,7 +9,7 @@ const studyFeatures = [
   { name: "Quiz", icon: "📝" },
 ];
 
-const Sidebar = ({ modules, isOpen, onClose, onFeatureSelect }) => {
+const Sidebar = ({ modules, isOpen, onClose, onFeatureSelect, onAddFile }) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
   const toggleModule = (index) => {
@@ -61,6 +61,13 @@ const Sidebar = ({ modules, isOpen, onClose, onFeatureSelect }) => {
           </li>
         ))}
       </ul>
+
+      <div className={styles.footer}>
+        <button className={styles.addFileBtn} onClick={onAddFile}>
+          <Plus size={18} />
+          Add more files
+        </button>
+      </div>
     </div>
   );
 };

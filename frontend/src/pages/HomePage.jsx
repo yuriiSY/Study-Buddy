@@ -39,12 +39,14 @@ export const HomePage = () => {
 
   if (loading) {
     return (
-      <Layout>
+      <>
         <Header />
-        <div className={styles.homePage}>
-          <p>Loading...</p>
-        </div>
-      </Layout>
+        <Layout>
+          <div className={styles.homePage}>
+            <p>Loading...</p>
+          </div>
+        </Layout>
+      </>
     );
   }
 
@@ -54,7 +56,7 @@ export const HomePage = () => {
       <Layout>
         <div className={styles.homePage}>
           {modules.length === 0 ? (
-            <Onboarding />
+            <Onboarding onClick={handleOpenModal} />
           ) : (
             <div className={styles.content}>
               <div className={styles.modulesSection}>
@@ -82,7 +84,6 @@ export const HomePage = () => {
                   />
                 </div>
               </div>
-
               <StatsCards />
             </div>
           )}

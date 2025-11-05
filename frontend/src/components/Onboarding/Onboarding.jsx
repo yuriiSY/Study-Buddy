@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import styles from "./Onboarding.module.css";
-import ModuleModal from "../../components/ModuleModal/ModuleModal";
 
-const Onboarding = () => {
-  const [showModal, setShowModal] = useState(false);
-
-  const handleStart = (data) => {
-    console.log("New module created:", data);
-  };
-
+const Onboarding = ({ onClick }) => {
   return (
     <div className={styles.container}>
       <div className={styles.icon}>📖</div>
@@ -37,23 +30,9 @@ const Onboarding = () => {
         </ul>
       </div>
 
-      <button
-        className={styles.actionBtn}
-        onClick={() => {
-          console.log(showModal);
-          setShowModal(true);
-        }}
-      >
+      <button className={styles.actionBtn} onClick={onClick}>
         + Create Your First Module
       </button>
-
-      {showModal && (
-        <ModuleModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          onStart={handleStart}
-        />
-      )}
     </div>
   );
 };

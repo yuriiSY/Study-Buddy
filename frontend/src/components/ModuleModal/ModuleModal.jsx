@@ -1,11 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./ModuleModal.module.css";
 import api from "../../api/axios";
 
-const ModuleModal = ({ isOpen, onClose, onCreate }) => {
+const ModuleModal = ({
+  isOpen,
+  onClose,
+  onCreate,
+  moduleId,
+  mode = "create",
+}) => {
   const [moduleName, setModuleName] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (mode === "upload") {
+      setModuleName("");
+    }
+  }, [mode]);
 
   if (!isOpen) return null;
 
@@ -15,10 +27,11 @@ const ModuleModal = ({ isOpen, onClose, onCreate }) => {
   };
 
   const handleSubmit = async () => {
-    if (!moduleName.trim()) {
+    if (mode === "create" && !moduleName.trim()) {
       alert("Please enter a module name.");
       return;
     }
+
     if (uploadedFiles.length === 0) {
       alert("Please upload at least one file.");
       return;
@@ -27,7 +40,13 @@ const ModuleModal = ({ isOpen, onClose, onCreate }) => {
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append("moduleName", moduleName);
+
+      if (mode === "create") {
+        formData.append("moduleName", moduleName);
+      } else {
+        formData.append("moduleId", moduleId);
+      }
+
       uploadedFiles.forEach((file) => formData.append("files", file));
 
       const res = await api.post("/files/upload", formData, {
@@ -58,23 +77,31 @@ const ModuleModal = ({ isOpen, onClose, onCreate }) => {
           ✕
         </button>
 
-        <h2 className={styles.title}>Create New Study Module</h2>
+        <h2 className={styles.title}>
+          {mode === "create"
+            ? "Create New Study Module"
+            : "Add Files to Module"}
+        </h2>
         <p className={styles.subtitle}>
-          Upload your study materials to create a new module.
+          {mode === "create"
+            ? "Upload your study materials to create a new module."
+            : "Select and upload additional files for this module."}
         </p>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="moduleName">Module Name</label>
-          <input
-            id="moduleName"
-            type="text"
-            className={styles.input}
-            placeholder="e.g., Calculus I - Chapter 3"
-            value={moduleName}
-            onChange={(e) => setModuleName(e.target.value)}
-            disabled={loading}
-          />
-        </div>
+        {mode === "create" && (
+          <div className={styles.formGroup}>
+            <label htmlFor="moduleName">Module Name</label>
+            <input
+              id="moduleName"
+              type="text"
+              className={styles.input}
+              placeholder="e.g., Calculus I - Chapter 3"
+              value={moduleName}
+              onChange={(e) => setModuleName(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+        )}
 
         <div className={styles.uploadSection}>
           <input
@@ -115,7 +142,11 @@ const ModuleModal = ({ isOpen, onClose, onCreate }) => {
               onClick={handleSubmit}
               disabled={uploadedFiles.length === 0 || loading}
             >
-              {loading ? "Uploading..." : "Create Module"}
+              {loading
+                ? "Uploading..."
+                : mode === "create"
+                ? "Create Module"
+                : "Add Files"}
             </button>
           </div>
         </div>
