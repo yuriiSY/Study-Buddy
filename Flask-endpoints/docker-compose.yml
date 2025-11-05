@@ -1,13 +1,13 @@
-version: "3.9"
-
 services:
   ollama:
     image: ollama/ollama:latest  
     container_name: ollama
     ports:
       - "11434:11434"
-    command: serve
+    volumes:
+      - ollama_data:/root/.ollama
     restart: unless-stopped
+
 
   flask-api:
     build: .
@@ -16,6 +16,7 @@ services:
       - "3000:3000"
     environment:
       OLLAMA_BASE_URL: "http://ollama:11434"  
+      OLLAMA_MODEL: "llava:latest"
       DB_HOST: "dpg-d3ojnuje5dus73aqads0-a.frankfurt-postgres.render.com"
       DB_PORT: 5432
       DB_NAME: "mydb_uykg"
@@ -23,3 +24,6 @@ services:
       DB_PASSWORD: "H8XZD0E3gugc5WGIFZlZaRrdu2M7AveU"
     depends_on:
       - ollama
+
+volumes:
+  ollama_data:

@@ -19,7 +19,7 @@ except ImportError:
 
 # ---------------- CONFIG ----------------
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
-OLLAMA_MODEL = "llama3:latest"
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llava:latest")
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://ollama:11434")
 TABLE_NAME = "langchain_pg_embedding"
 
@@ -110,9 +110,10 @@ def process_file_content(file, filename):
             return file.stream.read().decode("utf-8", errors="ignore"), None
         except:
             return None, f"Unsupported file type: {file_extension}"
+        
 # ---------- LLM (Ollama API call) ----------
 
-def ollama_chat(context: str, question: str, max_wait_sec: int = 60) -> str:
+def ollama_chat(context: str, question: str, max_wait_sec: int = 120) -> str:
     url = f"{OLLAMA_BASE_URL}/api/chat"
     payload = {
         "model": OLLAMA_MODEL,
@@ -132,7 +133,7 @@ def ollama_chat(context: str, question: str, max_wait_sec: int = 60) -> str:
     print(f"Sending request to Ollama at: {url}")
 
     try:
-        response = requests.post(url, json=payload, timeout=60)
+        response = requests.post(url, json=payload, timeout=120)
         print(f"Ollama response status: {response.status_code}")
         
         if response.status_code == 200:
@@ -169,10 +170,52 @@ def ollama_chat(context: str, question: str, max_wait_sec: int = 60) -> str:
         print(error_msg)
         return error_msg
     
+# ---------- OLLAMA HEALTH CHECK ----------
+def wait_for_ollama():
+    """Wait for Ollama and Llava to be ready"""
+    max_retries = 30
+    for i in range(max_retries):
+        try:
+            response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=5)
+            if response.status_code == 200:
+                models = response.json()
+                model_names = [model['name'] for model in models.get('models', [])]
+                
+                if any('llava' in name.lower() for name in model_names):
+                    print("Ollama ready with Llava model!")
+                    return True
+                else:
+                    print(f"⏳ Ollama ready, waiting for Llava... ({i+1}/{max_retries})")
+        except Exception as e:
+            print(f"⏳ Waiting for Ollama... ({i+1}/{max_retries}) - Error: {e}")
+        
+        time.sleep(2)
+    
+    print("Ollama/Llava not ready within timeout")
+    return False
+
+# Wait for Ollama before first request
+def check_ollama_on_startup():
+    print("Starting up... waiting for Ollama with Llava")
+    wait_for_ollama()
+    
 # ------------------- ENDPOINTS --------------------------------------------------------
 @app.route('/', methods=['GET'])
 def health():
-    return jsonify({"status": "ok"}), 200
+    try:
+        # Check Ollama status
+        response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=5)
+        models = response.json()
+        llava_ready = any('llava' in model['name'].lower() for model in models.get('models', []))
+        
+        return jsonify({
+            "status": "ok", 
+            "ollama": "connected",
+            "llava_ready": llava_ready,
+            "model": OLLAMA_MODEL
+        }), 200
+    except:
+        return jsonify({"status": "ok", "ollama": "disconnected"}), 200
 
 @app.route('/upload-files', methods=['POST'])
 def upload_files():
@@ -268,42 +311,11 @@ def ask():
         "question": question,
         "answer": answer,
         "file_ids_used": file_ids,
-        "chunks": len(context_chunks)
+        "chunks": len(context_chunks),
+        "model_used": OLLAMA_MODEL 
     })
-
-
-
-@app.route('/test-ollama-direct', methods=['GET'])
-def test_ollama_direct():
-    """Test endpoint to see raw Ollama response"""
-    import json
-    url = f"{OLLAMA_BASE_URL}/api/chat"
-    payload = {
-        "model": OLLAMA_MODEL,
-        "messages": [
-            {"role": "user", "content": "What is 2+2? Answer very briefly."}
-        ],
-        "stream": False
-    }
-    
-    try:
-        response = requests.post(url, json=payload, timeout=30)
-        
-        # Fix JSON detection
-        content_type = response.headers.get('content-type', '')
-        is_json = 'application/json' in content_type
-        
-        return jsonify({
-            "status_code": response.status_code,
-            "headers": dict(response.headers),
-            "content_type": content_type,
-            "is_json": is_json,
-            "raw_response": response.text,
-            "parsed_json": response.json() if is_json else "Not JSON"
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)})
     
 if __name__ == "__main__":
     print("Starting Flask API")
+    check_ollama_on_startup()
     app.run(host="0.0.0.0", port=3000, debug=True)
