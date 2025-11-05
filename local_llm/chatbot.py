@@ -7,7 +7,15 @@ from flask import Flask, request, jsonify
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-import os
+import os,io
+
+# Import PDF processing library
+try:
+    import pdfplumber
+    PDF_SUPPORT = True
+except ImportError:
+    PDF_SUPPORT = False
+    print("PDF support disabled: install pdfplumber")
 
 # ---------------- CONFIG ----------------
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
@@ -69,6 +77,39 @@ def retrieve_by_file_ids(file_ids, query, k=4):
     docs = store.similarity_search(query, k=k, filter=filter_cond)
     return [doc.page_content for doc in docs]
 
+# ---------------- PDF PROCESSING FUNCTION ----------------
+
+def extract_text_from_pdf(file_stream):
+    """Extract text from PDF file"""
+    text = ""
+    try:
+        with pdfplumber.open(file_stream) as pdf:
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + "\n"
+        return text.strip()
+    except Exception as e:
+        print(f"Error extracting PDF text: {e}")
+        return ""
+    
+def process_file_content(file, filename):
+    """Process different file types and extract text"""
+    file_extension = filename.lower().split('.')[-1] if '.' in filename else ''
+    
+    if file_extension == 'pdf':
+        if not PDF_SUPPORT:
+            return None, "PDF support not available. Install pdfplumber."
+        return extract_text_from_pdf(io.BytesIO(file.read())), None
+    elif file_extension == 'txt':
+        # For text files, use existing method
+        return file.stream.read().decode("utf-8", errors="ignore"), None
+    else:
+        # Try to process as text file for other extensions
+        try:
+            return file.stream.read().decode("utf-8", errors="ignore"), None
+        except:
+            return None, f"Unsupported file type: {file_extension}"
 # ---------- LLM (Ollama API call) ----------
 
 def ollama_chat(context: str, question: str, max_wait_sec: int = 60) -> str:
@@ -144,26 +185,55 @@ def upload_files():
 
     store = get_vector_store()
     results = []
+    errors = []
 
     for file in files:
         if not file.filename:
             continue
-        raw_text = file.stream.read().decode("utf-8", errors="ignore")
-        if not raw_text.strip():
+
+        print(f"Processing file: {file.filename}")
+
+        # Extract text based on file type
+        raw_text, error = process_file_content(file, file.filename)
+        
+        if error:
+            errors.append({"file_name": file.filename, "error": error})
+            continue
+            
+        if not raw_text or not raw_text.strip():
+            errors.append({"file_name": file.filename, "error": "No extractable text content"})
             continue
 
+        print(f"Extracted {len(raw_text)} characters from {file.filename}")
+
+        # Process the text
         file_id = str(uuid.uuid4())
         splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         chunks = splitter.split_text(raw_text)
 
         texts = chunks
-        metadatas = [{"file_id": file_id, "file_name": file.filename, "chunk_index": i} for i in range(len(chunks))]
+        metadatas = [{
+            "file_id": file_id, 
+            "file_name": file.filename, 
+            "chunk_index": i,
+            "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown'
+        } for i in range(len(chunks))]
         ids = [str(uuid.uuid4()) for _ in chunks]
 
+        # Store in vector database
         store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
-        results.append({"file_name": file.filename, "file_id": file_id, "chunks": len(chunks)})
+        results.append({
+            "file_name": file.filename, 
+            "file_id": file_id, 
+            "chunks": len(chunks),
+            "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown'
+        })
 
-    return jsonify({"uploaded": results}), 201
+    response_data = {"uploaded": results}
+    if errors:
+        response_data["errors"] = errors
+
+    return jsonify(response_data), 201
 
 @app.route('/file-ids', methods=['GET'])
 def list_file_ids():

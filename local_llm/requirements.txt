@@ -9,7 +9,7 @@ langchain-text-splitters==0.2.4
 psycopg2-binary==2.9.9
 numpy==1.26.4
 pillow==10.4.0
-
+pdfplumber
 #gunicorn
 #for mac user use python3.12.7
 #docker exec -it ollama-chatbot ollama pull llama    3.2:3b   --- IGNORE ---

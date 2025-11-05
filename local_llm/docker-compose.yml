@@ -15,7 +15,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      OLLAMA_BASE_URL: "http://ollama:11434"  # Use service name as host
+      OLLAMA_BASE_URL: "http://ollama:11434"  
       DB_HOST: "dpg-d3ojnuje5dus73aqads0-a.frankfurt-postgres.render.com"
       DB_PORT: 5432
       DB_NAME: "mydb_uykg"
