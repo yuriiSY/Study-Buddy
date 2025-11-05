@@ -2,6 +2,7 @@
 
 AI Study Buddy is a simple app to help students study better. It combines tools like uploading notes (text, PDFs, images, audio, videos), making quizzes, using a Pomodoro timer, earning rewards, finding weak spots, chatting with an AI tutor, connecting with study partners, and discussing topics in a community forum (like StackOverflow). The app is built to be fast, grow with more users, and easy to update.
 
+
 ## What It Does
 
 - **Upload Notes**: Add text, PDFs or images(like lecture slides or handwritten notes). The app reads them with AI.
