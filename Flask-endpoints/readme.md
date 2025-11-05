@@ -16,7 +16,7 @@ A Flask-based API that uses Ollama with Llava model to answer questions from upl
    ```
 
 2. **Update environment variables**
-   Edit `docker-compose.yml` with database credentials: (for now its I have provided already)
+   Edit `docker-compose.yml` with database credentials: (for now, I have provided already)
    ```yaml
    environment:
      DB_HOST: "your_db_host"
@@ -25,20 +25,20 @@ A Flask-based API that uses Ollama with Llava model to answer questions from upl
      DB_PASSWORD: "your_password"
    ```
 
-3. **Deploy the application**
+4. **Deploy the application**
    ```bash
    docker-compose up --build -d
    ```
 
-4. **Wait for services to start** 
+5. **Wait for services to start** 
 
 
-5. **Install the Llava model**
+6. **Install the model**
    ```bash
-   docker-compose exec ollama ollama pull llava
+   docker-compose exec ollama ollama pull llama3
    ```
 
-6. **Verify deployment**
+7. **Verify deployment**
    ```bash
    # Check health
    curl http://localhost:3000/
