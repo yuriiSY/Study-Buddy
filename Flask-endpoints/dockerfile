@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["python", "chatbot.py"]
+CMD ["python", "main.py"]

@@ -169,7 +169,7 @@ def ollama_chat(context: str, question: str, max_wait_sec: int = 60) -> str:
         print(error_msg)
         return error_msg
     
-# ------------------- ENDPOINTS -------------------
+# ------------------- ENDPOINTS --------------------------------------------------------
 @app.route('/', methods=['GET'])
 def health():
     return jsonify({"status": "ok"}), 200
