@@ -1,6 +1,5 @@
-# AI Document Q&A System
-
-A Flask-based API that uses Ollama with Llava model to answer questions from uploaded PDF documents.
+# Study buddy AI Integration
+Flask API that uses Ollama with llama3 model to answer questions from uploaded PDF documents.
 
 ## Setup Instructions
 
