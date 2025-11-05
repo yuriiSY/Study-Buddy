@@ -70,3 +70,18 @@
 • Set meeting data for surveying students
 • AI optimisation continues
 
+
+## Week 7 Retrospectives:
+### What went well
+• User evaluation report is progressing well -Lorenzo
+• Front-end development is coming nicely with interface and feature updates -Yurii
+• Back-end development is also progressing as the connectivity issues with front-end were sorted by Rumaysa & Anika
+• Prepping for the survey is going well -Whole group
+### What to improve
+• Additional communication on task status
+### What actions are being taken
+• User evaluation report is still in the works
+• Front-end development is continuing and also working ensure connectivity w/ back-end is functional
+• Back-end is being polished to ensure connectivity is swift & AI optimisation is in the works
+• Additional survey questions are being created
+
