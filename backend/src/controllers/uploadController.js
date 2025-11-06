@@ -188,3 +188,201 @@ export const getFileHtml = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch file HTML" });
   }
 };
+
+export const deleteModule = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { moduleId } = req.params;
+
+    const module = await prisma.module.findUnique({
+      where: { id: Number(moduleId) },
+      include: { files: true },
+    });
+
+    if (!module || module.userId !== userId) {
+      return res.status(404).json({ error: "Module not found" });
+    }
+
+    for (const file of module.files) {
+      try {
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: file.s3Key,
+          })
+        );
+      } catch (err) {
+        console.warn("Failed to delete file from S3:", file.s3Key);
+      }
+    }
+
+    await prisma.file.deleteMany({
+      where: { moduleId: module.id },
+    });
+
+    await prisma.module.delete({
+      where: { id: module.id },
+    });
+
+    res.json({ message: "Module and its files deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting module:", error);
+    res.status(500).json({ error: "Failed to delete module" });
+  }
+};
+
+export const updateModuleTitle = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { moduleId } = req.params;
+    const { title } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: "Title is required" });
+    }
+
+    const module = await prisma.module.findUnique({
+      where: { id: Number(moduleId) },
+    });
+
+    if (!module || module.userId !== userId) {
+      return res.status(404).json({ error: "Module not found" });
+    }
+
+    const updatedModule = await prisma.module.update({
+      where: { id: module.id },
+      data: { title },
+    });
+
+    res.json({
+      message: "Module title updated successfully",
+      module: updatedModule,
+    });
+  } catch (error) {
+    console.error("Error updating module title:", error);
+    res.status(500).json({ error: "Failed to update module title" });
+  }
+};
+
+export const archiveModule = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { moduleId } = req.params;
+
+    const module = await prisma.module.findUnique({
+      where: { id: Number(moduleId) },
+    });
+
+    if (!module || module.userId !== userId) {
+      return res.status(404).json({ error: "Module not found" });
+    }
+
+    const updatedModule = await prisma.module.update({
+      where: { id: module.id },
+      data: { archived: true },
+    });
+
+    res.json({
+      message: "Module archived successfully",
+      module: updatedModule,
+    });
+  } catch (error) {
+    console.error("Error archiving module:", error);
+    res.status(500).json({ error: "Failed to archive module" });
+  }
+};
+
+export const unarchiveModule = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { moduleId } = req.params;
+
+    const module = await prisma.module.findUnique({
+      where: { id: Number(moduleId) },
+    });
+
+    if (!module || module.userId !== userId) {
+      return res.status(404).json({ error: "Module not found" });
+    }
+
+    const updatedModule = await prisma.module.update({
+      where: { id: module.id },
+      data: { archived: false },
+    });
+
+    res.json({
+      message: "Module restored from archive",
+      module: updatedModule,
+    });
+  } catch (error) {
+    console.error("Error unarchiving module:", error);
+    res.status(500).json({ error: "Failed to unarchive module" });
+  }
+};
+
+export const addCollaborator = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+    const { moduleId } = req.params;
+    const { collaboratorEmail, role } = req.body;
+
+    const module = await prisma.module.findUnique({
+      where: { id: Number(moduleId) },
+    });
+    if (!module || module.userId !== ownerId)
+      return res
+        .status(403)
+        .json({ error: "You are not allowed to share this module" });
+
+    const user = await prisma.user.findUnique({
+      where: { email: collaboratorEmail },
+    });
+    if (!user) return res.status(404).json({ error: "Collaborator not found" });
+
+    const collaboration = await prisma.collaboration.upsert({
+      where: { userId_moduleId: { userId: user.id, moduleId: module.id } },
+      update: { role: role || "editor" },
+      create: { userId: user.id, moduleId: module.id, role: role || "editor" },
+    });
+
+    res.json({ message: "Collaborator added successfully", collaboration });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to add collaborator" });
+  }
+};
+
+export const removeCollaborator = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+    const { moduleId, collaboratorId } = req.params;
+
+    const module = await prisma.module.findUnique({
+      where: { id: Number(moduleId) },
+    });
+    if (!module || module.userId !== ownerId)
+      return res
+        .status(403)
+        .json({ error: "You are not allowed to modify this module" });
+
+    await prisma.collaboration.deleteMany({
+      where: { moduleId: Number(moduleId), userId: Number(collaboratorId) },
+    });
+
+    res.json({ message: "Collaborator removed successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to remove collaborator" });
+  }
+};
+
+export const getCollaborators = async (req, res) => {
+  try {
+    const { moduleId } = req.params;
+    const collaborators = await prisma.collaboration.findMany({
+      where: { moduleId: Number(moduleId) },
+      include: { user: { select: { id: true, name: true, email: true } } },
+    });
+    res.json({ collaborators });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch collaborators" });
+  }
+};
