@@ -5,6 +5,7 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs";
@@ -19,6 +20,9 @@ const s3 = new S3Client({
   },
 });
 
+// ----------------------------------------------------------------------
+// Upload files (create or update module)
+// ----------------------------------------------------------------------
 export const uploadFiles = async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: "No files uploaded" });
@@ -30,13 +34,24 @@ export const uploadFiles = async (req, res) => {
     let module;
 
     if (moduleId) {
-      module = await prisma.module.findUnique({
-        where: { id: Number(moduleId) },
+      // Check ownership or collaborator permission
+      module = await prisma.module.findFirst({
+        where: {
+          id: Number(moduleId),
+          OR: [
+            { ownerId: req.user.id },
+            {
+              collaborations: { some: { userId: req.user.id, role: "editor" } },
+            },
+          ],
+        },
         include: { files: true },
       });
 
       if (!module) {
-        return res.status(404).json({ error: "Module not found" });
+        return res
+          .status(403)
+          .json({ error: "Not allowed to upload to this module" });
       }
     } else {
       if (!moduleName || !moduleName.trim()) {
@@ -46,7 +61,7 @@ export const uploadFiles = async (req, res) => {
       module = await prisma.module.create({
         data: {
           title: moduleName,
-          userId: req.user.id,
+          ownerId: req.user.id,
         },
       });
     }
@@ -111,10 +126,12 @@ export const uploadFiles = async (req, res) => {
   }
 };
 
+// ----------------------------------------------------------------------
+// Get signed S3 URL for download
+// ----------------------------------------------------------------------
 export const getFileUrl = async (req, res) => {
   try {
     const { fileId } = req.params;
-
     const file = await uploadService.getOriginalFileById(fileId);
 
     const command = new GetObjectCommand({
@@ -122,7 +139,7 @@ export const getFileUrl = async (req, res) => {
       Key: file.s3Key,
     });
 
-    const signedUrl = await getSignedUrl(s3, command, { expiresIn: 300 }); // 5 min
+    const signedUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
 
     res.json({
       id: file.id,
@@ -138,17 +155,9 @@ export const getFileUrl = async (req, res) => {
   }
 };
 
-export const getUserFiles = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const files = await uploadService.getFilesByUserId(userId);
-    res.json({ files });
-  } catch (error) {
-    console.error("Error fetching files:", error);
-    res.status(500).json({ error: "Failed to fetch files" });
-  }
-};
-
+// ----------------------------------------------------------------------
+// Fetch modules and files
+// ----------------------------------------------------------------------
 export const getUserModules = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -178,10 +187,7 @@ export const getFileHtml = async (req, res) => {
     const { id } = req.params;
     const file = await uploadService.getFileById(userId, parseInt(id));
 
-    if (!file) {
-      return res.status(404).json({ error: "File not found" });
-    }
-
+    if (!file) return res.status(404).json({ error: "File not found" });
     res.json({ html: file.html });
   } catch (error) {
     console.error("Error fetching file HTML:", error);
@@ -189,6 +195,9 @@ export const getFileHtml = async (req, res) => {
   }
 };
 
+// ----------------------------------------------------------------------
+// Delete, update, archive, unarchive modules
+// ----------------------------------------------------------------------
 export const deleteModule = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -199,14 +208,14 @@ export const deleteModule = async (req, res) => {
       include: { files: true },
     });
 
-    if (!module || module.userId !== userId) {
+    if (!module || module.ownerId !== userId) {
       return res.status(404).json({ error: "Module not found" });
     }
 
     for (const file of module.files) {
       try {
         await s3.send(
-          new PutObjectCommand({
+          new DeleteObjectCommand({
             Bucket: process.env.S3_BUCKET_NAME,
             Key: file.s3Key,
           })
@@ -216,13 +225,8 @@ export const deleteModule = async (req, res) => {
       }
     }
 
-    await prisma.file.deleteMany({
-      where: { moduleId: module.id },
-    });
-
-    await prisma.module.delete({
-      where: { id: module.id },
-    });
+    await prisma.file.deleteMany({ where: { moduleId: module.id } });
+    await prisma.module.delete({ where: { id: module.id } });
 
     res.json({ message: "Module and its files deleted successfully" });
   } catch (error) {
@@ -245,7 +249,7 @@ export const updateModuleTitle = async (req, res) => {
       where: { id: Number(moduleId) },
     });
 
-    if (!module || module.userId !== userId) {
+    if (!module || module.ownerId !== userId) {
       return res.status(404).json({ error: "Module not found" });
     }
 
@@ -273,7 +277,7 @@ export const archiveModule = async (req, res) => {
       where: { id: Number(moduleId) },
     });
 
-    if (!module || module.userId !== userId) {
+    if (!module || module.ownerId !== userId) {
       return res.status(404).json({ error: "Module not found" });
     }
 
@@ -301,7 +305,7 @@ export const unarchiveModule = async (req, res) => {
       where: { id: Number(moduleId) },
     });
 
-    if (!module || module.userId !== userId) {
+    if (!module || module.ownerId !== userId) {
       return res.status(404).json({ error: "Module not found" });
     }
 
@@ -320,6 +324,9 @@ export const unarchiveModule = async (req, res) => {
   }
 };
 
+// ----------------------------------------------------------------------
+// Collaborator Management
+// ----------------------------------------------------------------------
 export const addCollaborator = async (req, res) => {
   try {
     const ownerId = req.user.id;
@@ -329,7 +336,8 @@ export const addCollaborator = async (req, res) => {
     const module = await prisma.module.findUnique({
       where: { id: Number(moduleId) },
     });
-    if (!module || module.userId !== ownerId)
+
+    if (!module || module.ownerId !== ownerId)
       return res
         .status(403)
         .json({ error: "You are not allowed to share this module" });
@@ -359,7 +367,8 @@ export const removeCollaborator = async (req, res) => {
     const module = await prisma.module.findUnique({
       where: { id: Number(moduleId) },
     });
-    if (!module || module.userId !== ownerId)
+
+    if (!module || module.ownerId !== ownerId)
       return res
         .status(403)
         .json({ error: "You are not allowed to modify this module" });
