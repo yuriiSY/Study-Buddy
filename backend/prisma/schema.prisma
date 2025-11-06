@@ -40,6 +40,7 @@ model File {
   s3Url     String
   s3Key     String
   embedding Bytes?
+  externalId  String?  @unique
   moduleId  Int
   createdAt DateTime @default(now())
 

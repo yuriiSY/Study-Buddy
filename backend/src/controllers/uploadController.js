@@ -28,13 +28,12 @@ export const uploadFiles = async (req, res) => {
     return res.status(400).json({ error: "No files uploaded" });
   }
 
-  const { moduleName, moduleId } = req.body;
+  const { moduleName, moduleId, file_id } = req.body;
 
   try {
     let module;
 
     if (moduleId) {
-      // Check ownership or collaborator permission
       module = await prisma.module.findFirst({
         where: {
           id: Number(moduleId),
@@ -103,6 +102,7 @@ export const uploadFiles = async (req, res) => {
           s3Url,
           s3Key,
           moduleId: module.id,
+          externalId: file_id || null,
         },
       });
 
