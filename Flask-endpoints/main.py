@@ -112,7 +112,7 @@ def process_file_content(file, filename):
             return None, f"Unsupported file type: {file_extension}"
 # ---------- LLM (Ollama API call) ----------
 
-def ollama_chat(context: str, question: str, max_wait_sec: int = 60) -> str:
+def ollama_chat(context: str, question: str, max_wait_sec: int = 120) -> str:
     url = f"{OLLAMA_BASE_URL}/api/chat"
     payload = {
         "model": OLLAMA_MODEL,
@@ -132,7 +132,7 @@ def ollama_chat(context: str, question: str, max_wait_sec: int = 60) -> str:
     print(f"Sending request to Ollama at: {url}")
 
     try:
-        response = requests.post(url, json=payload, timeout=60)
+        response = requests.post(url, json=payload, timeout=120)
         print(f"Ollama response status: {response.status_code}")
         
         if response.status_code == 200:
