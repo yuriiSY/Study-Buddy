@@ -30,7 +30,7 @@
   width: 90px;
 }
 
-.button {
+.learnButton {
   background-color: #656596;
   border-color: #b57600;
   border-width: 1px;
@@ -40,4 +40,35 @@
   border-radius: 8px;
   cursor: pointer;
   height: 30px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+.iconButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.iconButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.archiveButton svg {
+  color: #f0ad4e;
+}
+.archiveButton:hover svg {
+  color: #ec9a2b;
+}
+.deleteButton svg {
+  color: #d9534f;
+}
+.deleteButton:hover svg {
+  color: #c9302c;
 }

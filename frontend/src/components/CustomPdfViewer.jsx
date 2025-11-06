@@ -9,15 +9,14 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 export default function CustomPdfViewer({ fileUrl = "/docs/sample.pdf" }) {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
-  const [scale, setScale] = useState(1.6); // default zoom
+  const [scale, setScale] = useState(1.6);
   const containerRef = useRef();
 
   useEffect(() => {
     const updateScale = () => {
       if (containerRef.current) {
         const width = containerRef.current.offsetWidth;
-        // Fit PDF proportionally (800 is default PDF width)
-        setScale(Math.min(width / 600, 2)); // limit to 2x zoom
+        setScale(Math.min(width / 600, 2));
       }
     };
     updateScale();

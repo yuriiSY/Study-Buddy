@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./ModuleModal.module.css";
 import api from "../../api/axios";
+import apiPY from "../../api/axiosPython";
 
 const ModuleModal = ({
   isOpen,
@@ -39,21 +40,49 @@ const ModuleModal = ({
 
     setLoading(true);
     try {
-      const formData = new FormData();
-
+      // ---------- 1️⃣ Build FormData for Python ----------
+      const pyFormData = new FormData();
       if (mode === "create") {
-        formData.append("moduleName", moduleName);
+        pyFormData.append("moduleName", moduleName);
       } else {
-        formData.append("moduleId", moduleId);
+        pyFormData.append("moduleId", moduleId);
       }
+      uploadedFiles.forEach((file) => pyFormData.append("files", file));
 
-      uploadedFiles.forEach((file) => formData.append("files", file));
-
-      const res = await api.post("/files/upload", formData, {
+      // ---------- 2️⃣ Upload to Python ----------
+      const respy = await apiPY.post("/upload-files", pyFormData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("Upload successful:", res.data);
+      console.log("Python Upload successful:", respy.data);
+
+      // Extract file_id from the response
+      const uploadedInfo = respy.data.uploaded?.[0];
+      const fileIdFromPython = uploadedInfo?.file_id;
+
+      if (!fileIdFromPython) {
+        console.warn("⚠️ No file_id returned from Python — skipping link.");
+      }
+
+      // ---------- 3️⃣ Build new FormData for Node ----------
+      const nodeFormData = new FormData();
+      if (mode === "create") {
+        nodeFormData.append("moduleName", moduleName);
+      } else {
+        nodeFormData.append("moduleId", moduleId);
+      }
+
+      uploadedFiles.forEach((file) => nodeFormData.append("files", file));
+      if (fileIdFromPython) {
+        nodeFormData.append("file_id", fileIdFromPython); // 👈 Add the link
+      }
+
+      // ---------- 4️⃣ Upload to Node ----------
+      const res = await api.post("/files/upload", nodeFormData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      console.log("Node Upload successful:", res.data);
 
       if (onCreate && res.data?.module) {
         onCreate(res.data.module);

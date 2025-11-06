@@ -53,16 +53,16 @@ export const StudySpacePage = () => {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const docs = useMemo(
-    () => [
-      {
-        uri: "/asd.pdf",
-        fileType: "pdf",
-        fileName: "sample.pdf",
-      },
-    ],
-    []
-  );
+  // const docs = useMemo(
+  //   () => [
+  //     {
+  //       uri: "/asd.pdf",
+  //       fileType: "pdf",
+  //       fileName: "sample.pdf",
+  //     },
+  //   ],
+  //   []
+  // );
 
   const Viewer = React.memo(() => <CustomPdfViewer />);
 
@@ -74,6 +74,7 @@ export const StudySpacePage = () => {
       const formattedModules = backendFiles.map((file, index) => ({
         title: `File ${index + 1}. ${file.filename}`,
         id: file.id,
+        externalId: file.externalId,
       }));
 
       setModules(formattedModules);
@@ -113,7 +114,7 @@ export const StudySpacePage = () => {
         return (
           <div className={styles.studySpaceContainer}>
             <DocxViewer fileId={selectedFile?.id} moduleId={moduleId} />
-            <Chat />
+            <Chat externalId={selectedFile?.externalId} />
           </div>
         );
       default:
