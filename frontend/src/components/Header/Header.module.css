@@ -116,11 +116,14 @@
 }
 
 .menuItem {
-  display: block;
-  padding: 10px 16px;
-  text-decoration: none;
+  width: 100%;
+  background: none;
+  border: none;
   color: #333;
-  font-weight: 500;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 16px;
+  cursor: pointer;
 }
 
 .menuItem:hover {
