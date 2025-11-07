@@ -9,12 +9,21 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
+enum Specialization {
+  Math
+  Physics
+  Chemistry
+  Biology
+  ComputerScience
+}
+
 model User {
   id        Int         @id @default(autoincrement())
   name      String
   email     String      @unique
   password  String
   createdAt DateTime    @default(now())
+  specialization Specialization? 
 
   ownedModules Module[]       @relation("OwnedModules")
   collaborations Collaboration[]
@@ -59,3 +68,4 @@ model Collaboration {
 
   @@unique([userId, moduleId]) 
 }
+

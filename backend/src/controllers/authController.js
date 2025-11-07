@@ -58,7 +58,28 @@ const signin = async (req, res) => {
   });
 };
 
+const updateProfile = async (req, res) => {
+  const userId = req.user.id;
+  const { name, email, specialization } = req.body;
+
+  try {
+    const updatedUser = await authService.updateUserProfile(userId, {
+      ...(name && { name }),
+      ...(email && { email }),
+      ...(specialization !== undefined && { specialization }),
+    });
+
+    res.json({ message: "Profile updated successfully", user: updatedUser });
+  } catch (error) {
+    if (error.code === "P2002") {
+      return res.status(400).json({ error: "Email is already in use" });
+    }
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+};
+
 export default {
   signup,
   signin,
+  updateProfile,
 };
