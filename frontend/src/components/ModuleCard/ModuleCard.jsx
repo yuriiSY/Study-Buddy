@@ -33,11 +33,11 @@ const ModuleCard = ({
         <p className={styles.date}>{date}</p>
         <div className={styles.actions}>
           <button
-            className={`${styles.iconButton}`}
-            onClick={handleManage}
-            title="Manage"
+            className={`${styles.iconButton} ${styles.deleteButton}`}
+            onClick={handleDelete}
+            title="Delete"
           >
-            <Settings size={18} />
+            <Trash2 size={18} />
           </button>
           <button
             className={`${styles.iconButton} ${styles.archiveButton}`}
@@ -47,11 +47,11 @@ const ModuleCard = ({
             {archived ? <ArchiveRestore size={18} /> : <Archive size={18} />}
           </button>
           <button
-            className={`${styles.iconButton} ${styles.deleteButton}`}
-            onClick={handleDelete}
-            title="Delete"
+            className={`${styles.iconButton} ${styles.manageButton}`}
+            onClick={handleManage}
+            title="Manage"
           >
-            <Trash2 size={18} />
+            <Settings size={18} />
           </button>
         </div>
       </div>

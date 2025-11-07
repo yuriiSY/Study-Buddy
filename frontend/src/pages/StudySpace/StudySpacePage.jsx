@@ -9,6 +9,7 @@ import styles from "./StudySpacePage.module.css";
 import FocusHeader from "../../components/FocusHeader/FocusHeader";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import CustomPdfViewer from "../../components/CustomDocViewer/CustomDocViewer";
+import LoaderOverlay from "../../components/LoaderOverlay/LoaderOverlay";
 
 import api from "../../api/axios";
 
@@ -127,7 +128,7 @@ export const StudySpacePage = () => {
     }
   };
 
-  if (loading) return <p>Loading files...</p>;
+  if (loading) return <LoaderOverlay />;
 
   return (
     <WorkspaceLayout

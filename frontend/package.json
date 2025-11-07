@@ -30,6 +30,7 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.3",
     "react-slick": "^0.31.0",
+    "react-spinners": "^0.17.0",
     "react-toastify": "^11.0.5",
     "slick-carousel": "^1.8.1",
     "yup": "^1.7.1"

@@ -2,11 +2,24 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background-color: #314158;
-  width: 450px;
+  background-color: #656596;
+  width: 419px;
   min-height: 280px;
   padding: 15px;
   border-radius: 8px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 10px;
 }
 
 .title {
@@ -23,6 +36,7 @@
 }
 
 .date {
+  font-size: 18px;
   display: block;
   color: #ffffff;
   border-radius: 12px;
@@ -31,15 +45,16 @@
 }
 
 .learnButton {
-  background-color: #656596;
+  background-color: #505078;
   border-color: #b57600;
   border-width: 1px;
   color: #ffffff;
   overflow: hidden;
   width: 100%;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  height: 30px;
+  height: 45px;
+  font-size: 18px;
 }
 
 .actions {
@@ -60,15 +75,27 @@
 .iconButton:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
+
+.learnButton:hover {
+  background-color: #a2a2c0;
+}
+
 .archiveButton svg {
-  color: #f0ad4e;
+  color: #ffffff;
 }
 .archiveButton:hover svg {
   color: #ec9a2b;
 }
 .deleteButton svg {
-  color: #d9534f;
+  color: #ffffff;
 }
 .deleteButton:hover svg {
   color: #c9302c;
+}
+
+.manageButton svg {
+  color: #ffffff;
+}
+.manageButton:hover svg {
+  color: #656596;
 }

@@ -9,8 +9,9 @@ import {
 import schema from "../../schemas/validationRegistrSchemas";
 import { yupResolver } from "@hookform/resolvers/yup";
 import styles from "./LoginForm.module.css";
+import { ClipLoader } from "react-spinners";
 
-const LoginForm = ({ onSubmit }) => {
+const LoginForm = ({ onSubmit, loading }) => {
   const {
     register,
     handleSubmit,
@@ -77,7 +78,7 @@ const LoginForm = ({ onSubmit }) => {
       </div>
 
       <button className={styles.button} type="submit">
-        Sign In
+        {loading ? <ClipLoader size={20} color="#fff" /> : "Sign in"}
       </button>
     </form>
   );

@@ -9,6 +9,7 @@ import api from "../../src/api/axios";
 import AddCard from "../components/AddCard/AddCard";
 import StatsCards from "../components/StatsCards/StatsCards";
 import ManageModuleModal from "../components/ManageModuleModal/ManageModuleModal";
+import LoaderOverlay from "../components/LoaderOverlay/LoaderOverlay";
 
 export const HomePage = () => {
   const [modules, setModules] = useState([]);
@@ -19,6 +20,8 @@ export const HomePage = () => {
     moduleId: null,
     title: "",
   });
+  const [showAllActive, setShowAllActive] = useState(false);
+  const [showAllArchived, setShowAllArchived] = useState(false);
 
   useEffect(() => {
     const fetchModules = async () => {
@@ -31,7 +34,6 @@ export const HomePage = () => {
         setLoading(false);
       }
     };
-
     fetchModules();
   }, []);
 
@@ -48,9 +50,7 @@ export const HomePage = () => {
       const endpoint = archived
         ? `/files/modules/${id}/unarchive`
         : `/files/modules/${id}/archive`;
-
       await api.put(endpoint);
-
       setModules((prev) =>
         prev.map((mod) =>
           mod.id === id ? { ...mod, archived: !archived } : mod
@@ -66,7 +66,6 @@ export const HomePage = () => {
       "Are you sure you want to delete this module and all its files?"
     );
     if (!confirmed) return;
-
     try {
       await api.delete(`/files/modules/${id}`);
       setModules((prev) => prev.filter((mod) => mod.id !== id));
@@ -91,7 +90,7 @@ export const HomePage = () => {
         <Header />
         <Layout>
           <div className={styles.homePage}>
-            <p>Loading...</p>
+            <LoaderOverlay />
           </div>
         </Layout>
       </>
@@ -111,9 +110,32 @@ export const HomePage = () => {
           ) : (
             <div className={styles.content}>
               <div className={styles.modulesSection}>
-                <h2>Your Study Modules</h2>
+                <div className={styles.headerSection}>
+                  <h2>Your Study Modules</h2>
+                  <div>
+                    {activeModules.length >= 3 && (
+                      <button
+                        className={styles.viewAllBtn}
+                        onClick={handleOpenModal}
+                      >
+                        Add more modules
+                      </button>
+                    )}
+                    {activeModules.length > 4 && (
+                      <button
+                        className={styles.viewAllBtn}
+                        onClick={() => setShowAllActive((prev) => !prev)}
+                      >
+                        {showAllActive ? "View less" : "View all"}
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <div className={styles.modulesGrid}>
-                  {activeModules.map((mod) => (
+                  {(showAllActive
+                    ? activeModules
+                    : activeModules.slice(0, 4)
+                  ).map((mod) => (
                     <ModuleCard
                       key={mod.id}
                       id={mod.id}
@@ -125,15 +147,30 @@ export const HomePage = () => {
                       onManage={handleManage}
                     />
                   ))}
-                  <AddCard onClick={handleOpenModal} />
+                  {activeModules.length <= 3 && (
+                    <AddCard onClick={handleOpenModal} />
+                  )}
                 </div>
               </div>
 
               {archivedModules.length > 0 && (
                 <div className={styles.modulesSection}>
-                  <h2>Archived Modules</h2>
+                  <div className={styles.headerSection}>
+                    <h2>Archived Modules</h2>
+                    {archivedModules.length > 4 && (
+                      <button
+                        className={styles.viewAllBtn}
+                        onClick={() => setShowAllArchived((prev) => !prev)}
+                      >
+                        {showAllArchived ? "View less" : "View all"}
+                      </button>
+                    )}
+                  </div>
                   <div className={styles.modulesGrid}>
-                    {archivedModules.map((mod) => (
+                    {(showAllArchived
+                      ? archivedModules
+                      : archivedModules.slice(0, 4)
+                    ).map((mod) => (
                       <ModuleCard
                         key={mod.id}
                         id={mod.id}

@@ -12,10 +12,11 @@
   background: white;
   border-radius: 12px;
   padding: 24px;
-  width: 420px;
+  width: 520px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
 }
 
 .section {
@@ -25,27 +26,15 @@
 .formRow {
   display: flex;
   gap: 8px;
+  margin-top: 10px;
 }
 
 input,
 select {
   padding: 6px 8px;
+  width: 100%;
   border: 1px solid #ccc;
   border-radius: 6px;
-}
-
-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-button:hover {
-  background-color: #0056b3;
 }
 
 .removeBtn {
@@ -60,4 +49,34 @@ button:hover {
   color: #888;
   font-size: 0.85rem;
   margin-left: 8px;
+}
+
+.button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #656596;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #505078;
+}
+
+.closeIcon {
+  position: absolute;
+  top: 15px;
+  right: 22px;
+  background: transparent;
+  border: none;
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: #656565;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.closeIcon:hover {
+  color: #505078;
 }

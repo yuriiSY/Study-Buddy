@@ -4,6 +4,36 @@
   height: calc(100vh - 84px);
 }
 
+.headerSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 0 4px;
+}
+
+.headerSection h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.viewAllBtn {
+  background: none;
+  color: #656596;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  text-decoration: underline;
+  border-radius: 4px;
+}
+
+.viewAllBtn:hover {
+  color: #505078;
+}
+
 .modulesGrid {
   display: flex;
   flex-wrap: wrap;

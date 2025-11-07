@@ -68,17 +68,25 @@ const ManageModuleModal = ({
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
+        <button className={styles.closeIcon} onClick={onClose}>
+          &times;
+        </button>
+
         <h2>Manage Module</h2>
 
         <div className={styles.section}>
           <h4>Update Module Title</h4>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="New title"
-          />
-          <button onClick={handleUpdateTitle}>Save Title</button>
+          <div className={styles.formRow}>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="New title"
+            />
+            <button className={styles.button} onClick={handleUpdateTitle}>
+              Save
+            </button>
+          </div>
         </div>
 
         <div className={styles.section}>
@@ -94,7 +102,9 @@ const ManageModuleModal = ({
               <option value="editor">Editor</option>
               <option value="viewer">Viewer</option>
             </select>
-            <button onClick={handleAddCollaborator}>Add</button>
+            <button className={styles.button} onClick={handleAddCollaborator}>
+              Add
+            </button>
           </div>
         </div>
 
@@ -119,10 +129,6 @@ const ManageModuleModal = ({
             </ul>
           )}
         </div>
-
-        <button className={styles.closeBtn} onClick={onClose}>
-          Close
-        </button>
       </div>
     </div>
   );
