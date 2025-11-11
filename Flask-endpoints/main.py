@@ -1,5 +1,4 @@
 import uuid
-import time
 import subprocess
 import tempfile
 from groq import Groq
@@ -10,12 +9,10 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
-import torch
 import os, io
 import base64
 from PIL import Image
 import fitz
-import numpy as np
 from dotenv import load_dotenv
 import random
 from datetime import datetime
