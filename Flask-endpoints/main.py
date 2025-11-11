@@ -440,41 +440,30 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
     
     CRITICAL: Hints should GUIDE thinking without revealing the answer and don't repeat the question in hint
      guide the user to think towards the answer
-
-     REQUIREMENTS:
     
-    ANSWERS:
-    - Must be COMPLETE explanations, not just one word
-    - Include definitions, examples, or key details
- 
-    
-    HINTS:
-    - Must be SUBSTANTIALLY different from the question
-    - Use analogies, real-world applications, or different perspectives
-    - Guide thinking without revealing key terms
-     example: 
-    Question: What is Mitochondria
-    Answer: Powerhouse of the cell; site of ATP production.
-    Hint: Think "power plant" for the cel."
-    
-    Return ONLY valid JSON:
+    FORMAT:
     [
         {{
-            "question": "question text",
-            "answer": "answer text", 
-            "hint": "hint that guides thinking WITHOUT revealing key terms from answer"
+            "question": "One word question/expression/formulas/equation of graphs,etc",
+            "answer": "detailed answer", 
+            "hint": "helpful hint"
         }}
-    ]
+    ]        
+       example:
+    [
+        {{
+            "question": "Speed",
+            "answer": "The distance travelled pe runit time", 
+            "hint": "The faster this is, the less time it takes to travel"
+        }}
+    ]               
     """
     
     try:
         response = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
-                {
-                    "role": "system",
-                    "content": "Create hints that guide thinking without revealing key answer terms. Hints should make students think, not recall."
-                },
+               
                 {
                     "role": "user", 
                     "content": prompt
@@ -485,7 +474,7 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
         )
         
         content = response.choices[0].message.content.strip()
-        print(f"Raw Groq response: {content}")
+        #print(f"Raw Groq response: {content}")
         
         import json
         try:
@@ -515,6 +504,89 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
     except Exception as e:
         print(f"Groq API error: {e}")
         return [{"error": f"Generation failed: {str(e)}"}]
+    
+def generate_mcq_with_groq(context: str, num_questions: int = 5):
+    client = Groq(api_key=GROQ_API_KEY)
+    
+    prompt = f"""
+    CONTENT:
+    {context}
+    
+    Create {num_questions} multiple choice questions with 4 options each.
+    
+    REQUIREMENTS:
+    - Questions should test understanding of key concepts
+    - Each question has 4 options (A, B, C, D)
+    - Only ONE correct answer per question (either A, B, C, or D)
+    - Shuffle Answers like option A,B,C,D , dont always put correct answer at same place
+    - Wrong answers should be plausible but incorrect
+    - Cover different aspects of the content
+    
+    FORMAT:
+    [
+        {{
+            "question": "clear question",
+            "options": [
+                "A. text",
+                "B. text", 
+                "C. text",
+                "D. text"
+            ],
+            "correct_answer": "A"/"B"/"C"/"D"
+        }}
+    ]
+    
+    Return ONLY valid JSON.
+    """
+    
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Create high-quality multiple choice questions with 4 options and one correct answer."
+                },
+                {
+                    "role": "user", 
+                    "content": prompt
+                }
+            ],
+            max_tokens=2048,
+            temperature=0.7
+        )
+        
+        content = response.choices[0].message.content.strip()
+        print(f"Raw MCQ response: {content}")
+        
+        import json
+        try:
+            mcqs = json.loads(content)
+            
+            if isinstance(mcqs, list):
+                return mcqs
+            elif isinstance(mcqs, dict):
+                if 'questions' in mcqs:
+                    return mcqs['questions']
+                else:
+                    return [mcqs]
+            else:
+                return [{"error": "Invalid response format"}]
+                
+        except json.JSONDecodeError as e:
+            print(f"JSON parse error: {e}")
+            import re
+            json_match = re.search(r'\[.*\]', content, re.DOTALL)
+            if json_match:
+                try:
+                    return json.loads(json_match.group())
+                except:
+                    pass
+            return [{"error": "Could not parse MCQs"}]
+        
+    except Exception as e:
+        print(f"Groq API error: {e}")
+        return [{"error": f"MCQ generation failed: {str(e)}"}]
 # ------------------- ENDPOINTS --------------------------------------------------------
 
 @app.route('/', methods=['GET'])
@@ -703,6 +775,39 @@ def generate_flashcards():
         "file_ids_used": file_ids,
         "total_generated": len(flashcards)
     })
+
+
+@app.route('/generate-mcq', methods=['POST'])
+def generate_mcq():
+    data = request.get_json()
+    file_ids = data.get("file_ids", [])
+    num_questions = data.get("num_questions", 5) 
+    
+    # Random search for variety
+    search_terms = [
+        "key concepts and definitions",
+        "important principles and theories", 
+        "formulas and equations",
+        "processes and methods",
+        "relationships and connections"
+    ]
+    
+    random_term = random.choice(search_terms)
+    context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=8)
+    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
+    
+    if not context.strip():
+        return jsonify({"error": "No content found in selected files"}), 400
+
+    mcqs = generate_mcq_with_groq(context, num_questions)
+    
+    return jsonify({
+        "mcqs": mcqs,
+        "file_ids_used": file_ids,
+        "total_questions": len(mcqs)
+    })
+
+
 if __name__ == "__main__":
     print("Starting Flask ...")
     app.run(host="0.0.0.0", port=3000, debug=True)
