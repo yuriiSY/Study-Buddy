@@ -1,16 +1,44 @@
 import uuid
 import time
-import requests
+import subprocess
+import tempfile
+from groq import Groq
 from flask_cors import CORS
 import psycopg2 as db
 from flask import Flask, request, jsonify
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-import os,io
+from sentence_transformers import SentenceTransformer
+import torch
+import os, io
 import base64
 from PIL import Image
 import fitz
+import numpy as np
+
+# Import Office document libraries
+try:
+    from docx import Document
+    DOCX_SUPPORT = True
+except ImportError:
+    DOCX_SUPPORT = False
+    print("DOCX support disabled: install python-docx")
+
+try:
+    from pptx import Presentation
+    PPTX_SUPPORT = True
+except ImportError:
+    PPTX_SUPPORT = False
+    print("PPTX support disabled: install python-pptx")
+
+try:
+    import openpyxl
+    XLSX_SUPPORT = True
+except ImportError:
+    XLSX_SUPPORT = False
+    print("XLSX support disabled: install openpyxl")
+
 # Import PDF processing library
 try:
     import pdfplumber
@@ -21,8 +49,9 @@ except ImportError:
 
 # ---------------- CONFIG ----------------
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llava:latest")
-OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://ollama:11434")
+CLIP_MODEL_NAME = "clip-ViT-B-32"
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
 TABLE_NAME = "langchain_pg_embedding"
 
 # Hosted DB credentials
@@ -52,34 +81,113 @@ except Exception as e:
     print("Failed to connect:", e)
     raise
 
-# Load embedding model
-embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
-EMBED_DIM = len(embeddings.embed_query("test"))
-print(f"Embedding dimension: {EMBED_DIM}")
+# Load embedding models
+text_embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
+clip_model = SentenceTransformer('sentence-transformers/clip-ViT-B-32')
+
+EMBED_DIM = len(text_embeddings.embed_query("test"))
+CLIP_EMBED_DIM = 512
+print(f"Text embedding dimension: {EMBED_DIM}")
+print(f"CLIP embedding dimension: {CLIP_EMBED_DIM}")
 
 # ---------- PGVector ----------
 vector_store = None
+clip_vector_store = None
+
 def get_vector_store():
     global vector_store
     if vector_store is None:
         vector_store = PGVector(
             connection=f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?sslmode=require",
             collection_name=TABLE_NAME,
-            embeddings=embeddings,
+            embeddings=text_embeddings,
             distance_strategy="cosine",
-            embedding_length=EMBED_DIM
+            use_jsonb=True,  # Add this
+            pre_delete_collection=False  # Add this
         )
     return vector_store
 
-def retrieve_by_file_ids(file_ids, query, k=4):
-    store = get_vector_store()
-    if not file_ids:
-        return []
-    filter_cond = {"file_id": {"$in": file_ids}}
-    docs = store.similarity_search(query, k=k, filter=filter_cond)
-    return [doc.page_content for doc in docs]
+def get_clip_vector_store():
+    global clip_vector_store
+    if clip_vector_store is None:
+        class ClipEmbeddings:
+            def embed_documents(self, texts):
+                return [self.embed_query(text) for text in texts]
+            
+            def embed_query(self, text):
+                return clip_model.encode([text])[0].tolist()
+        
+        clip_embeddings = ClipEmbeddings()
+        clip_vector_store = PGVector(
+            connection=f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?sslmode=require",
+            collection_name=f"{TABLE_NAME}_clip",
+            embeddings=clip_embeddings,
+            distance_strategy="cosine",
+            use_jsonb=True,  # Add this
+            pre_delete_collection=False,  # Add this
+            embedding_length=512  # Explicitly set for CLIP
+        )
+    return clip_vector_store
 
-# ---------------- PDF PROCESSING FUNCTION ----------------
+def retrieve_by_file_ids(file_ids, query, k=4, user_id=None):
+    store = get_vector_store()
+    clip_store = get_clip_vector_store()
+    
+    if not file_ids:
+        return [], []
+    
+    # ENFORCE USER ISOLATION
+    filter_cond = {
+        "file_id": {"$in": file_ids},
+        "user_id": user_id  # CRITICAL: Only search user's files
+    }
+    
+    text_docs = store.similarity_search(query, k=k, filter=filter_cond)
+    text_results = [doc.page_content for doc in text_docs]
+    
+    image_docs = clip_store.similarity_search(query, k=2, filter=filter_cond)
+    image_results = [doc.page_content for doc in image_docs]
+    
+    return text_results, image_results
+
+# ---------------- DOCUMENT PROCESSING FUNCTIONS ----------------
+
+def convert_office_to_pdf(file_stream, filename):
+    """Convert Office files to PDF using local LibreOffice"""
+    try:
+        # Save uploaded file to temp location
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.tmp') as temp_input:
+            file_stream.seek(0)
+            temp_input.write(file_stream.read())
+            temp_input_path = temp_input.name
+        
+        # Convert using LibreOffice
+        cmd = [
+            'libreoffice', '--headless', '--convert-to', 'pdf', 
+            '--outdir', '/tmp', temp_input_path
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        
+        if result.returncode == 0:
+            # Find the converted PDF
+            pdf_path = temp_input_path.replace('.tmp', '.pdf')
+            if os.path.exists(pdf_path):
+                with open(pdf_path, 'rb') as pdf_file:
+                    pdf_data = pdf_file.read()
+                
+                # Cleanup temporary files
+                os.unlink(temp_input_path)
+                os.unlink(pdf_path)
+                
+                return pdf_data, None
+        
+        return None, f"Conversion failed: {result.stderr}"
+        
+    except subprocess.TimeoutExpired:
+        return None, "Conversion timeout - LibreOffice took too long"
+    except Exception as e:
+        return None, f"Conversion error: {str(e)}"
 
 def extract_text_from_pdf(file_stream):
     """Extract text from PDF file"""
@@ -94,7 +202,7 @@ def extract_text_from_pdf(file_stream):
     except Exception as e:
         print(f"Error extracting PDF text: {e}")
         return ""
-    
+
 def extract_images_from_pdf(file_stream):
     """Extract images from PDF using PyMuPDF"""
     images = []
@@ -119,165 +227,250 @@ def extract_images_from_pdf(file_stream):
         print(f"Error extracting images from PDF: {e}")
     return images
 
+def extract_text_from_docx(file_stream):
+    """Extract text from Word documents"""
+    try:
+        doc = Document(file_stream)
+        text = ""
+        for paragraph in doc.paragraphs:
+            if paragraph.text.strip():
+                text += paragraph.text + "\n"
+        
+        # Extract tables
+        for table in doc.tables:
+            for row in table.rows:
+                row_text = " | ".join([cell.text.strip() for cell in row.cells if cell.text.strip()])
+                if row_text:
+                    text += f"Table: {row_text}\n"
+        
+        return text.strip()
+    except Exception as e:
+        print(f"Error extracting DOCX text: {e}")
+        return ""
+
+def extract_text_from_pptx(file_stream):
+    """Extract text from PowerPoint presentations"""
+    try:
+        prs = Presentation(file_stream)
+        text = ""
+        
+        for slide_num, slide in enumerate(prs.slides):
+            text += f"--- Slide {slide_num + 1} ---\n"
+            for shape in slide.shapes:
+                if hasattr(shape, "text") and shape.text.strip():
+                    text += shape.text + "\n"
+        
+        return text.strip()
+    except Exception as e:
+        print(f"Error extracting PPTX text: {e}")
+        return ""
+
+def extract_text_from_xlsx(file_stream):
+    """Extract text from Excel files"""
+    try:
+        wb = openpyxl.load_workbook(file_stream)
+        text = ""
+        
+        for sheet_name in wb.sheetnames:
+            sheet = wb[sheet_name]
+            text += f"--- Sheet: {sheet_name} ---\n"
+            
+            for row in sheet.iter_rows(values_only=True):
+                row_data = [str(cell) if cell is not None else "" for cell in row]
+                row_text = " | ".join(row_data)
+                if row_text.strip():
+                    text += row_text + "\n"
+        
+        return text.strip()
+    except Exception as e:
+        print(f"Error extracting XLSX text: {e}")
+        return ""
+
+def generate_image_description(image):
+    """Generate text description of image using Groq for CLIP indexing"""
+    client = Groq(api_key=GROQ_API_KEY)
+    
+    try:
+        img_byte_arr = io.BytesIO()
+        image.save(img_byte_arr, format='PNG')
+        img_b64 = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
+        
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "Describe this image in detail for search purposes. Focus on content, objects, text, and visual elements:"},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
+                ]
+            }],
+            max_tokens=150,
+            temperature=0.1
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"Error generating image description: {e}")
+        return "Image content"
+
 def process_file_content(file, filename):
-    """Process different file types and extract text and images"""
+    """Process different file types with Office-to-PDF conversion"""
     file_extension = filename.lower().split('.')[-1] if '.' in filename else ''
     
-    if file_extension == 'pdf':
+    # Convert Office files to PDF first for full text+image extraction
+    convertible_types = ['docx', 'pptx', 'xlsx', 'doc', 'ppt', 'xls']
+    if file_extension in convertible_types:
+        print(f"🔄 Converting {file_extension.upper()} to PDF for full processing...")
+        
+        file_stream = io.BytesIO(file.read())
+        pdf_data, error = convert_office_to_pdf(file_stream, filename)
+        
+        if error:
+            # Fallback to text-only extraction if conversion fails
+            print(f"Conversion failed, falling back to text extraction: {error}")
+            if file_extension == 'docx' and DOCX_SUPPORT:
+                file_stream.seek(0)
+                text = extract_text_from_docx(file_stream)
+                return text, f"⚠️ Images not processed. {error}", []
+            elif file_extension == 'pptx' and PPTX_SUPPORT:
+                file_stream.seek(0)
+                text = extract_text_from_pptx(file_stream)
+                return text, f"⚠️ Images not processed. {error}", []
+            elif file_extension == 'xlsx' and XLSX_SUPPORT:
+                file_stream.seek(0)
+                text = extract_text_from_xlsx(file_stream)
+                return text, f"⚠️ Images not processed. {error}", []
+            else:
+                return None, f"Conversion failed and no fallback: {error}", []
+        
+        # Process the converted PDF
+        print(f"✅ Successfully converted {filename} to PDF")
+        pdf_stream = io.BytesIO(pdf_data)
+        text = extract_text_from_pdf(pdf_stream)
+        pdf_stream.seek(0)
+        images = extract_images_from_pdf(pdf_stream)
+        
+        return text, None, images
+    
+    # Process PDF files directly
+    elif file_extension == 'pdf':
         if not PDF_SUPPORT:
             return None, "PDF support not available. Install pdfplumber.", []
-        # For now, just extract text - we'll add image extraction later
-        return extract_text_from_pdf(io.BytesIO(file.read())), None, []
+        
+        file_stream = io.BytesIO(file.read())
+        text = extract_text_from_pdf(file_stream)
+        file_stream.seek(0)
+        images = extract_images_from_pdf(file_stream)
+        
+        return text, None, images
         
     elif file_extension in ['png', 'jpg', 'jpeg', 'gif', 'bmp']:
-        # We'll process images in the ask endpoint
-        return "Image file - content will be processed during Q&A", None, []
+        try:
+            image = Image.open(file.stream)
+            description = generate_image_description(image)
+            file.stream.seek(0)
+            return description, None, [image]
+        except Exception as e:
+            return None, f"Error processing image: {e}", []
             
     elif file_extension == 'txt':
-        # For text files
         return file.stream.read().decode("utf-8", errors="ignore"), None, []
     else:
-        # Try to process as text file for other extensions
         try:
             return file.stream.read().decode("utf-8", errors="ignore"), None, []
         except:
             return None, f"Unsupported file type: {file_extension}", []
 
-        
-# ---------- LLM (Ollama API call) ----------
+# ---------- LLM (Groq API call) ----------
 
-def ollama_chat(context: str, question: str,images: list = None, max_wait_sec: int = 120) -> str:
-    url = f"{OLLAMA_BASE_URL}/api/chat"
-    payload = {
-        "model": OLLAMA_MODEL,
-        "messages": [
-            {
-                "role": "system", 
-                "content": "You are a helpful AI using stdent notes as a context you teach students. Use your knowledge/logic to explain in simple way only if required. Use the provided context to answer questions. never ever answer question unrelated to notes. Always cite your sources."
-            },
-            {
-                "role": "user",
-                "content": f"CONTEXT:\n{context}\n\nQUESTION:\n{question}\n\nAnswer based on the context above. End with: SOURCE: [file(s)]"
-            }
-        ],
-        "stream": False
-    }
-     # Add images to the payload if available
+def groq_chat(context: str, question: str, images: list = None) -> str:
+    client = Groq(api_key=GROQ_API_KEY)
+    
+    messages = [
+        {
+            "role": "system", 
+            "content": "You are a helpful AI using student notes as a context you teach students. Use your knowledge/logic to explain in simple way only if required. Use the provided context to answer questions. never ever answer question unrelated to notes. Always cite your sources."
+        }
+    ]
+    
+    user_content = [{"type": "text", "text": f"CONTEXT:\n{context}\n\nQUESTION:\n{question}\n\nAnswer based on the context above. End with: SOURCE: [file(s)]"}]
+    
     if images and len(images) > 0:
-        import base64
-        image_b64_list = []
         for img in images:
             try:
                 img_byte_arr = io.BytesIO()
                 img.save(img_byte_arr, format='PNG')
                 img_b64 = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
-                image_b64_list.append(img_b64)
+                user_content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}
+                })
             except Exception as e:
                 print(f"Error converting image to base64: {e}")
                 continue
-        
-        if image_b64_list:
-            payload["messages"][1]["images"] = image_b64_list
-            print(f"📸 Sending request with {len(image_b64_list)} images to Llava")
-
-
-    print(f"Sending request to Ollama at: {url}")
-
+    
+    messages.append({"role": "user", "content": user_content})
+    
     try:
-        response = requests.post(url, json=payload, timeout=max_wait_sec)
-        print(f"Ollama response status: {response.status_code}")
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            max_tokens=2048,
+            temperature=0.1
+        )
         
-        if response.status_code == 200:
-            data = response.json()
-            
-            if "message" in data and "content" in data["message"]:
-                content = data["message"]["content"]
-                image_info = f" with {len(images)} images" if images else ""
-                print(f"Successfully extracted content from {OLLAMA_MODEL}{image_info}")
-                return content
-            else:
-                print(f" Unexpected response structure: {data}")
-                return "Error: Could not extract response content from Ollama"
-        else:
-            error_msg = f"Ollama API returned status {response.status_code}: {response.text}"
-            print(error_msg)
-            return error_msg
-
-            
-    except requests.exceptions.ConnectionError as e:
-        error_msg = f"Cannot connect to Ollama at {url}: {e}"
-        print(error_msg)
-        return error_msg
-    except requests.exceptions.Timeout as e:
-        error_msg = f"Ollama API timeout: {e}"
-        print(error_msg)
-        return error_msg
-    except requests.exceptions.RequestException as e:
-        error_msg = f"Ollama API request error: {e}"
-        print(error_msg)
-        return error_msg
+        content = response.choices[0].message.content
+        image_info = f" with {len(images)} images" if images else ""
+        print(f"Successfully got response from {GROQ_MODEL}{image_info}")
+        return content
+        
     except Exception as e:
-        error_msg = f"Unexpected error: {e}"
+        error_msg = f"Groq API error: {e}"
         print(error_msg)
         return error_msg
-    
-# ---------- OLLAMA HEALTH CHECK ----------
-def wait_for_ollama():
-    """Wait for Ollama and Llava to be ready"""
-    max_retries = 30
-    for i in range(max_retries):
-        try:
-            response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=5)
-            if response.status_code == 200:
-                models = response.json()
-                model_names = [model['name'] for model in models.get('models', [])]
-                
-                if any('llava' in name.lower() for name in model_names):
-                    print("Ollama ready with Llava model!")
-                    return True
-                else:
-                    print(f"⏳ Ollama ready, waiting for Llava... ({i+1}/{max_retries})")
-        except Exception as e:
-            print(f"⏳ Waiting for Ollama... ({i+1}/{max_retries}) - Error: {e}")
-        
-        time.sleep(2)
-    
-    print("Ollama/Llava not ready within timeout")
-    return False
 
-# Wait for Ollama before first request
-def check_ollama_on_startup():
-    print("Starting up... waiting for Ollama with Llava")
-    wait_for_ollama()
-    
 # ------------------- ENDPOINTS --------------------------------------------------------
+
 @app.route('/', methods=['GET'])
 def health():
     try:
-        # Check Ollama status
-        response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=5)
-        models = response.json()
-        llava_ready = any('llava' in model['name'].lower() for model in models.get('models', []))
+        client = Groq(api_key=GROQ_API_KEY)
+        models = client.models.list()
+        model_names = [model.id for model in models.data]
+        llava_ready = any('llava' in name.lower() for name in model_names)
         
         return jsonify({
             "status": "ok", 
-            "ollama": "connected",
+            "groq": "connected",
             "llava_ready": llava_ready,
-            "model": OLLAMA_MODEL
+            "model": GROQ_MODEL,
+            "clip_ready": True,
+            "office_support": {
+                "docx": DOCX_SUPPORT,
+                "pptx": PPTX_SUPPORT,
+                "xlsx": XLSX_SUPPORT,
+                "pdf": PDF_SUPPORT,
+                "libreoffice": True
+            }
         }), 200
-    except:
-        return jsonify({"status": "ok", "ollama": "disconnected"}), 200
+    except Exception as e:
+        return jsonify({"status": "ok", "groq": "disconnected", "error": str(e)}), 200
 
 @app.route('/upload-files', methods=['POST'])
 def upload_files():
     if 'files' not in request.files:
         return jsonify({"error": "Missing 'files'"}), 400
 
+    # Get user_id from request (frontend sends this)
+    user_id = request.form.get('user_id')
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+
     files = request.files.getlist('files')
     if not files:
         return jsonify({"error": "No files selected"}), 400
 
     store = get_vector_store()
+    clip_store = get_clip_vector_store()
     results = []
     errors = []
 
@@ -285,9 +478,8 @@ def upload_files():
         if not file.filename:
             continue
 
-        print(f"Processing file: {file.filename}")
+        print(f"Processing file for user {user_id}: {file.filename}")
 
-        # Extract text and images based on file type - NOW 3 VALUES
         raw_text, error, images = process_file_content(file, file.filename)
         
         if error:
@@ -295,36 +487,56 @@ def upload_files():
             continue
             
         if not raw_text or not raw_text.strip():
-            # For image files, raw_text might be "Image file" but that's okay
             if not images:
-                errors.append({"file_name": file.filename, "error": "No extractable text content"})
+                errors.append({"file_name": file.filename, "error": "No extractable content"})
                 continue
 
         print(f"Extracted {len(raw_text)} characters and {len(images)} images from {file.filename}")
 
-        # Process the text (images are handled separately during Q&A)
         file_id = str(uuid.uuid4())
-        splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        chunks = splitter.split_text(raw_text)
+        
+        if raw_text and raw_text.strip():
+            splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+            chunks = splitter.split_text(raw_text)
 
-        texts = chunks
-        metadatas = [{
-            "file_id": file_id, 
-            "file_name": file.filename, 
-            "chunk_index": i,
-            "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown',
-            "has_images": len(images) > 0  # Store if file has images
-        } for i in range(len(chunks))]
-        ids = [str(uuid.uuid4()) for _ in chunks]
+            texts = chunks
+            metadatas = [{
+                "file_id": file_id, 
+                "file_name": file.filename, 
+                "user_id": user_id,  # STORE USER ID
+                "chunk_index": i,
+                "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown',
+                "content_type": "text",
+                "has_images": len(images) > 0
+            } for i in range(len(chunks))]
+            ids = [str(uuid.uuid4()) for _ in chunks]
 
-        # Store in vector database
-        store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
+            store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
+
+        if images and len(images) > 0:
+            for img_index, img in enumerate(images):
+                description = generate_image_description(img)
+                
+                clip_store.add_texts(
+                    texts=[description],
+                    metadatas=[{
+                        "file_id": file_id,
+                        "file_name": file.filename,
+                        "user_id": user_id,  # STORE USER ID
+                        "image_index": img_index,
+                        "file_type": "image",
+                        "content_type": "image",
+                        "original_content": description
+                    }],
+                    ids=[str(uuid.uuid4())]
+                )
+
         results.append({
             "file_name": file.filename, 
             "file_id": file_id, 
-            "chunks": len(chunks),
-            "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown',
-            "images_found": len(images)  # Add images info to response
+            "chunks": len(chunks) if 'chunks' in locals() else 0,
+            "images_processed": len(images),
+            "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown'
         })
 
     response_data = {"uploaded": results}
@@ -336,13 +548,19 @@ def upload_files():
 @app.route('/file-ids', methods=['GET'])
 def list_file_ids():
     try:
+        user_id = request.args.get('user_id')  # Get user_id from query params
+        if not user_id:
+            return jsonify({"error": "user_id is required"}), 400
+            
         cur = conn.cursor()
         cur.execute(f"""
             SELECT DISTINCT {TABLE_NAME}.cmetadata->>'file_id' AS file_id,
                             {TABLE_NAME}.cmetadata->>'file_name' AS file_name
             FROM {TABLE_NAME}
+            WHERE {TABLE_NAME}.cmetadata->>'user_id' = %s
             ORDER BY file_name
-        """)
+        """, (user_id,))
+        
         rows = cur.fetchall()
         cur.close()
         conn.commit()
@@ -357,20 +575,31 @@ def ask():
     data = request.get_json()
     question = data.get("question", "").strip()
     file_ids = data.get("file_ids", [])
+    user_id = data.get("user_id")  # Frontend MUST send user_id
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
 
-    context_chunks = retrieve_by_file_ids(file_ids, question, k=6)
-    context = "\n---\n".join(context_chunks) if context_chunks else "No relevant context."
+    # ENFORCE USER ISOLATION
+    text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, question, k=6, user_id=user_id)
+    
+    text_context = "\n---\n".join(text_chunks) if text_chunks else ""
+    image_context = "\n[IMAGES]:\n" + "\n".join(image_descriptions) if image_descriptions else ""
+    
+    context = text_context + image_context
+    if not context.strip():
+        context = "No relevant context."
 
-    answer = ollama_chat(context, question)
+    answer = groq_chat(context, question)
     return jsonify({
         "question": question,
         "answer": answer,
         "file_ids_used": file_ids,
-        "chunks": len(context_chunks),
-        "model_used": OLLAMA_MODEL 
+        "text_chunks": len(text_chunks),
+        "images_found": len(image_descriptions),
+        "model_used": GROQ_MODEL
     })
     
 if __name__ == "__main__":
-    print("Starting Flask API")
-    check_ollama_on_startup()
+    print("Starting Flask API with User Isolation & Office Document Conversion")
     app.run(host="0.0.0.0", port=3000, debug=True)
