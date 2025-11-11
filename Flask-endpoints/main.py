@@ -77,10 +77,29 @@ def retrieve_by_file_ids(file_ids, query, k=4):
     docs = store.similarity_search(query, k=k, filter=filter_cond)
     return [doc.page_content for doc in docs]
 
-# ---------------- PDF PROCESSING FUNCTION ----------------
+# ---------- File Processing ----------
+
+try:
+    import pdfplumber
+    PDF_SUPPORT = True
+except ImportError:
+    PDF_SUPPORT = False
+    print("PDF support disabled: install pdfplumber")
+
+try:
+    from docx import Document
+    DOCX_SUPPORT = True
+except ImportError:
+    DOCX_SUPPORT = False
+    print("DOCX support disabled: install python-docx")
+
+
+# ---------------- TEXT EXTRACTION FUNCTIONS ----------------
 
 def extract_text_from_pdf(file_stream):
     """Extract text from PDF file"""
+    if not PDF_SUPPORT:
+        return ""
     text = ""
     try:
         with pdfplumber.open(file_stream) as pdf:
@@ -92,24 +111,69 @@ def extract_text_from_pdf(file_stream):
     except Exception as e:
         print(f"Error extracting PDF text: {e}")
         return ""
-    
+
+
+def extract_text_from_docx(file_stream):
+    """Extract text from DOCX file"""
+    if not DOCX_SUPPORT:
+        return ""
+    text = ""
+    try:
+        doc = Document(file_stream)
+        # Extract paragraphs
+        for para in doc.paragraphs:
+            if para.text.strip():
+                text += para.text + "\n"
+        
+        # Extract tables
+        for table in doc.tables:
+            for row in table.rows:
+                row_text = "\t".join(cell.text.strip() for cell in row.cells if cell.text.strip())
+                if row_text:
+                    text += row_text + "\n"
+            text += "\n"  # Separate tables
+        
+        return text.strip()
+    except Exception as e:
+        print(f"Error extracting DOCX text: {e}")
+        return ""
+
+
+
 def process_file_content(file, filename):
     """Process different file types and extract text"""
     file_extension = filename.lower().split('.')[-1] if '.' in filename else ''
     
+    # Always reset stream
+    file.stream.seek(0)
+    file_bytes = file.read()  # Read once
+    file.stream.seek(0)  # Reset again if needed elsewhere
+
     if file_extension == 'pdf':
         if not PDF_SUPPORT:
             return None, "PDF support not available. Install pdfplumber."
-        return extract_text_from_pdf(io.BytesIO(file.read())), None
-    elif file_extension == 'txt':
-        # For text files, use existing method
-        return file.stream.read().decode("utf-8", errors="ignore"), None
+        text = extract_text_from_pdf(io.BytesIO(file_bytes))
+        return text, None
+
+    elif file_extension == 'docx':
+        if not DOCX_SUPPORT:
+            return None, "DOCX support not available. Install python-docx."
+        text = extract_text_from_docx(io.BytesIO(file_bytes))
+        return text, None
+
+    elif file_extension in ['txt', 'md', 'py', 'json', 'csv', 'log']:
+        try:
+            return file.stream.read().decode("utf-8", errors="ignore"), None
+        except Exception as e:
+            return None, f"Text decode error: {e}"
+
     else:
-        # Try to process as text file for other extensions
+        # Fallback attempt as plain text
         try:
             return file.stream.read().decode("utf-8", errors="ignore"), None
         except:
             return None, f"Unsupported file type: {file_extension}"
+        
 # ---------- LLM (Ollama API call) ----------
 
 def ollama_chat(context: str, question: str, max_wait_sec: int = 120) -> str:

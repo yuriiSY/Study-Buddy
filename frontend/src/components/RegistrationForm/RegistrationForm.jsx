@@ -10,8 +10,9 @@ import {
 import { yupResolver } from "@hookform/resolvers/yup";
 import schema from "../../schemas/validationRegistrSchemas";
 import styles from "./RegistrationForm.module.css";
+import { ClipLoader } from "react-spinners";
 
-const RegistrationForm = ({ onSubmit }) => {
+const RegistrationForm = ({ onSubmit, loading }) => {
   const {
     register,
     handleSubmit,
@@ -95,7 +96,7 @@ const RegistrationForm = ({ onSubmit }) => {
       </div>
 
       <button className={styles.button} type="submit">
-        Register Now
+        {loading ? <ClipLoader size={20} color="#fff" /> : "Register"}
       </button>
     </form>
   );

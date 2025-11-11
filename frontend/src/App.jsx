@@ -41,11 +41,11 @@ export default function App() {
           }
         />
         <Route
-          path="/test"
+          path="/test/:fileId"
           element={
-            <PublicRoute>
+            <PrivateRoute>
               <TestPage />
-            </PublicRoute>
+            </PrivateRoute>
           }
         />
         {/* Private routes */}
