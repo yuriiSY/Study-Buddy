@@ -18,6 +18,9 @@ import fitz
 import numpy as np
 from dotenv import load_dotenv
 import random
+from datetime import datetime
+
+# Load environment variables from .env file
 load_dotenv()  
 
 # Import Office document libraries
@@ -427,7 +430,106 @@ def groq_chat(context: str, question: str, images: list = None) -> str:
         error_msg = f"Groq API error: {e}"
         print(error_msg)
         return error_msg
+    
+# Chat History Functions
+def save_chat_history(file_id, question, answer):
+    """Save question-answer to chat history"""
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO chat_history (file_id, question, answer, timestamp) VALUES (%s, %s, %s, %s)",
+            (file_id, question, answer, datetime.now())
+        )
+        conn.commit()
+        cur.close()
+        print(f"Chat history saved for file: {file_id}")
+        return True
+    except Exception as e:
+        print(f"Error saving chat history: {e}")
+        conn.rollback()
+        return False
 
+def get_chat_history(file_ids, limit=10):
+    """Get recent chat history for given file IDs"""
+    try:
+        cur = conn.cursor()
+        placeholders = ','.join(['%s'] * len(file_ids))
+        cur.execute(f"""
+            SELECT file_id, question, answer, timestamp 
+            FROM chat_history 
+            WHERE file_id IN ({placeholders})
+            ORDER BY timestamp DESC 
+            LIMIT %s
+        """, file_ids + [limit])
+        
+        history = cur.fetchall()
+        cur.close()
+        
+        # Convert to list of dicts
+        chat_history = []
+        for row in history:
+            chat_history.append({
+                "file_id": row[0],
+                "question": row[1],
+                "answer": row[2],
+                "timestamp": row[3].isoformat() if row[3] else None
+            })
+        
+        return chat_history
+    except Exception as e:
+        print(f"Error getting chat history: {e}")
+        return []
+
+def groq_chat_with_history(context: str, question: str, chat_history: list, images: list = None) -> str:
+    client = Groq(api_key=GROQ_API_KEY)
+    
+    # Build messages with explicit conversation structure
+    messages = [
+        {
+            "role": "system", 
+            "content": "You are having a continuous conversation. Always reference and build upon previous questions and answers when relevant."
+        }
+    ]
+    
+    # Add chat history as previous messages
+    for chat in chat_history:
+        messages.append({"role": "user", "content": chat['question']})
+        messages.append({"role": "assistant", "content": chat['answer']})
+    
+    # Add current context and question
+    user_content = [{"type": "text", "text": f"DOCUMENT CONTEXT:\n{context}\n\nCURRENT QUESTION: {question}\n\nPlease reference our previous conversation when answering."}]
+    
+    if images and len(images) > 0:
+        for img in images:
+            try:
+                img_byte_arr = io.BytesIO()
+                img.save(img_byte_arr, format='PNG')
+                img_b64 = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
+                user_content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}
+                })
+            except Exception as e:
+                print(f"Error converting image to base64: {e}")
+                continue
+    
+    messages.append({"role": "user", "content": user_content})
+    
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            max_tokens=2048,
+            temperature=0.1
+        )
+        
+        content = response.choices[0].message.content
+        return content
+        
+    except Exception as e:
+        error_msg = f"Groq API error: {e}"
+        print(error_msg)
+        return error_msg
 #-----------Flashcard Generation with Groq-----------
 def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
     client = Groq(api_key=GROQ_API_KEY)
@@ -505,88 +607,56 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
         print(f"Groq API error: {e}")
         return [{"error": f"Generation failed: {str(e)}"}]
     
-def generate_mcq_with_groq(context: str, num_questions: int = 5):
+def groq_chat_with_history(context: str, question: str, chat_history: list, images: list = None) -> str:
     client = Groq(api_key=GROQ_API_KEY)
     
-    prompt = f"""
-    CONTENT:
-    {context}
-    
-    Create {num_questions} multiple choice questions with 4 options each.
-    
-    REQUIREMENTS:
-    - Questions should test understanding of key concepts
-    - Each question has 4 options (A, B, C, D)
-    - Only ONE correct answer per question (either A, B, C, or D)
-    - Shuffle Answers like option A,B,C,D , dont always put correct answer at same place
-    - Wrong answers should be plausible but incorrect
-    - Cover different aspects of the content
-    
-    FORMAT:
-    [
-        {{
-            "question": "clear question",
-            "options": [
-                "A. text",
-                "B. text", 
-                "C. text",
-                "D. text"
-            ],
-            "correct_answer": "A"/"B"/"C"/"D"
-        }}
+    messages = [
+        {
+            "role": "system", 
+            "content": "You are a helpful AI using student notes as context. Use the provided context to answer questions. Always cite your sources."
+        }
     ]
     
-    Return ONLY valid JSON.
-    """
+    # Add chat history naturally as conversation
+    for chat in chat_history:
+        messages.append({"role": "user", "content": chat['question']})
+        messages.append({"role": "assistant", "content": chat['answer']})
+    
+    # Add current context and question
+    user_content = [{"type": "text", "text": f"CONTEXT:\n{context}\n\nQUESTION:\n{question}\n\nAnswer based on the context above. End with: SOURCE: [file(s)]"}]
+    
+    if images and len(images) > 0:
+        for img in images:
+            try:
+                img_byte_arr = io.BytesIO()
+                img.save(img_byte_arr, format='PNG')
+                img_b64 = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
+                user_content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}
+                })
+            except Exception as e:
+                print(f"Error converting image to base64: {e}")
+                continue
+    
+    messages.append({"role": "user", "content": user_content})
     
     try:
         response = client.chat.completions.create(
             model=GROQ_MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Create high-quality multiple choice questions with 4 options and one correct answer."
-                },
-                {
-                    "role": "user", 
-                    "content": prompt
-                }
-            ],
+            messages=messages,
             max_tokens=2048,
-            temperature=0.7
+            temperature=0.1
         )
         
-        content = response.choices[0].message.content.strip()
-        print(f"Raw MCQ response: {content}")
-        
-        import json
-        try:
-            mcqs = json.loads(content)
-            
-            if isinstance(mcqs, list):
-                return mcqs
-            elif isinstance(mcqs, dict):
-                if 'questions' in mcqs:
-                    return mcqs['questions']
-                else:
-                    return [mcqs]
-            else:
-                return [{"error": "Invalid response format"}]
-                
-        except json.JSONDecodeError as e:
-            print(f"JSON parse error: {e}")
-            import re
-            json_match = re.search(r'\[.*\]', content, re.DOTALL)
-            if json_match:
-                try:
-                    return json.loads(json_match.group())
-                except:
-                    pass
-            return [{"error": "Could not parse MCQs"}]
+        content = response.choices[0].message.content
+        return content
         
     except Exception as e:
-        print(f"Groq API error: {e}")
-        return [{"error": f"MCQ generation failed: {str(e)}"}]
+        error_msg = f"Groq API error: {e}"
+        print(error_msg)
+        return error_msg  
+
 # ------------------- ENDPOINTS --------------------------------------------------------
 
 @app.route('/', methods=['GET'])
@@ -721,25 +791,68 @@ def ask():
     question = data.get("question", "").strip()
     file_ids = data.get("file_ids", [])
     
+    if not file_ids:
+        return jsonify({"error": "file_ids are required"}), 400
 
-    text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, question, k=6)
+    # Get recent chat history
+    chat_history = get_chat_history(file_ids, limit=3)  # Reduced to save tokens
     
+    # Get document context
+    text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, question, k=4)
     text_context = "\n---\n".join(text_chunks) if text_chunks else ""
-    image_context = "\n[IMAGES]:\n" + "\n".join(image_descriptions) if image_descriptions else ""
     
-    context = text_context + image_context
-    if not context.strip():
-        context = "No relevant context."
-
-    answer = groq_chat(context, question)
+    # Generate answer WITH history in message format
+    answer = groq_chat_with_history(text_context, question, chat_history)
+    
+    # Save to chat history
+    for file_id in file_ids:
+        save_chat_history(file_id, question, answer)
+    
     return jsonify({
         "question": question,
         "answer": answer,
         "file_ids_used": file_ids,
-        "text_chunks": len(text_chunks),
-        "images_found": len(image_descriptions),
-        "model_used": GROQ_MODEL
+        "chat_history": chat_history,
+        "text_chunks": len(text_chunks)
     })
+@app.route('/chat-history', methods=['GET'])
+def get_chat_history_endpoint():
+    """Get chat history for specific files"""
+    file_ids = request.args.getlist('file_ids[]')
+    limit = int(request.args.get('limit', 20))
+    
+    if not file_ids:
+        return jsonify({"error": "file_ids are required"}), 400
+    
+    history = get_chat_history(file_ids, limit)
+    
+    return jsonify({
+        "chat_history": history,
+        "file_ids": file_ids,
+        "total_messages": len(history)
+    })
+
+@app.route('/clear-chat-history', methods=['POST'])
+def clear_chat_history():
+    """Clear chat history for specific files"""
+    data = request.get_json()
+    file_ids = data.get("file_ids", [])
+    
+    try:
+        cur = conn.cursor()
+        placeholders = ','.join(['%s'] * len(file_ids))
+        cur.execute(f"DELETE FROM chat_history WHERE file_id IN ({placeholders})", file_ids)
+        
+        conn.commit()
+        cur.close()
+        
+        return jsonify({
+            "message": "Chat history cleared successfully",
+            "file_ids": file_ids
+        })
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": f"Failed to clear history: {str(e)}"}), 500
 
 
 
