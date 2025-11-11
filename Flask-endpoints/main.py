@@ -66,7 +66,6 @@ DB_PORT = os.environ.get("DB_PORT")
 DB_NAME = os.environ.get("DB_NAME")
 DB_USER = os.environ.get("DB_USER")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
-PORT= int(os.environ.get("PORT", 3000))
 
 #---------Flask App Setup---------
 app = Flask(__name__)
@@ -924,4 +923,4 @@ def generate_mcq():
 
 if __name__ == "__main__":
     print("Starting Flask ...")
-    app.run(host="0.0.0.0", port=PORT, debug=False)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)), debug=False)
