@@ -20,6 +20,10 @@ from datetime import datetime
 # Load environment variables from .env file
 load_dotenv()  
 
+#---------Flask App Setup---------
+app = Flask(__name__)
+CORS(app)
+
 # Import Office document libraries
 try:
     from docx import Document
@@ -64,9 +68,7 @@ DB_NAME = os.environ.get("DB_NAME")
 DB_USER = os.environ.get("DB_USER")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
 
-#---------Flask App Setup---------
-app = Flask(__name__)
-CORS(app)
+
 
 # ---------- Connect to hosted PostgreSQL ----------
 print("Connecting to hosted PostgreSQL...")
