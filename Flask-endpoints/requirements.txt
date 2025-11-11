@@ -11,4 +11,5 @@ numpy==1.26.4
 pillow==10.4.0
 pdfplumber
 PyMuPDF==1.24.4
+python-magic==0.4.27
 

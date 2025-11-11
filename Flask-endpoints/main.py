@@ -8,7 +8,9 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import os,io
-
+import base64
+from PIL import Image
+import fitz
 # Import PDF processing library
 try:
     import pdfplumber
@@ -93,27 +95,58 @@ def extract_text_from_pdf(file_stream):
         print(f"Error extracting PDF text: {e}")
         return ""
     
+def extract_images_from_pdf(file_stream):
+    """Extract images from PDF using PyMuPDF"""
+    images = []
+    try:
+        doc = fitz.open(stream=file_stream.read(), filetype="pdf")
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            image_list = page.get_images()
+            
+            for img_index, img in enumerate(image_list):
+                xref = img[0]
+                pix = fitz.Pixmap(doc, xref)
+                
+                if pix.n - pix.alpha < 4:  # RGB
+                    img_data = pix.tobytes("png")
+                    img_pil = Image.open(io.BytesIO(img_data))
+                    images.append(img_pil)
+                
+                pix = None
+        doc.close()
+    except Exception as e:
+        print(f"Error extracting images from PDF: {e}")
+    return images
+
 def process_file_content(file, filename):
-    """Process different file types and extract text"""
+    """Process different file types and extract text and images"""
     file_extension = filename.lower().split('.')[-1] if '.' in filename else ''
     
     if file_extension == 'pdf':
         if not PDF_SUPPORT:
-            return None, "PDF support not available. Install pdfplumber."
-        return extract_text_from_pdf(io.BytesIO(file.read())), None
+            return None, "PDF support not available. Install pdfplumber.", []
+        # For now, just extract text - we'll add image extraction later
+        return extract_text_from_pdf(io.BytesIO(file.read())), None, []
+        
+    elif file_extension in ['png', 'jpg', 'jpeg', 'gif', 'bmp']:
+        # We'll process images in the ask endpoint
+        return "Image file - content will be processed during Q&A", None, []
+            
     elif file_extension == 'txt':
-        # For text files, use existing method
-        return file.stream.read().decode("utf-8", errors="ignore"), None
+        # For text files
+        return file.stream.read().decode("utf-8", errors="ignore"), None, []
     else:
         # Try to process as text file for other extensions
         try:
-            return file.stream.read().decode("utf-8", errors="ignore"), None
+            return file.stream.read().decode("utf-8", errors="ignore"), None, []
         except:
-            return None, f"Unsupported file type: {file_extension}"
+            return None, f"Unsupported file type: {file_extension}", []
+
         
 # ---------- LLM (Ollama API call) ----------
 
-def ollama_chat(context: str, question: str, max_wait_sec: int = 120) -> str:
+def ollama_chat(context: str, question: str,images: list = None, max_wait_sec: int = 120) -> str:
     url = f"{OLLAMA_BASE_URL}/api/chat"
     payload = {
         "model": OLLAMA_MODEL,
@@ -129,29 +162,47 @@ def ollama_chat(context: str, question: str, max_wait_sec: int = 120) -> str:
         ],
         "stream": False
     }
+     # Add images to the payload if available
+    if images and len(images) > 0:
+        import base64
+        image_b64_list = []
+        for img in images:
+            try:
+                img_byte_arr = io.BytesIO()
+                img.save(img_byte_arr, format='PNG')
+                img_b64 = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
+                image_b64_list.append(img_b64)
+            except Exception as e:
+                print(f"Error converting image to base64: {e}")
+                continue
+        
+        if image_b64_list:
+            payload["messages"][1]["images"] = image_b64_list
+            print(f"📸 Sending request with {len(image_b64_list)} images to Llava")
+
 
     print(f"Sending request to Ollama at: {url}")
 
     try:
-        response = requests.post(url, json=payload, timeout=120)
+        response = requests.post(url, json=payload, timeout=max_wait_sec)
         print(f"Ollama response status: {response.status_code}")
         
         if response.status_code == 200:
             data = response.json()
-            print(f"Ollama response keys: {list(data.keys())}")
             
-            # Extract content from the response structure we can see in the test
             if "message" in data and "content" in data["message"]:
                 content = data["message"]["content"]
-                print(f"Successfully extracted content: {content}")
+                image_info = f" with {len(images)} images" if images else ""
+                print(f"Successfully extracted content from {OLLAMA_MODEL}{image_info}")
                 return content
             else:
-                print(f"Unexpected response structure: {data}")
+                print(f" Unexpected response structure: {data}")
                 return "Error: Could not extract response content from Ollama"
         else:
             error_msg = f"Ollama API returned status {response.status_code}: {response.text}"
             print(error_msg)
             return error_msg
+
             
     except requests.exceptions.ConnectionError as e:
         error_msg = f"Cannot connect to Ollama at {url}: {e}"
@@ -236,20 +287,22 @@ def upload_files():
 
         print(f"Processing file: {file.filename}")
 
-        # Extract text based on file type
-        raw_text, error = process_file_content(file, file.filename)
+        # Extract text and images based on file type - NOW 3 VALUES
+        raw_text, error, images = process_file_content(file, file.filename)
         
         if error:
             errors.append({"file_name": file.filename, "error": error})
             continue
             
         if not raw_text or not raw_text.strip():
-            errors.append({"file_name": file.filename, "error": "No extractable text content"})
-            continue
+            # For image files, raw_text might be "Image file" but that's okay
+            if not images:
+                errors.append({"file_name": file.filename, "error": "No extractable text content"})
+                continue
 
-        print(f"Extracted {len(raw_text)} characters from {file.filename}")
+        print(f"Extracted {len(raw_text)} characters and {len(images)} images from {file.filename}")
 
-        # Process the text
+        # Process the text (images are handled separately during Q&A)
         file_id = str(uuid.uuid4())
         splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         chunks = splitter.split_text(raw_text)
@@ -259,7 +312,8 @@ def upload_files():
             "file_id": file_id, 
             "file_name": file.filename, 
             "chunk_index": i,
-            "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown'
+            "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown',
+            "has_images": len(images) > 0  # Store if file has images
         } for i in range(len(chunks))]
         ids = [str(uuid.uuid4()) for _ in chunks]
 
@@ -269,7 +323,8 @@ def upload_files():
             "file_name": file.filename, 
             "file_id": file_id, 
             "chunks": len(chunks),
-            "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown'
+            "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown',
+            "images_found": len(images)  # Add images info to response
         })
 
     response_data = {"uploaded": results}
