@@ -17,6 +17,7 @@ from PIL import Image
 import fitz
 import numpy as np
 from dotenv import load_dotenv
+import random
 load_dotenv()  
 
 # Import Office document libraries
@@ -104,8 +105,8 @@ def get_vector_store():
             collection_name=TABLE_NAME,
             embeddings=text_embeddings,
             distance_strategy="cosine",
-            use_jsonb=True,  # Add this
-            pre_delete_collection=False  # Add this
+            use_jsonb=True,
+            pre_delete_collection=False
         )
     return vector_store
 
@@ -125,24 +126,20 @@ def get_clip_vector_store():
             collection_name=f"{TABLE_NAME}_clip",
             embeddings=clip_embeddings,
             distance_strategy="cosine",
-            use_jsonb=True,  # Add this
-            pre_delete_collection=False,  # Add this
-            embedding_length=512  # Explicitly set for CLIP
+            use_jsonb=True,
+            pre_delete_collection=False,
+            embedding_length=512
         )
     return clip_vector_store
 
-def retrieve_by_file_ids(file_ids, query, k=4, user_id=None):
+def retrieve_by_file_ids(file_ids, query, k=4):
     store = get_vector_store()
     clip_store = get_clip_vector_store()
     
     if not file_ids:
         return [], []
     
-    # ENFORCE USER ISOLATION
-    filter_cond = {
-        "file_id": {"$in": file_ids},
-        "user_id": user_id  # CRITICAL: Only search user's files
-    }
+    filter_cond = {"file_id": {"$in": file_ids}}
     
     text_docs = store.similarity_search(query, k=k, filter=filter_cond)
     text_results = [doc.page_content for doc in text_docs]
@@ -321,7 +318,7 @@ def process_file_content(file, filename):
     # Convert Office files to PDF first for full text+image extraction
     convertible_types = ['docx', 'pptx', 'xlsx', 'doc', 'ppt', 'xls']
     if file_extension in convertible_types:
-        print(f"🔄 Converting {file_extension.upper()} to PDF for full processing...")
+        print(f"Converting {file_extension.upper()} to PDF for full processing...")
         
         file_stream = io.BytesIO(file.read())
         pdf_data, error = convert_office_to_pdf(file_stream, filename)
@@ -332,20 +329,20 @@ def process_file_content(file, filename):
             if file_extension == 'docx' and DOCX_SUPPORT:
                 file_stream.seek(0)
                 text = extract_text_from_docx(file_stream)
-                return text, f"⚠️ Images not processed. {error}", []
+                return text, f"Images not processed. {error}", []
             elif file_extension == 'pptx' and PPTX_SUPPORT:
                 file_stream.seek(0)
                 text = extract_text_from_pptx(file_stream)
-                return text, f"⚠️ Images not processed. {error}", []
+                return text, f"Images not processed. {error}", []
             elif file_extension == 'xlsx' and XLSX_SUPPORT:
                 file_stream.seek(0)
                 text = extract_text_from_xlsx(file_stream)
-                return text, f"⚠️ Images not processed. {error}", []
+                return text, f"Images not processed. {error}", []
             else:
                 return None, f"Conversion failed and no fallback: {error}", []
         
         # Process the converted PDF
-        print(f"✅ Successfully converted {filename} to PDF")
+        print(f"Successfully converted {filename} to PDF")
         pdf_stream = io.BytesIO(pdf_data)
         text = extract_text_from_pdf(pdf_stream)
         pdf_stream.seek(0)
@@ -381,6 +378,7 @@ def process_file_content(file, filename):
             return file.stream.read().decode("utf-8", errors="ignore"), None, []
         except:
             return None, f"Unsupported file type: {file_extension}", []
+        
 
 # ---------- LLM (Groq API call) ----------
 
@@ -430,6 +428,93 @@ def groq_chat(context: str, question: str, images: list = None) -> str:
         print(error_msg)
         return error_msg
 
+#-----------Flashcard Generation with Groq-----------
+def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
+    client = Groq(api_key=GROQ_API_KEY)
+    
+    prompt = f"""
+    CONTENT:
+    {context}
+    
+    Create {num_flashcards} flashcards from this content.
+    
+    CRITICAL: Hints should GUIDE thinking without revealing the answer and don't repeat the question in hint
+     guide the user to think towards the answer
+
+     REQUIREMENTS:
+    
+    ANSWERS:
+    - Must be COMPLETE explanations, not just one word
+    - Include definitions, examples, or key details
+ 
+    
+    HINTS:
+    - Must be SUBSTANTIALLY different from the question
+    - Use analogies, real-world applications, or different perspectives
+    - Guide thinking without revealing key terms
+     example: 
+    Question: What is Mitochondria
+    Answer: Powerhouse of the cell; site of ATP production.
+    Hint: Think "power plant" for the cel."
+    
+    Return ONLY valid JSON:
+    [
+        {{
+            "question": "question text",
+            "answer": "answer text", 
+            "hint": "hint that guides thinking WITHOUT revealing key terms from answer"
+        }}
+    ]
+    """
+    
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Create hints that guide thinking without revealing key answer terms. Hints should make students think, not recall."
+                },
+                {
+                    "role": "user", 
+                    "content": prompt
+                }
+            ],
+            max_tokens=2048,
+            temperature=0.9
+        )
+        
+        content = response.choices[0].message.content.strip()
+        print(f"Raw Groq response: {content}")
+        
+        import json
+        try:
+            flashcards = json.loads(content)
+            
+            if isinstance(flashcards, list):
+                return flashcards
+            elif isinstance(flashcards, dict):
+                if 'flashcards' in flashcards:
+                    return flashcards['flashcards']
+                else:
+                    return [flashcards]
+            else:
+                return [{"error": "Invalid response format"}]
+                
+        except json.JSONDecodeError as e:
+            print(f"JSON parse error: {e}")
+            import re
+            json_match = re.search(r'\[.*\]', content, re.DOTALL)
+            if json_match:
+                try:
+                    return json.loads(json_match.group())
+                except:
+                    pass
+            return [{"error": "Could not parse flashcards"}]
+        
+    except Exception as e:
+        print(f"Groq API error: {e}")
+        return [{"error": f"Generation failed: {str(e)}"}]
 # ------------------- ENDPOINTS --------------------------------------------------------
 
 @app.route('/', methods=['GET'])
@@ -438,12 +523,10 @@ def health():
         client = Groq(api_key=GROQ_API_KEY)
         models = client.models.list()
         model_names = [model.id for model in models.data]
-        llava_ready = any('llava' in name.lower() for name in model_names)
         
         return jsonify({
             "status": "ok", 
             "groq": "connected",
-            "llava_ready": llava_ready,
             "model": GROQ_MODEL,
             "clip_ready": True,
             "office_support": {
@@ -462,11 +545,6 @@ def upload_files():
     if 'files' not in request.files:
         return jsonify({"error": "Missing 'files'"}), 400
 
-    # Get user_id from request (frontend sends this)
-    user_id = request.form.get('user_id')
-    if not user_id:
-        return jsonify({"error": "user_id is required"}), 400
-
     files = request.files.getlist('files')
     if not files:
         return jsonify({"error": "No files selected"}), 400
@@ -480,7 +558,7 @@ def upload_files():
         if not file.filename:
             continue
 
-        print(f"Processing file for user {user_id}: {file.filename}")
+        print(f"Processing file: {file.filename}")
 
         raw_text, error, images = process_file_content(file, file.filename)
         
@@ -505,7 +583,6 @@ def upload_files():
             metadatas = [{
                 "file_id": file_id, 
                 "file_name": file.filename, 
-                "user_id": user_id,  # STORE USER ID
                 "chunk_index": i,
                 "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown',
                 "content_type": "text",
@@ -524,7 +601,6 @@ def upload_files():
                     metadatas=[{
                         "file_id": file_id,
                         "file_name": file.filename,
-                        "user_id": user_id,  # STORE USER ID
                         "image_index": img_index,
                         "file_type": "image",
                         "content_type": "image",
@@ -550,18 +626,13 @@ def upload_files():
 @app.route('/file-ids', methods=['GET'])
 def list_file_ids():
     try:
-        user_id = request.args.get('user_id')  # Get user_id from query params
-        if not user_id:
-            return jsonify({"error": "user_id is required"}), 400
-            
         cur = conn.cursor()
         cur.execute(f"""
             SELECT DISTINCT {TABLE_NAME}.cmetadata->>'file_id' AS file_id,
                             {TABLE_NAME}.cmetadata->>'file_name' AS file_name
             FROM {TABLE_NAME}
-            WHERE {TABLE_NAME}.cmetadata->>'user_id' = %s
             ORDER BY file_name
-        """, (user_id,))
+        """)
         
         rows = cur.fetchall()
         cur.close()
@@ -577,13 +648,9 @@ def ask():
     data = request.get_json()
     question = data.get("question", "").strip()
     file_ids = data.get("file_ids", [])
-    user_id = data.get("user_id")  # Frontend MUST send user_id
     
-    if not user_id:
-        return jsonify({"error": "user_id is required"}), 400
 
-    # ENFORCE USER ISOLATION
-    text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, question, k=6, user_id=user_id)
+    text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, question, k=6)
     
     text_context = "\n---\n".join(text_chunks) if text_chunks else ""
     image_context = "\n[IMAGES]:\n" + "\n".join(image_descriptions) if image_descriptions else ""
@@ -601,7 +668,41 @@ def ask():
         "images_found": len(image_descriptions),
         "model_used": GROQ_MODEL
     })
+
+
+
+@app.route('/generate-flashcards', methods=['POST'])
+def generate_flashcards():
+    data = request.get_json()
+    file_ids = data.get("file_ids", [])
+    num_flashcards = data.get("num_flashcards", 5)
     
+    # Random search terms to get different context each time
+    search_terms = [
+        "key concepts",
+        "important information", 
+        "main topics",
+        "detailed explanations",
+        "examples and applications",
+        "definitions and principles",
+        "processes and methods",
+        "relationships and connections"
+    ]
+    
+    random_term = random.choice(search_terms)
+    context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=6)
+    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
+    
+    if not context.strip():
+        return jsonify({"error": "No content found in selected files"}), 400
+
+    flashcards = generate_flashcards_with_groq(context, num_flashcards)
+    
+    return jsonify({
+        "flashcards": flashcards,
+        "file_ids_used": file_ids,
+        "total_generated": len(flashcards)
+    })
 if __name__ == "__main__":
-    print("Starting Flask API with User Isolation & Office Document Conversion")
+    print("Starting Flask ...")
     app.run(host="0.0.0.0", port=3000, debug=True)
