@@ -1,0 +1,13 @@
+Introduce yourselves & course overview 
+Goals
+1 team project equivalent to 4 individual projects 
+Demands
+Fully deployed industry level
+
+Think about education in a unit of quantity
+Topics in unicen, one week in neural networks, next week in AI etc...
+Data flow diagram >Login>upload etc...
+flashcards looking like monopoly style
+
+add in a lot of features for presentation (e.g., most useful way to list data)
+font size 24
