@@ -16,6 +16,8 @@ import base64
 from PIL import Image
 import fitz
 import numpy as np
+from dotenv import load_dotenv
+load_dotenv()  
 
 # Import Office document libraries
 try:
