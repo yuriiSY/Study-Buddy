@@ -19,6 +19,7 @@
     "@react-pdf-viewer/default-layout": "^3.12.0",
     "@reduxjs/toolkit": "^2.9.0",
     "axios": "^1.12.2",
+    "docx-preview": "^0.3.7",
     "lucide-react": "^0.545.0",
     "modern-normalize": "^3.0.1",
     "react": "^19.1.1",

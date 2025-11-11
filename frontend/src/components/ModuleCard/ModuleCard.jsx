@@ -1,6 +1,6 @@
 import styles from "./ModuleCard.module.css";
 import { useNavigate } from "react-router-dom";
-import { Archive, ArchiveRestore, Trash2, Settings } from "lucide-react";
+import { Archive, ArchiveRestore, Trash2, Settings, Play } from "lucide-react";
 
 const ModuleCard = ({
   id,
@@ -10,6 +10,7 @@ const ModuleCard = ({
   onArchive,
   onDelete,
   onManage,
+  imageUrl = "card-bg1.jpg",
 }) => {
   const navigate = useNavigate();
 
@@ -29,38 +30,64 @@ const ModuleCard = ({
 
   return (
     <div className={styles.card}>
-      <div className={styles.cardHeader}>
-        <p className={styles.date}>{date}</p>
-        <div className={styles.actions}>
-          <button
-            className={`${styles.iconButton} ${styles.deleteButton}`}
-            onClick={handleDelete}
-            title="Delete"
-          >
-            <Trash2 size={18} />
-          </button>
-          <button
-            className={`${styles.iconButton} ${styles.archiveButton}`}
-            onClick={handleArchive}
-            title={archived ? "Unarchive" : "Archive"}
-          >
-            {archived ? <ArchiveRestore size={18} /> : <Archive size={18} />}
-          </button>
-          <button
-            className={`${styles.iconButton} ${styles.manageButton}`}
-            onClick={handleManage}
-            title="Manage"
-          >
-            <Settings size={18} />
+      {/* ✅ Image section */}
+      <div
+        className={`${styles.cardHeader} ${imageUrl ? styles.withImage : ""}`}
+        style={
+          imageUrl
+            ? {
+                backgroundImage: `url(${imageUrl})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : {}
+        }
+      >
+        <div className={styles.headerOverlay}>
+          <div className={styles.cardHeaderTop}>
+            <p className={styles.date}>{date}</p>
+            <div className={styles.actions}>
+              <button
+                className={`${styles.iconButton} ${styles.deleteButton}`}
+                onClick={handleDelete}
+                title="Delete"
+              >
+                <Trash2 size={18} />
+              </button>
+              <button
+                className={`${styles.iconButton} ${styles.archiveButton}`}
+                onClick={handleArchive}
+                title={archived ? "Unarchive" : "Archive"}
+              >
+                {archived ? (
+                  <ArchiveRestore size={18} />
+                ) : (
+                  <Archive size={18} />
+                )}
+              </button>
+              <button
+                className={`${styles.iconButton} ${styles.manageButton}`}
+                onClick={handleManage}
+                title="Manage"
+              >
+                <Settings size={18} />
+              </button>
+            </div>
+          </div>
+
+          {/* <p className={styles.title}>{title}</p> */}
+
+          {/* ✅ Floating play button on image */}
+          <button className={styles.playButton} onClick={handleClick}>
+            <Play size={32} />
           </button>
         </div>
       </div>
 
-      <div className={styles.cardBody}>
+      {/* ✅ White footer */}
+      <div className={styles.cardFooter}>
+        {" "}
         <p className={styles.title}>{title}</p>
-        <button className={styles.learnButton} onClick={handleClick}>
-          Keep learning
-        </button>
       </div>
     </div>
   );

@@ -22,7 +22,9 @@ export const HomePage = () => {
   });
   const [showAllActive, setShowAllActive] = useState(false);
   const [showAllArchived, setShowAllArchived] = useState(false);
+  const [viewMode, setViewMode] = useState("active"); // ✅ "active" | "archived"
 
+  // Fetch modules
   useEffect(() => {
     const fetchModules = async () => {
       try {
@@ -37,6 +39,7 @@ export const HomePage = () => {
     fetchModules();
   }, []);
 
+  // Handlers
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
@@ -110,87 +113,92 @@ export const HomePage = () => {
           ) : (
             <div className={styles.content}>
               <div className={styles.modulesSection}>
+                {/* Header Controls */}
                 <div className={styles.headerSection}>
                   <h2>Your Study Modules</h2>
-                  <div>
-                    {activeModules.length >= 3 && (
-                      <button
-                        className={styles.viewAllBtn}
-                        onClick={handleOpenModal}
-                      >
-                        Add more modules
-                      </button>
-                    )}
-                    {activeModules.length > 4 && (
-                      <button
-                        className={styles.viewAllBtn}
-                        onClick={() => setShowAllActive((prev) => !prev)}
-                      >
-                        {showAllActive ? "View less" : "View all"}
-                      </button>
-                    )}
-                  </div>
+
+                  {viewMode === "active" && (
+                    <div>
+                      {activeModules.length >= 3 && (
+                        <button
+                          className={styles.viewAllBtn}
+                          onClick={handleOpenModal}
+                        >
+                          Add more modules
+                        </button>
+                      )}
+                      {activeModules.length > 4 && (
+                        <button
+                          className={styles.viewAllBtn}
+                          onClick={() => setShowAllActive((prev) => !prev)}
+                        >
+                          {showAllActive ? "View less" : "View all"}
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
+                <div className={styles.toggleButtons}>
+                  <button
+                    className={viewMode === "active" ? styles.activeBtn : ""}
+                    onClick={() => setViewMode("active")}
+                  >
+                    Current
+                  </button>
+                  <button
+                    className={viewMode === "archived" ? styles.activeBtn : ""}
+                    onClick={() => setViewMode("archived")}
+                  >
+                    Archive
+                  </button>
+                </div>
+                {/* Active or Archived Modules */}
                 <div className={styles.modulesGrid}>
-                  {(showAllActive
-                    ? activeModules
-                    : activeModules.slice(0, 4)
-                  ).map((mod) => (
-                    <ModuleCard
-                      key={mod.id}
-                      id={mod.id}
-                      title={mod.title}
-                      date={new Date(mod.createdAt).toLocaleDateString()}
-                      archived={mod.archived}
-                      onArchive={handleArchive}
-                      onDelete={handleDelete}
-                      onManage={handleManage}
-                    />
-                  ))}
-                  {activeModules.length <= 3 && (
+                  {viewMode === "active"
+                    ? (showAllActive
+                        ? activeModules
+                        : activeModules.slice(0, 4)
+                      ).map((mod) => (
+                        <ModuleCard
+                          key={mod.id}
+                          id={mod.id}
+                          title={mod.title}
+                          date={new Date(mod.createdAt).toLocaleDateString()}
+                          archived={mod.archived}
+                          onArchive={handleArchive}
+                          onDelete={handleDelete}
+                          onManage={handleManage}
+                        />
+                      ))
+                    : (showAllArchived
+                        ? archivedModules
+                        : archivedModules.slice(0, 4)
+                      ).map((mod) => (
+                        <ModuleCard
+                          key={mod.id}
+                          id={mod.id}
+                          title={mod.title}
+                          date={new Date(mod.createdAt).toLocaleDateString()}
+                          archived={mod.archived}
+                          onArchive={handleArchive}
+                          onDelete={handleDelete}
+                          onManage={handleManage}
+                        />
+                      ))}
+
+                  {/* Add Card (only in active view) */}
+                  {viewMode === "active" && activeModules.length <= 3 && (
                     <AddCard onClick={handleOpenModal} />
                   )}
                 </div>
               </div>
 
-              {archivedModules.length > 0 && (
-                <div className={styles.modulesSection}>
-                  <div className={styles.headerSection}>
-                    <h2>Archived Modules</h2>
-                    {archivedModules.length > 4 && (
-                      <button
-                        className={styles.viewAllBtn}
-                        onClick={() => setShowAllArchived((prev) => !prev)}
-                      >
-                        {showAllArchived ? "View less" : "View all"}
-                      </button>
-                    )}
-                  </div>
-                  <div className={styles.modulesGrid}>
-                    {(showAllArchived
-                      ? archivedModules
-                      : archivedModules.slice(0, 4)
-                    ).map((mod) => (
-                      <ModuleCard
-                        key={mod.id}
-                        id={mod.id}
-                        title={mod.title}
-                        date={new Date(mod.createdAt).toLocaleDateString()}
-                        archived={mod.archived}
-                        onArchive={handleArchive}
-                        onDelete={handleDelete}
-                        onManage={handleManage}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <StatsCards />
+              {/* <StatsCards /> */}
             </div>
           )}
         </div>
 
+        {/* Modals */}
         {isModalOpen && (
           <ModuleModal
             isOpen={isModalOpen}

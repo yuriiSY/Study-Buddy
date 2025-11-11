@@ -43,10 +43,7 @@ const Chat = ({ externalId }) => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.chatContainer}>
-        <h2 className={styles.title}>
-          AI Tutor{" "}
-          {externalId ? <span className={styles.sub}>– linked</span> : ""}
-        </h2>
+        <h2 className={styles.title}>AI Tutor</h2>
 
         <div className={styles.chatBox}>
           {messages.map((msg, idx) => (

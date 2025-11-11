@@ -7,9 +7,8 @@ import DocxViewer from "../../components/DocViewer/DocViewer";
 import Chat from "../../components/Chat/Chat";
 import styles from "./StudySpacePage.module.css";
 import FocusHeader from "../../components/FocusHeader/FocusHeader";
-import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-import CustomPdfViewer from "../../components/CustomDocViewer/CustomDocViewer";
 import LoaderOverlay from "../../components/LoaderOverlay/LoaderOverlay";
+import CustomPdfViewer from "../../components/CustomPdfViewer";
 
 import api from "../../api/axios";
 
@@ -53,19 +52,6 @@ export const StudySpacePage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // const docs = useMemo(
-  //   () => [
-  //     {
-  //       uri: "/asd.pdf",
-  //       fileType: "pdf",
-  //       fileName: "sample.pdf",
-  //     },
-  //   ],
-  //   []
-  // );
-
-  const Viewer = React.memo(() => <CustomPdfViewer />);
 
   const fetchFiles = async () => {
     try {
@@ -114,17 +100,25 @@ export const StudySpacePage = () => {
       case "AI Buddy":
         return (
           <div className={styles.studySpaceContainer}>
-            <DocxViewer fileId={selectedFile?.id} moduleId={moduleId} />
+            <CustomPdfViewer
+              fileId={selectedFile?.id}
+              fileName={`${selectedFile?.title}`}
+              height="80vh"
+            />
             <Chat externalId={selectedFile?.externalId} />
           </div>
         );
       default:
-        return <DocxViewer fileId={selectedFile?.id} moduleId={moduleId} />;
-      // return (
-      //   <div style={{ width: "100%", height: "500px" }}>
-      //     <Viewer docs={docs} />
-      //   </div>
-      // );
+        return (
+          <div className={styles.studySpaceContainer}>
+            <CustomPdfViewer
+              fileId={selectedFile?.id}
+              fileName={`${selectedFile?.title}`}
+              height="80vh"
+            />
+          </div>
+        );
+      // return <DocxViewer fileId={selectedFile?.id} moduleId={moduleId} />;
     }
   };
 
@@ -140,14 +134,6 @@ export const StudySpacePage = () => {
     >
       {/* <FocusHeader /> */}
       {renderContent()}
-      {/* <button
-        onClick={async () => {
-          const res = await api.get(`/files/modules/8`);
-          window.open(res.data.url, "_blank");
-        }}
-      >
-        Download File
-      </button> */}
     </WorkspaceLayout>
   );
 };

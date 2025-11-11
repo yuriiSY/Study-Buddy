@@ -1,62 +1,97 @@
 .card {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  background-color: #656596;
   width: 419px;
   min-height: 280px;
-  padding: 15px;
   border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* --- IMAGE HEADER --- */
 .cardHeader {
+  position: relative;
+  height: 200px;
+  background-color: #656596;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.withImage {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.cardHeader::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.headerOverlay {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 15px;
+}
+
+.cardHeaderTop {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.cardBody {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-top: 10px;
+.date {
+  font-size: 16px;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 3px 8px;
+  border-radius: 6px;
+  color: white;
 }
+
+/* --- WHITE BOTTOM SECTION --- */
+/* .cardFooter {
+  background: white;
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} */
 
 .title {
-  font-size: 32px;
-  color: #ffffff;
+  font-size: 28px;
   font-weight: 700;
+  color: #656596;
   display: block;
 }
 
-.cardTitle {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-}
-
-.date {
-  font-size: 18px;
-  display: block;
-  color: #ffffff;
-  border-radius: 12px;
-  border-color: #ffffff;
-  width: 90px;
-}
-
+/* --- BUTTON --- */
 .learnButton {
   background-color: #505078;
-  border-color: #b57600;
-  border-width: 1px;
   color: #ffffff;
-  overflow: hidden;
   width: 100%;
+  border: none;
   border-radius: 12px;
   cursor: pointer;
   height: 45px;
   font-size: 18px;
+  transition: background 0.2s ease;
 }
 
+.learnButton:hover {
+  background-color: #656596;
+}
+
+/* --- ICONS --- */
 .actions {
   display: flex;
   gap: 8px;
@@ -67,35 +102,58 @@
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
-  transition: background 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.2s ease;
 }
 .iconButton:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-.learnButton:hover {
-  background-color: #a2a2c0;
-}
-
-.archiveButton svg {
+.archiveButton svg,
+.deleteButton svg,
+.manageButton svg {
   color: #ffffff;
 }
 .archiveButton:hover svg {
   color: #ec9a2b;
 }
-.deleteButton svg {
-  color: #ffffff;
-}
 .deleteButton:hover svg {
   color: #c9302c;
 }
-
-.manageButton svg {
-  color: #ffffff;
-}
 .manageButton:hover svg {
-  color: #656596;
+  color: #d1d1f0;
+}
+
+.cardFooter {
+  background: white;
+  padding: 25px;
+}
+
+/* ✅ New round Play button */
+/* --- FLOATING PLAY BUTTON --- */
+.playButton {
+  position: absolute;
+  bottom: -30px; /* half inside image, half outside */
+  left: 80%;
+  transform: translateX(-50%);
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background-color: #505078;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  z-index: 3;
+}
+
+.playButton:hover {
+  background-color: #656596;
+  transform: translateX(-50%) scale(1.08);
 }

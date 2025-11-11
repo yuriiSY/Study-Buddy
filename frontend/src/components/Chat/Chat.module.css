@@ -1,9 +1,9 @@
 .wrapper {
   display: flex;
   flex-direction: column;
-  height: 1210px;
+  height: 1020px;
   width: 900px;
-  padding: 2rem;
+  padding-left: 2rem;
 }
 
 .chatContainer {
