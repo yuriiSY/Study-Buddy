@@ -530,6 +530,90 @@ def groq_chat_with_history(context: str, question: str, chat_history: list, imag
         error_msg = f"Groq API error: {e}"
         print(error_msg)
         return error_msg
+    
+def generate_mcq_with_groq(context: str, num_questions: int = 5):
+    client = Groq(api_key=GROQ_API_KEY)
+    
+    prompt = f"""
+    CONTENT:
+    {context}
+    
+    Create {num_questions} multiple choice questions with 4 options each.
+    
+    REQUIREMENTS:
+    - Questions should test understanding of key concepts
+    - Each question has 4 options (A, B, C, D)
+    - Only ONE correct answer per question (either A, B, C, or D)
+    - Shuffle Answers like option A,B,C,D , dont always put correct answer at same place
+    - Wrong answers should be plausible but incorrect
+    - Cover different aspects of the content
+    
+    FORMAT:
+    [
+        {{
+            "question": "clear question",
+            "options": [
+                "A. text",
+                "B. text", 
+                "C. text",
+                "D. text"
+            ],
+            "correct_answer": "A"/"B"/"C"/"D"
+        }}
+    ]
+    
+    Return ONLY valid JSON.
+    """
+    
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Create high-quality multiple choice questions with 4 options and one correct answer."
+                },
+                {
+                    "role": "user", 
+                    "content": prompt
+                }
+            ],
+            max_tokens=2048,
+            temperature=0.7
+        )
+        
+        content = response.choices[0].message.content.strip()
+        print(f"Raw MCQ response: {content}")
+        
+        import json
+        try:
+            mcqs = json.loads(content)
+            
+            if isinstance(mcqs, list):
+                return mcqs
+            elif isinstance(mcqs, dict):
+                if 'questions' in mcqs:
+                    return mcqs['questions']
+                else:
+                    return [mcqs]
+            else:
+                return [{"error": "Invalid response format"}]
+                
+        except json.JSONDecodeError as e:
+            print(f"JSON parse error: {e}")
+            import re
+            json_match = re.search(r'\[.*\]', content, re.DOTALL)
+            if json_match:
+                try:
+                    return json.loads(json_match.group())
+                except:
+                    pass
+            return [{"error": "Could not parse MCQs"}]
+        
+    except Exception as e:
+        print(f"Groq API error: {e}")
+        return [{"error": f"MCQ generation failed: {str(e)}"}]
+    
 #-----------Flashcard Generation with Groq-----------
 def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
     client = Groq(api_key=GROQ_API_KEY)
