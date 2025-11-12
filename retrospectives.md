@@ -85,3 +85,14 @@
 • Back-end is being polished to ensure connectivity is swift & AI optimisation is in the works
 • Additional survey questions are being created
 
+## Week 8 Retrospectives:
+### What went well
+• Features on the front-end are being implemented
+• The user evaluation live demo provided valuable data
+• Back-end is continuing to evolve after last weeks feedback, targetting speeds.
+### What to improve
+• GitHub commenting
+### What actions are being taken
+• Various front-end features have made progress
+• Live demo data is being processed into report data
+
