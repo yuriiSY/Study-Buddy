@@ -9,30 +9,38 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-model Document {
-  id        Int      @id @default(autoincrement())
-  name      String
-  embedding Bytes    // Store embeddings as binary data
+enum Specialization {
+  Math
+  Physics
+  Chemistry
+  Biology
+  ComputerScience
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   name      String
-  email     String    @unique
+  email     String      @unique
   password  String
-  createdAt DateTime  @default(now())
-  modules   Module[]  
+  createdAt DateTime    @default(now())
+  specialization Specialization? 
+
+  ownedModules Module[]       @relation("OwnedModules")
+  collaborations Collaboration[]
 }
 
 model Module {
-  id        Int      @id @default(autoincrement())
-  title     String
-  userId    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int            @id @default(autoincrement())
+  title      String
+  ownerId    Int
+  coverImage  String?
+  archived   Boolean        @default(false)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
-  user  User  @relation(fields: [userId], references: [id])
-  files File[]
+  owner         User          @relation("OwnedModules", fields: [ownerId], references: [id])
+  files         File[]
+  collaborations Collaboration[]
 }
 
 model File {
@@ -41,8 +49,24 @@ model File {
   html      String?
   s3Url     String
   s3Key     String
+  embedding Bytes?
+  externalId  String?  @unique
   moduleId  Int
   createdAt DateTime @default(now())
 
   module Module @relation(fields: [moduleId], references: [id])
 }
+
+model Collaboration {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  moduleId  Int
+  role      String   @default("editor") 
+  invitedAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  module Module @relation(fields: [moduleId], references: [id])
+
+  @@unique([userId, moduleId]) 
+}
+

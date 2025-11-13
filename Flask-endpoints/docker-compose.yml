@@ -26,6 +26,3 @@ services:
       DB_PASSWORD: "H8XZD0E3gugc5WGIFZlZaRrdu2M7AveU"
     # depends_on:
     #   - ollama
-
-# volumes:
-#   ollama_data:

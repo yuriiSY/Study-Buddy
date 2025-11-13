@@ -1,47 +1,72 @@
 import React, { useState } from "react";
 import styles from "./Chat.module.css";
 import Message from "../Message/Message";
+import apiPY from "../../api/axiosPython";
 
-const Chat = () => {
-  const [messages, setMessages] = useState([
-    {
-      sender: "user",
-      text: "Hi, can you explain definition of Integration in a simple way?",
-    },
-    {
-      sender: "bot",
-      text: `Integration is the opposite of differentiation. 
-If differentiation breaks something into smaller parts (like finding rate of change), integration puts it back together — like finding total area, distance, or quantity.`,
-    },
-  ]);
-
+const Chat = ({ externalId }) => {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const sendMessage = (e) => {
+  const sendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
-    setMessages([...messages, { sender: "user", text: input }]);
+
+    const userMessage = { sender: "user", text: input };
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setLoading(true);
+
+    try {
+      const res = await apiPY.post("/ask", {
+        question: input,
+        file_ids: [externalId],
+      });
+
+      const botMessage = {
+        sender: "bot",
+        text: res.data?.answer || "No answer returned.",
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Chat request failed:", error);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "⚠️ Sorry, something went wrong." },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.chatContainer}>
         <h2 className={styles.title}>AI Tutor</h2>
+
         <div className={styles.chatBox}>
           {messages.map((msg, idx) => (
             <Message key={idx} sender={msg.sender} text={msg.text} />
           ))}
+          {loading && <Message sender="bot" text="Thinking..." />}
         </div>
+
         <form onSubmit={sendMessage} className={styles.inputArea}>
           <input
             type="text"
-            placeholder='Ask about: "∫ f(x) dx = F(x) + C"'
+            placeholder="Ask about your uploaded notes..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className={styles.input}
+            disabled={loading}
           />
-          <button type="submit" className={styles.sendBtn}>
+          <button
+            type="submit"
+            className={styles.sendBtn}
+            disabled={loading || !externalId}
+            title={!externalId ? "Select a file first" : "Send message"}
+          >
             ➤
           </button>
         </form>

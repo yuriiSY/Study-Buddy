@@ -58,7 +58,48 @@ const signin = async (req, res) => {
   });
 };
 
+const updateProfile = async (req, res) => {
+  const userId = req.user.id;
+  const { name, email, specialization } = req.body;
+
+  try {
+    const updatedUser = await authService.updateUserProfile(userId, {
+      ...(name && { name }),
+      ...(email && { email }),
+      ...(specialization !== undefined && { specialization }),
+    });
+
+    res.json({ message: "Profile updated successfully", user: updatedUser });
+  } catch (error) {
+    if (error.code === "P2002") {
+      return res.status(400).json({ error: "Email is already in use" });
+    }
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+};
+
+const getProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await authService.findUserById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      username: user.name,
+      email: user.email,
+      specialization: user.specialization,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get profile" });
+  }
+};
+
 export default {
   signup,
   signin,
+  updateProfile,
+  getProfile,
 };

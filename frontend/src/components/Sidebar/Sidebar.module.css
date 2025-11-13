@@ -116,7 +116,7 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  background-color: #6366f1;
+  background-color: #656596;
   color: white;
   font-weight: 500;
   border: none;
@@ -127,7 +127,7 @@
 }
 
 .addFileBtn:hover {
-  background-color: #4f46e5;
+  background-color: #505078;
 }
 
 @media (max-width: 1023px) {

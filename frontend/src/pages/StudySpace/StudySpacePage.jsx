@@ -7,8 +7,8 @@ import DocxViewer from "../../components/DocViewer/DocViewer";
 import Chat from "../../components/Chat/Chat";
 import styles from "./StudySpacePage.module.css";
 import FocusHeader from "../../components/FocusHeader/FocusHeader";
-import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-import CustomPdfViewer from "../../components/CustomDocViewer/CustomDocViewer";
+import LoaderOverlay from "../../components/LoaderOverlay/LoaderOverlay";
+import CustomPdfViewer from "../../components/CustomPdfViewer";
 
 import api from "../../api/axios";
 
@@ -53,19 +53,6 @@ export const StudySpacePage = () => {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const docs = useMemo(
-    () => [
-      {
-        uri: "/asd.pdf",
-        fileType: "pdf",
-        fileName: "sample.pdf",
-      },
-    ],
-    []
-  );
-
-  const Viewer = React.memo(() => <CustomPdfViewer />);
-
   const fetchFiles = async () => {
     try {
       const res = await api.get(`/files/modules/${moduleId}/files`);
@@ -74,6 +61,7 @@ export const StudySpacePage = () => {
       const formattedModules = backendFiles.map((file, index) => ({
         title: `File ${index + 1}. ${file.filename}`,
         id: file.id,
+        externalId: file.externalId,
       }));
 
       setModules(formattedModules);
@@ -112,21 +100,29 @@ export const StudySpacePage = () => {
       case "AI Buddy":
         return (
           <div className={styles.studySpaceContainer}>
-            <DocxViewer fileId={selectedFile?.id} moduleId={moduleId} />
-            <Chat />
+            <CustomPdfViewer
+              fileId={selectedFile?.id}
+              fileName={`${selectedFile?.title}`}
+              height="80vh"
+            />
+            <Chat externalId={selectedFile?.externalId} />
           </div>
         );
       default:
-        return <DocxViewer fileId={selectedFile?.id} moduleId={moduleId} />;
-      // return (
-      //   <div style={{ width: "100%", height: "500px" }}>
-      //     <Viewer docs={docs} />
-      //   </div>
-      // );
+        return (
+          <div className={styles.studySpaceContainer}>
+            <CustomPdfViewer
+              fileId={selectedFile?.id}
+              fileName={`${selectedFile?.title}`}
+              height="80vh"
+            />
+          </div>
+        );
+      // return <DocxViewer fileId={selectedFile?.id} moduleId={moduleId} />;
     }
   };
 
-  if (loading) return <p>Loading files...</p>;
+  if (loading) return <LoaderOverlay />;
 
   return (
     <WorkspaceLayout
@@ -138,14 +134,6 @@ export const StudySpacePage = () => {
     >
       {/* <FocusHeader /> */}
       {renderContent()}
-      {/* <button
-        onClick={async () => {
-          const res = await api.get(`/files/modules/8`);
-          window.open(res.data.url, "_blank");
-        }}
-      >
-        Download File
-      </button> */}
     </WorkspaceLayout>
   );
 };

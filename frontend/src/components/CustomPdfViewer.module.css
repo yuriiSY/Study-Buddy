@@ -1,65 +1,66 @@
 .viewerWrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f4f6fa;
-  padding: 2rem;
-}
-
-.pdfContainer {
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
-  padding: 2rem;
-  width: 900px; /* increased from 750px */
+  width: 100%;
+  max-width: 750px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
-.pdfDocument {
-  width: 100%;
+.header {
+  background: #656596;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+}
+
+/* PDF container */
+.pdfContainer {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  scroll-behavior: smooth;
+  background: #fafafa;
+}
+
+.pdfPage {
   display: flex;
   justify-content: center;
-  overflow: hidden;
-  border-radius: 8px;
-  background: white;
+  margin-bottom: 20px;
 }
 
-.navigation {
+/* Footer */
+.footer {
+  background: #656596;
+  border-top: 1px solid #e0e0e0;
+  padding: 8px 16px;
+}
+
+.footerContent {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  font-family: "Inter", system-ui, sans-serif;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #fff;
 }
 
-.navButton {
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  padding: 0.6rem 1.4rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: background 0.2s ease;
+/* Inline page input */
+.inlinePageInput {
+  width: 45px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 3px 0;
+  font-size: 0.9rem;
 }
-
-.navButton:hover {
-  background-color: #1d4ed8;
-}
-
-.disabled {
-  background-color: #d1d5db;
-  cursor: not-allowed;
-}
-
-.pageIndicator {
-  color: #374151;
-  font-weight: 500;
-  font-size: 0.95rem;
+.inlinePageInput:focus {
+  outline: none;
+  border-color: #0078ff;
+  box-shadow: 0 0 2px #0078ff;
 }

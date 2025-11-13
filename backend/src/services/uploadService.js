@@ -9,7 +9,7 @@ export const getFilesByModuleId = async (userId, moduleId) => {
     where: {
       moduleId: moduleId,
       module: {
-        userId: userId,
+        OR: [{ ownerId: userId }, { collaborations: { some: { userId } } }],
       },
     },
     orderBy: { createdAt: "desc" },
@@ -21,7 +21,7 @@ export const getFileById = async (userId, fileId) => {
     where: {
       id: fileId,
       module: {
-        userId: userId,
+        OR: [{ ownerId: userId }, { collaborations: { some: { userId } } }],
       },
     },
     include: {
@@ -34,10 +34,13 @@ export const getFileById = async (userId, fileId) => {
 
 export const getModulesByUserId = async (userId) => {
   return prisma.module.findMany({
-    where: { userId },
+    where: {
+      OR: [{ ownerId: userId }, { collaborations: { some: { userId } } }],
+    },
     select: {
       id: true,
       title: true,
+      archived: true,
       createdAt: true,
       _count: {
         select: { files: true },

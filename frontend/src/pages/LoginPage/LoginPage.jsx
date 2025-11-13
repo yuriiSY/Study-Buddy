@@ -12,7 +12,7 @@ import RegistrationForm from "../../components/RegistrationForm/RegistrationForm
 export const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLoggedIn } = useSelector((state) => state.auth);
+  const { isLoggedIn, loading } = useSelector((state) => state.auth);
 
   const [isLogin, setIsLogin] = useState(true);
 
@@ -60,9 +60,9 @@ export const LoginPage = () => {
 
         <div className={styles.formContainer}>
           {isLogin ? (
-            <LoginForm onSubmit={handleLogin} />
+            <LoginForm onSubmit={handleLogin} loading={loading} />
           ) : (
-            <RegistrationForm onSubmit={handleRegister} />
+            <RegistrationForm onSubmit={handleRegister} loading={loading} />
           )}
         </div>
 

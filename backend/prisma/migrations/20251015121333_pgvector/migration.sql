@@ -5,14 +5,14 @@
 
 */
 -- AlterTable
-ALTER TABLE "User" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN     "password" TEXT NOT NULL;
+-- ALTER TABLE "User" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+-- ADD COLUMN     "password" TEXT NOT NULL;
 
--- CreateTable
-CREATE TABLE "Document" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-    "embedding" BYTEA NOT NULL,
+-- -- CreateTable
+-- CREATE TABLE "Document" (
+--     "id" SERIAL NOT NULL,
+--     "name" TEXT NOT NULL,
+--     "embedding" BYTEA NOT NULL,
 
-    CONSTRAINT "Document_pkey" PRIMARY KEY ("id")
-);
+--     CONSTRAINT "Document_pkey" PRIMARY KEY ("id")
+-- );
