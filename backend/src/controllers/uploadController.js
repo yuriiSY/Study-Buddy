@@ -95,7 +95,15 @@ export const uploadFiles = async (req, res) => {
 
       fs.unlink(filePath, () => {});
 
-      const coverImage = req.body.coverImage;
+      let coverImage = req.body.coverImage;
+
+      if (Array.isArray(coverImage)) {
+        coverImage = coverImage[0];
+      }
+
+      if (!coverImage || coverImage === "null" || coverImage === "undefined") {
+        coverImage = null;
+      }
 
       const savedFile = await prisma.file.create({
         data: {
@@ -104,7 +112,7 @@ export const uploadFiles = async (req, res) => {
           s3Url,
           s3Key,
           moduleId: module.id,
-          coverImage: coverImage || null,
+          coverImage: coverImage,
           externalId: file_id || null,
         },
       });
