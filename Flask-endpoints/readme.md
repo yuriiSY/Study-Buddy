@@ -1,5 +1,6 @@
-# Study buddy AI Integration
-Flask API that uses Ollama with llama3 model to answer questions from uploaded PDF documents.
+# AI Document Q&A System
+
+A Flask-based API that uses Ollama with Llava model to answer questions from uploaded PDF documents.
 
 ## Setup Instructions
 
@@ -15,7 +16,7 @@ Flask API that uses Ollama with llama3 model to answer questions from uploaded P
    ```
 
 2. **Update environment variables**
-   Edit `docker-compose.yml` with database credentials: (for now, I have provided already)
+   Edit `docker-compose.yml` with database credentials: (for now its I have provided already)
    ```yaml
    environment:
      DB_HOST: "your_db_host"
@@ -24,20 +25,20 @@ Flask API that uses Ollama with llama3 model to answer questions from uploaded P
      DB_PASSWORD: "your_password"
    ```
 
-4. **Deploy the application**
+3. **Deploy the application**
    ```bash
    docker-compose up --build -d
    ```
 
-5. **Wait for services to start** 
+4. **Wait for services to start** 
 
 
-6. **Install the model**
+5. **Install the Llava model**
    ```bash
-   docker-compose exec ollama ollama pull llama3
+   docker-compose exec ollama ollama pull llava
    ```
 
-7. **Verify deployment**
+6. **Verify deployment**
    ```bash
    # Check health
    curl http://localhost:3000/
@@ -51,10 +52,12 @@ Flask API that uses Ollama with llama3 model to answer questions from uploaded P
 Once deployed, access the API at `http://localhost:3000`
 
 **Endpoints:**
+- `GET /` -  check if your app is ready with the model
 - `POST /upload-files` - Upload PDF files
-- `POST /ask` - Ask questions about uploaded content
 - `GET /file-ids` - List uploaded files
-- `GET /` - Health check
+- `POST /ask` - Ask questions about uploaded content
+
+
 
 ### Management Commands
 
@@ -72,12 +75,4 @@ docker-compose logs flask-api
 **Stop services:**
 ```bash
 docker-compose down
-```
-
-## File Structure
-```
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-└── main.py
 ```
