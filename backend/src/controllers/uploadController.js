@@ -57,10 +57,21 @@ export const uploadFiles = async (req, res) => {
         return res.status(400).json({ error: "Module name is required" });
       }
 
+      let coverImage = req.body.coverImage;
+
+      if (Array.isArray(coverImage)) {
+        coverImage = coverImage[0];
+      }
+
+      if (!coverImage || coverImage === "null" || coverImage === "undefined") {
+        coverImage = null;
+      }
+
       module = await prisma.module.create({
         data: {
           title: moduleName,
           ownerId: req.user.id,
+          coverImage: coverImage,
         },
       });
     }
@@ -95,16 +106,6 @@ export const uploadFiles = async (req, res) => {
 
       fs.unlink(filePath, () => {});
 
-      let coverImage = req.body.coverImage;
-
-      if (Array.isArray(coverImage)) {
-        coverImage = coverImage[0];
-      }
-
-      if (!coverImage || coverImage === "null" || coverImage === "undefined") {
-        coverImage = null;
-      }
-
       const savedFile = await prisma.file.create({
         data: {
           filename: fileName,
@@ -112,7 +113,6 @@ export const uploadFiles = async (req, res) => {
           s3Url,
           s3Key,
           moduleId: module.id,
-          coverImage: coverImage,
           externalId: file_id || null,
         },
       });
