@@ -57,6 +57,16 @@ export const uploadFiles = async (req, res) => {
         return res.status(400).json({ error: "Module name is required" });
       }
 
+      let coverImage = req.body.coverImage;
+
+      if (Array.isArray(coverImage)) {
+        coverImage = coverImage[0];
+      }
+
+      if (!coverImage || coverImage === "null" || coverImage === "undefined") {
+        coverImage = null;
+      }
+
       module = await prisma.module.create({
         data: {
           title: moduleName,
@@ -147,6 +157,7 @@ export const getFileUrl = async (req, res) => {
       id: file.id,
       filename: file.filename,
       url: signedUrl,
+      externalId: file.externalId,
       expiresIn: "5 minutes",
     });
   } catch (err) {

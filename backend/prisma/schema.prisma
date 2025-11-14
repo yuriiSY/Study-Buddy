@@ -33,7 +33,7 @@ model Module {
   id         Int            @id @default(autoincrement())
   title      String
   ownerId    Int
-  coverImage String?
+  coverImage  String?
   archived   Boolean        @default(false)
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt

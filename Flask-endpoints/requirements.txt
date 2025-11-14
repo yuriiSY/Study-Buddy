@@ -3,15 +3,21 @@ requests
 flask-cors==4.0.1
 langchain_huggingface
 langchain_postgres
-langchain-ollama==0.1.3
 langchain-core==0.2.38
 langchain-text-splitters==0.2.4
 psycopg2-binary==2.9.9
 numpy==1.26.4
 pillow==10.4.0
 pdfplumber
-python-docx
-#gunicorn
-#for mac user use python3.12.7
-#docker exec -it ollama-chatbot ollama pull llama    3.2:3b   --- IGNORE ---
-#docker exec -it ollama-chatbot ollama pull llama3
+PyMuPDF==1.24.4
+python-magic==0.4.27
+groq
+sentence-transformers
+torch
+torchvision
+python-docx>=1.1.0
+python-pptx>=0.6.23
+openpyxl>=3.1.0
+python-dotenv
+
+# python version should be 3.12.7
