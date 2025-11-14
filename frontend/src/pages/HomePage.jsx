@@ -22,7 +22,7 @@ export const HomePage = () => {
   });
   const [showAllActive, setShowAllActive] = useState(false);
   const [showAllArchived, setShowAllArchived] = useState(false);
-  const [viewMode, setViewMode] = useState("active"); // ✅ "active" | "archived"
+  const [viewMode, setViewMode] = useState("active"); 
 
   // Fetch modules
   useEffect(() => {
@@ -168,6 +168,7 @@ export const HomePage = () => {
                           onArchive={handleArchive}
                           onDelete={handleDelete}
                           onManage={handleManage}
+                          coverImage={mod.coverImage}
                         />
                       ))
                     : (showAllArchived
@@ -183,6 +184,7 @@ export const HomePage = () => {
                           onArchive={handleArchive}
                           onDelete={handleDelete}
                           onManage={handleManage}
+                          coverImage={mod.coverImage}
                         />
                       ))}
 

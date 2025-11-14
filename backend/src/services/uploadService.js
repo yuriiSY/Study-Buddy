@@ -41,6 +41,8 @@ export const getModulesByUserId = async (userId) => {
       id: true,
       title: true,
       archived: true,
+      coverImage: true,
+      isOwner: true,
       createdAt: true,
       _count: {
         select: { files: true },

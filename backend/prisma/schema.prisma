@@ -33,11 +33,13 @@ model Module {
   id         Int            @id @default(autoincrement())
   title      String
   ownerId    Int
+  coverImage String?
   archived   Boolean        @default(false)
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
 
   owner         User          @relation("OwnedModules", fields: [ownerId], references: [id])
+  isOwner       Boolean
   files         File[]
   collaborations Collaboration[]
 }

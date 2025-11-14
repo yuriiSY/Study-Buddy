@@ -61,6 +61,8 @@ export const uploadFiles = async (req, res) => {
         data: {
           title: moduleName,
           ownerId: req.user.id,
+          isOwner: true,
+          coverImage: coverImage,
         },
       });
     }
@@ -166,6 +168,36 @@ export const getUserModules = async (req, res) => {
   } catch (error) {
     console.error("Error fetching modules:", error);
     res.status(500).json({ error: "Failed to fetch modules" });
+  }
+};
+
+export const searchModulesByTitle = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const query = req.query.q || "";
+
+    const modules = await prisma.module.findMany({
+      where: {
+        AND: [
+          {
+            OR: [{ ownerId: userId }, { collaborations: { some: { userId } } }],
+          },
+          {
+            title: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      include: { files: true },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    res.json({ modules });
+  } catch (error) {
+    console.error("Error searching modules:", error);
+    res.status(500).json({ error: "Failed to search modules" });
   }
 };
 
