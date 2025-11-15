@@ -10,7 +10,7 @@ const ModuleCard = ({
   onArchive,
   onDelete,
   onManage,
-  imageUrl = "card-bg1.jpg",
+  coverImage,
 }) => {
   const navigate = useNavigate();
 
@@ -28,15 +28,17 @@ const ModuleCard = ({
     onManage(id, title);
   };
 
+  console.log(coverImage);
+
   return (
     <div className={styles.card}>
       {/* ✅ Image section */}
       <div
-        className={`${styles.cardHeader} ${imageUrl ? styles.withImage : ""}`}
+        className={`${styles.cardHeader} ${coverImage ? styles.withImage : ""}`}
         style={
-          imageUrl
+          coverImage
             ? {
-                backgroundImage: `url(${imageUrl})`,
+                backgroundImage: `url(${coverImage})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }

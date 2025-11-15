@@ -39,6 +39,7 @@ model Module {
   updatedAt  DateTime       @updatedAt
 
   owner         User          @relation("OwnedModules", fields: [ownerId], references: [id])
+  isOwner       Boolean
   files         File[]
   collaborations Collaboration[]
 }

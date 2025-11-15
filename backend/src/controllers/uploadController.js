@@ -181,6 +181,36 @@ export const getUserModules = async (req, res) => {
   }
 };
 
+export const searchModulesByTitle = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const query = req.query.q || "";
+
+    const modules = await prisma.module.findMany({
+      where: {
+        AND: [
+          {
+            OR: [{ ownerId: userId }, { collaborations: { some: { userId } } }],
+          },
+          {
+            title: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      include: { files: true },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    res.json({ modules });
+  } catch (error) {
+    console.error("Error searching modules:", error);
+    res.status(500).json({ error: "Failed to search modules" });
+  }
+};
+
 export const getFilesByModule = async (req, res) => {
   try {
     const userId = req.user.id;
