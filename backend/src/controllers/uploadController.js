@@ -9,6 +9,8 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs";
+import path from "path";
+import libre from "libreoffice-convert";
 
 const prisma = new PrismaClient();
 
