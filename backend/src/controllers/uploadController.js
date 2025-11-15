@@ -20,6 +20,22 @@ const s3 = new S3Client({
   },
 });
 
+export const convertWithLibre = (inputPath) => {
+  return new Promise((resolve, reject) => {
+    const ext = ".pdf";
+    const file = fs.readFileSync(inputPath);
+
+    libre.convert(file, ext, undefined, (err, done) => {
+      if (err) return reject(err);
+
+      const outputPath = inputPath.replace(path.extname(inputPath), ".pdf");
+      fs.writeFileSync(outputPath, done);
+
+      resolve(outputPath);
+    });
+  });
+};
+
 // ----------------------------------------------------------------------
 // Upload files (create or update module)
 // ----------------------------------------------------------------------
@@ -58,11 +74,7 @@ export const uploadFiles = async (req, res) => {
       }
 
       let coverImage = req.body.coverImage;
-
-      if (Array.isArray(coverImage)) {
-        coverImage = coverImage[0];
-      }
-
+      if (Array.isArray(coverImage)) coverImage = coverImage[0];
       if (!coverImage || coverImage === "null" || coverImage === "undefined") {
         coverImage = null;
       }
@@ -80,36 +92,46 @@ export const uploadFiles = async (req, res) => {
     const uploadedResults = [];
 
     for (const file of req.files) {
-      const filePath = file.path;
-      const fileName = file.originalname;
+      let filePath = file.path;
+      const ext = path.extname(file.originalname).toLowerCase();
+      let finalPath = filePath;
+      let finalName = file.originalname;
 
-      const fileBuffer = fs.readFileSync(filePath);
-      const s3Key = `modules/${module.id}/${Date.now()}-${fileName}`;
+      const isOffice =
+        ext === ".doc" || ext === ".docx" || ext === ".ppt" || ext === ".pptx";
+
+      if (isOffice) {
+        finalPath = await convertWithLibre(filePath);
+        finalName = path.basename(finalPath);
+      }
+
+      const fileBuffer = fs.readFileSync(finalPath);
+      const s3Key = `modules/${module.id}/${Date.now()}-${finalName}`;
 
       await s3.send(
         new PutObjectCommand({
           Bucket: process.env.S3_BUCKET_NAME,
           Key: s3Key,
           Body: fileBuffer,
-          ContentType: file.mimetype,
+          ContentType: "application/pdf",
         })
       );
 
       const s3Url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
 
       let html = "";
-      if (
-        file.mimetype ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      ) {
+      if (ext === ".docx") {
         html = await convertDocxToHtml(filePath);
       }
 
       fs.unlink(filePath, () => {});
+      if (isOffice && finalPath !== filePath) {
+        fs.unlink(finalPath, () => {});
+      }
 
       const savedFile = await prisma.file.create({
         data: {
-          filename: fileName,
+          filename: finalName,
           html,
           s3Url,
           s3Key,
