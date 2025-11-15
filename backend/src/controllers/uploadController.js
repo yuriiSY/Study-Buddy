@@ -10,7 +10,8 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs";
 import path from "path";
-import ILovePDFApi from "@ilovepdf/ilovepdf-nodejs";
+
+const ILovePDFApi = require("@ilovepdf/ilovepdf-nodejs");
 
 const prisma = new PrismaClient();
 
