@@ -11,8 +11,6 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs";
 import path from "path";
 
-const ILovePDFApi = require("@ilovepdf/ilovepdf-nodejs");
-
 const prisma = new PrismaClient();
 
 const s3 = new S3Client({
@@ -23,10 +21,39 @@ const s3 = new S3Client({
   },
 });
 
-const publicKey = process.env.ILOVEPDF_PUBLIC_KEY;
-const secretKey = process.env.ILOVEPDF_SECRET_KEY;
+let ILovePDFApi = null;
+let ilovepdfInstance = null;
 
-const ilovepdf = new ILovePDFApi(publicKey, secretKey);
+async function loadILovePDF() {
+  if (!ILovePDFApi) {
+    const module = await import("@ilovepdf/ilovepdf-nodejs");
+    ILovePDFApi = module.default;
+
+    ilovepdfInstance = new ILovePDFApi(
+      process.env.ILOVEPDF_PUBLIC_KEY,
+      process.env.ILOVEPDF_SECRET_KEY
+    );
+  }
+
+  return ilovepdfInstance;
+}
+
+export async function convertToPdfILove(inputPath) {
+  const ilovepdf = await loadILovePDF();
+
+  const task = ilovepdf.newTask("officepdf");
+
+  await task.start();
+  await task.addFile(inputPath);
+  await task.process();
+
+  const pdfBuffer = await task.download();
+
+  const outputPath = inputPath.replace(path.extname(inputPath), ".pdf");
+  fs.writeFileSync(outputPath, pdfBuffer);
+
+  return outputPath;
+}
 
 export async function convertToPdfILove(inputPath) {
   const task = ilovepdf.newTask("officepdf");
