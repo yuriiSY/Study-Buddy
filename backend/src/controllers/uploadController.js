@@ -55,23 +55,6 @@ export async function convertToPdfILove(inputPath) {
   return outputPath;
 }
 
-export async function convertToPdfILove(inputPath) {
-  const task = ilovepdf.newTask("officepdf");
-
-  await task.start();
-
-  await task.addFile(inputPath);
-
-  await task.process();
-
-  const pdfBuffer = await task.download();
-
-  const outputPath = inputPath.replace(path.extname(inputPath), ".pdf");
-  fs.writeFileSync(outputPath, pdfBuffer);
-
-  return outputPath;
-}
-
 // ----------------------------------------------------------------------
 // Upload files (create or update module)
 // ----------------------------------------------------------------------
