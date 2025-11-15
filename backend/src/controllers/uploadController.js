@@ -10,7 +10,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs";
 import path from "path";
-import libre from "libreoffice-convert";
+import ILovePDFApi from "@ilovepdf/ilovepdf-nodejs";
 
 const prisma = new PrismaClient();
 
@@ -22,21 +22,27 @@ const s3 = new S3Client({
   },
 });
 
-export const convertWithLibre = (inputPath) => {
-  return new Promise((resolve, reject) => {
-    const ext = ".pdf";
-    const file = fs.readFileSync(inputPath);
+const publicKey = process.env.ILOVEPDF_PUBLIC_KEY;
+const secretKey = process.env.ILOVEPDF_SECRET_KEY;
 
-    libre.convert(file, ext, undefined, (err, done) => {
-      if (err) return reject(err);
+const ilovepdf = new ILovePDFApi(publicKey, secretKey);
 
-      const outputPath = inputPath.replace(path.extname(inputPath), ".pdf");
-      fs.writeFileSync(outputPath, done);
+export async function convertToPdfILove(inputPath) {
+  const task = ilovepdf.newTask("officepdf");
 
-      resolve(outputPath);
-    });
-  });
-};
+  await task.start();
+
+  await task.addFile(inputPath);
+
+  await task.process();
+
+  const pdfBuffer = await task.download();
+
+  const outputPath = inputPath.replace(path.extname(inputPath), ".pdf");
+  fs.writeFileSync(outputPath, pdfBuffer);
+
+  return outputPath;
+}
 
 // ----------------------------------------------------------------------
 // Upload files (create or update module)
@@ -103,7 +109,7 @@ export const uploadFiles = async (req, res) => {
         ext === ".doc" || ext === ".docx" || ext === ".ppt" || ext === ".pptx";
 
       if (isOffice) {
-        finalPath = await convertWithLibre(filePath);
+        finalPath = await convertToPdfILove(filePath);
         finalName = path.basename(finalPath);
       }
 

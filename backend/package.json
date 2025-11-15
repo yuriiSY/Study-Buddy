@@ -15,6 +15,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.920.0",
     "@aws-sdk/s3-request-presigner": "^3.920.0",
+    "@ilovepdf/ilovepdf-nodejs": "^0.3.1",
     "@prisma/client": "^6.17.1",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
