@@ -9,7 +9,6 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs";
-import path from "path";
 
 const prisma = new PrismaClient();
 
@@ -20,40 +19,6 @@ const s3 = new S3Client({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
-
-let ILovePDFApi = null;
-let ilovepdfInstance = null;
-
-async function loadILovePDF() {
-  if (!ILovePDFApi) {
-    const module = await import("@ilovepdf/ilovepdf-nodejs");
-    ILovePDFApi = module.default;
-
-    ilovepdfInstance = new ILovePDFApi(
-      process.env.ILOVEPDF_PUBLIC_KEY,
-      process.env.ILOVEPDF_SECRET_KEY
-    );
-  }
-
-  return ilovepdfInstance;
-}
-
-export async function convertToPdfILove(inputPath) {
-  const ilovepdf = await loadILovePDF();
-
-  const task = ilovepdf.newTask("officepdf");
-
-  await task.start();
-  await task.addFile(inputPath);
-  await task.process();
-
-  const pdfBuffer = await task.download();
-
-  const outputPath = inputPath.replace(path.extname(inputPath), ".pdf");
-  fs.writeFileSync(outputPath, pdfBuffer);
-
-  return outputPath;
-}
 
 // ----------------------------------------------------------------------
 // Upload files (create or update module)
@@ -93,7 +58,11 @@ export const uploadFiles = async (req, res) => {
       }
 
       let coverImage = req.body.coverImage;
-      if (Array.isArray(coverImage)) coverImage = coverImage[0];
+
+      if (Array.isArray(coverImage)) {
+        coverImage = coverImage[0];
+      }
+
       if (!coverImage || coverImage === "null" || coverImage === "undefined") {
         coverImage = null;
       }
@@ -102,7 +71,6 @@ export const uploadFiles = async (req, res) => {
         data: {
           title: moduleName,
           ownerId: req.user.id,
-          isOwner: true,
           coverImage: coverImage,
         },
       });
@@ -111,46 +79,36 @@ export const uploadFiles = async (req, res) => {
     const uploadedResults = [];
 
     for (const file of req.files) {
-      let filePath = file.path;
-      const ext = path.extname(file.originalname).toLowerCase();
-      let finalPath = filePath;
-      let finalName = file.originalname;
+      const filePath = file.path;
+      const fileName = file.originalname;
 
-      const isOffice =
-        ext === ".doc" || ext === ".docx" || ext === ".ppt" || ext === ".pptx";
-
-      if (isOffice) {
-        finalPath = await convertToPdfILove(filePath);
-        finalName = path.basename(finalPath);
-      }
-
-      const fileBuffer = fs.readFileSync(finalPath);
-      const s3Key = `modules/${module.id}/${Date.now()}-${finalName}`;
+      const fileBuffer = fs.readFileSync(filePath);
+      const s3Key = `modules/${module.id}/${Date.now()}-${fileName}`;
 
       await s3.send(
         new PutObjectCommand({
           Bucket: process.env.S3_BUCKET_NAME,
           Key: s3Key,
           Body: fileBuffer,
-          ContentType: "application/pdf",
+          ContentType: file.mimetype,
         })
       );
 
       const s3Url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
 
       let html = "";
-      if (ext === ".docx") {
+      if (
+        file.mimetype ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
         html = await convertDocxToHtml(filePath);
       }
 
       fs.unlink(filePath, () => {});
-      if (isOffice && finalPath !== filePath) {
-        fs.unlink(finalPath, () => {});
-      }
 
       const savedFile = await prisma.file.create({
         data: {
-          filename: finalName,
+          filename: fileName,
           html,
           s3Url,
           s3Key,
