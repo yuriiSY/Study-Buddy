@@ -59,6 +59,7 @@ export const StudySpacePage = () => {
   const [mcqQuestions, setMcqQuestions] = useState([]);
   const [loadingMCQ, setLoadingMCQ] = useState(false);
   const [mcqError, setMcqError] = useState(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     console.log(selectedFile);
@@ -170,6 +171,8 @@ export const StudySpacePage = () => {
     }
   };
 
+  const isMobile = window.innerWidth <= 768;
+
   const renderContent = () => {
     switch (selectedFeature) {
       case "Flashcards":
@@ -227,6 +230,49 @@ export const StudySpacePage = () => {
         }
         return <MCQTest questions={mcqQuestions} onSubmit={handleSubmit} />;
       case "AI Buddy":
+        if (isMobile) {
+          return (
+            <div className={styles.studySpaceContainer}>
+              <CustomPdfViewer
+                fileId={selectedFile?.id}
+                fileName={`${selectedFile?.title}`}
+                height="80vh"
+              />
+
+              {/* Floating Chat Button */}
+              <button
+                className={styles.openChatBtn}
+                onClick={() => setChatOpen(true)}
+              >
+                Open Chat
+              </button>
+
+              {/* Slide-up Chat Modal */}
+              {chatOpen && (
+                <div className={styles.chatModal}>
+                  <div className={styles.chatHeader}>
+                    <span>AI Buddy</span>
+                    <button onClick={() => setChatOpen(false)}>Close</button>
+                  </div>
+
+                  <Chat externalId={selectedFile?.externalId} />
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // DESKTOP VIEW
+        return (
+          <div className={styles.studySpaceContainer}>
+            <CustomPdfViewer
+              fileId={selectedFile?.id}
+              fileName={`${selectedFile?.title}`}
+              height="80vh"
+            />
+            <Chat externalId={selectedFile?.externalId} />
+          </div>
+        );
         return (
           <div className={styles.studySpaceContainer}>
             <CustomPdfViewer
