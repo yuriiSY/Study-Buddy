@@ -273,16 +273,6 @@ export const StudySpacePage = () => {
             <Chat externalId={selectedFile?.externalId} />
           </div>
         );
-        return (
-          <div className={styles.studySpaceContainer}>
-            <CustomPdfViewer
-              fileId={selectedFile?.id}
-              fileName={`${selectedFile?.title}`}
-              height="80vh"
-            />
-            <Chat externalId={selectedFile?.externalId} />
-          </div>
-        );
       default:
         return (
           <div className={styles.studySpaceContainer}>

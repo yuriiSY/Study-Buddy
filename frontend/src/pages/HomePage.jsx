@@ -10,6 +10,7 @@ import AddCard from "../components/AddCard/AddCard";
 import StatsCards from "../components/StatsCards/StatsCards";
 import ManageModuleModal from "../components/ManageModuleModal/ManageModuleModal";
 import LoaderOverlay from "../components/LoaderOverlay/LoaderOverlay";
+import StreakTracker from "../components/StreakTracker/StreakTracker";
 
 export const HomePage = () => {
   const [modules, setModules] = useState([]);
@@ -215,6 +216,7 @@ export const HomePage = () => {
               </div>
 
               {/* <StatsCards /> */}
+              <StreakTracker />
             </div>
           )}
         </div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./Chat.module.css";
 import Message from "../Message/Message";
 import apiPY from "../../api/axiosPython";
@@ -7,6 +7,36 @@ const Chat = ({ externalId }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!externalId) return;
+
+    const fetchHistory = async () => {
+      try {
+        const res = await apiPY.get("/chat-history", {
+          params: {
+            "file_ids[]": externalId,
+            limit: 50,
+          },
+        });
+
+        const history = res.data.chat_history || [];
+
+        const parsedMessages = history
+          .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+          .flatMap((item) => [
+            { sender: "user", text: item.question },
+            { sender: "bot", text: item.answer },
+          ]);
+
+        setMessages(parsedMessages);
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+      }
+    };
+
+    fetchHistory();
+  }, [externalId]);
 
   const sendMessage = async (e) => {
     e.preventDefault();

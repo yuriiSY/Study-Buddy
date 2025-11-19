@@ -1,6 +1,6 @@
 services:
   # ollama:
-  #   image: ollama/ollama:latest  
+  #   image: ollama/ollama:latest
   #   container_name: ollama
   #   ports:
   #     - "11434:11434"
@@ -8,21 +8,20 @@ services:
   #     - ollama_data:/root/.ollama
   #   restart: unless-stopped
 
-
   flask-api:
     build: .
     container_name: flask-api
     ports:
       - "3000:3000"
     environment:
-      # OLLAMA_BASE_URL: "http://ollama:11434"  
+      # OLLAMA_BASE_URL: "http://ollama:11434"
       # OLLAMA_MODEL: "llava:latest"
-      GROQ_API_KEY: "" 
+      GROQ_API_KEY: "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"
       GROQ_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct"
-      DB_HOST: "dpg-d3ojnuje5dus73aqads0-a.frankfurt-postgres.render.com"
+      DB_HOST: "dpg-d4cdfrvdiees73922o40-a.frankfurt-postgres.render.com"
       DB_PORT: 5432
-      DB_NAME: "mydb_uykg"
+      DB_NAME: "mydb_atf9"
       DB_USER: "admin"
-      DB_PASSWORD: "H8XZD0E3gugc5WGIFZlZaRrdu2M7AveU"
+      DB_PASSWORD: "v2v6nmi09ZtEcGYNP4tbdILXPvYd0GP3"
     # depends_on:
     #   - ollama

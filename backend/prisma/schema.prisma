@@ -108,3 +108,26 @@ model UserTestAttempt {
 
   @@unique([userId, testId])
 }
+
+model DailyActivity {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  date      DateTime
+  studied   Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+}
+
+model WeeklyForgiveness {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  weekStart DateTime
+  used      Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, weekStart])
+}
+
