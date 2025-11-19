@@ -96,3 +96,14 @@
 • Various front-end features have made progress  
 • Live demo data is being processed into report data  
 
+
+## Week 9 Retrospectives:
+### What went well
+• Additional features added  
+• Our presentation & interim report were successful  
+• Feedback was useful for our future interface iterations  
+### What to improve
+• GitHub commenting (II)  
+### What actions are being taken  
+• Application updates are being sent to the deployed version  
+• Interface updates  
