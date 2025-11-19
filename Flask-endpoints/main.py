@@ -827,23 +827,23 @@ async def upload_files(
         timestamp = int(time.time() * 1000)
 
         # S3 key pattern to match frontend
-        s3_key = f"modules/{moduleId}/{timestamp}-{filename}" if moduleId else f"uploads/{file_id}-{filename}"
-        s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+        # s3_key = f"modules/{moduleId}/{timestamp}-{filename}" if moduleId else f"uploads/{file_id}-{filename}"
+        # s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
 
-        # Upload to S3
-        try:
-            s3.put_object(
-                Bucket=S3_BUCKET_NAME,
-                Key=s3_key,
-                Body=content,
-                ContentType=file.content_type
-            )
-        except Exception as e:
-            errors.append({"file_name": filename, "error": f"S3 upload failed: {e}"})
-            s3_key = None
-            s3_url = None
+        # # Upload to S3
+        # try:
+        #     s3.put_object(
+        #         Bucket=S3_BUCKET_NAME,
+        #         Key=s3_key,
+        #         Body=content,
+        #         ContentType=file.content_type
+        #     )
+        # except Exception as e:
+        #     errors.append({"file_name": filename, "error": f"S3 upload failed: {e}"})
+        #     s3_key = None
+        #     s3_url = None
 
-        # Extract text, images, pdf_data
+        # # Extract text, images, pdf_data
         text, error, images, pdf_data = process_file_content(file_stream, filename)
 
         chunks = []
