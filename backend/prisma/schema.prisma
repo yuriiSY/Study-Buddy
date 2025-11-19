@@ -18,55 +18,116 @@ enum Specialization {
 }
 
 model User {
-  id        Int         @id @default(autoincrement())
-  name      String
-  email     String      @unique
-  password  String
-  createdAt DateTime    @default(now())
-  specialization Specialization? 
+  id              Int             @id @default(autoincrement())
+  name            String
+  email           String          @unique
+  password        String
+  createdAt       DateTime        @default(now())
+  specialization  Specialization?
 
-  ownedModules Module[]       @relation("OwnedModules")
-  collaborations Collaboration[]
+  ownedModules    Module[]        @relation("OwnedModules")
+  collaborations  Collaboration[]
+  attempts        UserTestAttempt[]
 }
 
 model Module {
-  id         Int            @id @default(autoincrement())
-  title      String
-  ownerId    Int
-  coverImage  String?
-  archived   Boolean        @default(false)
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  id              Int              @id @default(autoincrement())
+  title           String
+  ownerId         Int
+  coverImage      String?
+  archived        Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
-  owner         User          @relation("OwnedModules", fields: [ownerId], references: [id])
-  files         File[]
-  collaborations Collaboration[]
+  owner           User             @relation("OwnedModules", fields: [ownerId], references: [id])
+  isOwner         Boolean
+  files           File[]
+  collaborations  Collaboration[]
 }
 
 model File {
-  id        Int      @id @default(autoincrement())
-  filename  String
-  html      String?
-  s3Url     String
-  s3Key     String
-  embedding Bytes?
+  id          Int      @id @default(autoincrement())
+  filename    String
+  html        String?
+  s3Url       String
+  s3Key       String
+  embedding   Bytes?
   externalId  String?  @unique
-  moduleId  Int
-  createdAt DateTime @default(now())
+  moduleId    Int
+  createdAt   DateTime @default(now())
 
-  module Module @relation(fields: [moduleId], references: [id])
+  module      Module   @relation(fields: [moduleId], references: [id])
+
+  tests       Test[]
 }
 
 model Collaboration {
   id        Int      @id @default(autoincrement())
   userId    Int
   moduleId  Int
-  role      String   @default("editor") 
+  role      String   @default("editor")
   invitedAt DateTime @default(now())
 
-  user   User   @relation(fields: [userId], references: [id])
-  module Module @relation(fields: [moduleId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  module    Module   @relation(fields: [moduleId], references: [id])
 
-  @@unique([userId, moduleId]) 
+  @@unique([userId, moduleId])
+}
+
+model Test {
+  id          Int               @id @default(autoincrement())
+  title       String
+  fileId      Int
+  createdAt   DateTime          @default(now())
+
+  file        File              @relation(fields: [fileId], references: [id])
+  questions   Question[]
+  attempts    UserTestAttempt[]
+}
+
+model Question {
+  id          Int        @id @default(autoincrement())
+  testId      Int
+  text        String
+  options     String[]   
+  answer      Int       
+  createdAt   DateTime   @default(now())
+
+  test        Test       @relation(fields: [testId], references: [id])
+}
+
+model UserTestAttempt {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  testId      Int
+  score       Int
+  takenAt     DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+  test        Test     @relation(fields: [testId], references: [id])
+
+  @@unique([userId, testId])
+}
+
+model DailyActivity {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  date      DateTime
+  studied   Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+}
+
+model WeeklyForgiveness {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  weekStart DateTime
+  used      Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, weekStart])
 }
 

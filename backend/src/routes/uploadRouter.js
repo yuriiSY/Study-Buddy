@@ -13,6 +13,7 @@ import {
   addCollaborator,
   removeCollaborator,
   getCollaborators,
+  searchModulesByTitle,
 } from "../controllers/uploadController.js";
 
 const router = express.Router();
@@ -27,6 +28,7 @@ router.put("/modules/:moduleId/title", updateModuleTitle);
 router.put("/modules/:moduleId/archive", archiveModule);
 router.put("/modules/:moduleId/unarchive", unarchiveModule);
 router.delete("/modules/:moduleId", deleteModule);
+router.get("/modules/search", searchModulesByTitle);
 
 router.post("/modules/:moduleId/collaborators", addCollaborator);
 router.get("/modules/:moduleId/collaborators", getCollaborators);

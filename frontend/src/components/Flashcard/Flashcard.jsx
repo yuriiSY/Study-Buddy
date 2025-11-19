@@ -5,6 +5,7 @@ import styles from "./Flashcard.module.css";
 const Flashcard = ({ cards = [], onFinish }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   const currentCard = cards[currentIndex];
 
@@ -12,6 +13,7 @@ const Flashcard = ({ cards = [], onFinish }) => {
     if (currentIndex < cards.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       setShowAnswer(false);
+      setShowHint(false);
     } else {
       onFinish?.();
     }
@@ -21,6 +23,7 @@ const Flashcard = ({ cards = [], onFinish }) => {
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
       setShowAnswer(false);
+      setShowHint(false);
     }
   };
 
@@ -28,9 +31,9 @@ const Flashcard = ({ cards = [], onFinish }) => {
     <div className={styles.container}>
       <div className={styles.card}>
         <div className={styles.header}>
-          <span className={styles.tag}>{currentCard.topic}</span>
-          <span className={styles.tag}>{currentCard.difficulty}</span>
-          <div className={styles.iconBox}>💡</div>
+          <span className={styles.tag}>
+            Flashcard {currentIndex + 1} / {cards.length}
+          </span>
         </div>
 
         <div className={styles.content}>
@@ -41,13 +44,22 @@ const Flashcard = ({ cards = [], onFinish }) => {
           )}
 
           {!showAnswer && (
-            <button
-              className={styles.showBtn}
-              onClick={() => setShowAnswer(true)}
-            >
-              <RiEyeLine className={styles.icon} />
-              Show Answer
-            </button>
+            <div className={styles.btnAnswers}>
+              <button
+                className={styles.showBtn}
+                onClick={() => setShowAnswer(true)}
+              >
+                <RiEyeLine className={styles.icon} /> Show Answer
+              </button>
+              <button
+                className={styles.showBtn}
+                onClick={() => setShowHint(!showHint)}
+              >
+                💡 Hint
+              </button>
+
+              {showHint && <p className={styles.hint}>{currentCard.hint}</p>}
+            </div>
           )}
         </div>
       </div>
@@ -58,16 +70,14 @@ const Flashcard = ({ cards = [], onFinish }) => {
           onClick={handlePrev}
           disabled={currentIndex === 0}
         >
-          <RiArrowLeftLine />
-          Previous
+          <RiArrowLeftLine /> Previous
         </button>
 
         <button
           className={`${styles.navBtn} ${styles.next}`}
           onClick={handleNext}
         >
-          Next
-          <RiArrowRightLine />
+          Next <RiArrowRightLine />
         </button>
       </div>
     </div>

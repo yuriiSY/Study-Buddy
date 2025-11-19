@@ -11,6 +11,7 @@ import LoaderOverlay from "../../components/LoaderOverlay/LoaderOverlay";
 import CustomPdfViewer from "../../components/CustomPdfViewer";
 
 import api from "../../api/axios";
+import apiPY from "../../api/axiosPython";
 
 const cardsData = [
   {
@@ -52,6 +53,23 @@ export const StudySpacePage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [flashcards, setFlashcards] = useState([]);
+  const [loadingFlashcards, setLoadingFlashcards] = useState(false);
+  const [flashcardsError, setFlashcardsError] = useState(null);
+  const [mcqQuestions, setMcqQuestions] = useState([]);
+  const [loadingMCQ, setLoadingMCQ] = useState(false);
+  const [mcqError, setMcqError] = useState(null);
+  const [chatOpen, setChatOpen] = useState(false);
+
+  useEffect(() => {
+    console.log(selectedFile);
+    if (selectedFeature === "Flashcards" && selectedFile) {
+      loadFlashcards(selectedFile.externalId);
+    }
+    if (selectedFeature === "Quiz" && selectedFile) {
+      loadMCQ(selectedFile.externalId);
+    }
+  }, [selectedFeature, selectedFile]);
 
   const fetchFiles = async () => {
     try {
@@ -91,13 +109,160 @@ export const StudySpacePage = () => {
     console.log("Submitted answers:", answers);
   };
 
+  const loadFlashcards = async (fileId) => {
+    setLoadingFlashcards(true);
+    setFlashcardsError(null);
+
+    try {
+      const res = await apiPY.post("/generate-flashcards", {
+        file_ids: [fileId],
+        num_flashcards: 5,
+      });
+
+      if (!res.data || !res.data.flashcards) {
+        throw new Error("Invalid response format");
+      }
+
+      setFlashcards(res.data.flashcards);
+    } catch (err) {
+      console.error("Failed to load flashcards:", err);
+
+      setFlashcardsError(
+        err?.response?.data?.error ||
+          err.message ||
+          "Failed to load flashcards."
+      );
+    } finally {
+      setLoadingFlashcards(false);
+    }
+  };
+
+  const loadMCQ = async (fileId) => {
+    setLoadingMCQ(true);
+    setMcqError(null);
+
+    try {
+      const res = await apiPY.post("/generate-mcq", {
+        file_ids: [fileId],
+        num_questions: 5,
+      });
+
+      if (!res.data || !res.data.mcqs) {
+        throw new Error("Invalid MCQ response format");
+      }
+
+      const formatted = res.data.mcqs.map((q, index) => ({
+        id: `mcq_${index}`,
+        topic: q.topic || "General",
+        difficulty: q.difficulty || "Medium",
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correct_answer,
+      }));
+
+      setMcqQuestions(formatted);
+    } catch (err) {
+      console.error("Failed to load MCQs:", err);
+      setMcqError(
+        err?.response?.data?.error || err.message || "Failed to load MCQs."
+      );
+    } finally {
+      setLoadingMCQ(false);
+    }
+  };
+
+  const isMobile = window.innerWidth <= 768;
+
   const renderContent = () => {
     switch (selectedFeature) {
       case "Flashcards":
-        return <Flashcard cards={cardsData} />;
+        if (loadingFlashcards) return <LoaderOverlay />;
+
+        if (flashcardsError) {
+          return (
+            <div style={{ padding: 20 }}>
+              <h2 style={{ color: "red" }}>Failed to load flashcards</h2>
+              <button
+                onClick={() => loadFlashcards(selectedFile?.externalId)}
+                style={{
+                  padding: "10px 20px",
+                  background: "#4a6eff",
+                  color: "white",
+                  borderRadius: "6px",
+                  marginTop: "10px",
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          );
+        }
+
+        if (!flashcards.length) {
+          return <p style={{ padding: 20 }}>No flashcards available.</p>;
+        }
+
+        return <Flashcard cards={flashcards} />;
       case "Quiz":
-        return <MCQTest questions={sampleQuestions} onSubmit={handleSubmit} />;
+        if (loadingMCQ) return <LoaderOverlay />;
+
+        if (mcqError) {
+          return (
+            <div style={{ padding: 20 }}>
+              <h2 style={{ color: "red" }}>Failed to load MCQs</h2>
+              <button
+                onClick={() => loadMCQ(selectedFile.externalId)}
+                style={{
+                  padding: "10px 20px",
+                  background: "#4a6eff",
+                  color: "white",
+                  borderRadius: "6px",
+                  marginTop: "10px",
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          );
+        }
+        if (!mcqQuestions.length) {
+          return <p style={{ padding: 20 }}>No quiz questions available.</p>;
+        }
+        return <MCQTest questions={mcqQuestions} onSubmit={handleSubmit} />;
       case "AI Buddy":
+        if (isMobile) {
+          return (
+            <div className={styles.studySpaceContainer}>
+              <CustomPdfViewer
+                fileId={selectedFile?.id}
+                fileName={`${selectedFile?.title}`}
+                height="80vh"
+              />
+
+              {/* Floating Chat Button */}
+              <button
+                className={styles.openChatBtn}
+                onClick={() => setChatOpen(true)}
+              >
+                Open Chat
+              </button>
+
+              {/* Slide-up Chat Modal */}
+              {chatOpen && (
+                <div className={styles.chatModal}>
+                  <div className={styles.chatHeader}>
+                    <span>AI Buddy</span>
+                    <button onClick={() => setChatOpen(false)}>Close</button>
+                  </div>
+
+                  <Chat externalId={selectedFile?.externalId} />
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // DESKTOP VIEW
         return (
           <div className={styles.studySpaceContainer}>
             <CustomPdfViewer
@@ -118,7 +283,6 @@ export const StudySpacePage = () => {
             />
           </div>
         );
-      // return <DocxViewer fileId={selectedFile?.id} moduleId={moduleId} />;
     }
   };
 
@@ -132,7 +296,7 @@ export const StudySpacePage = () => {
       onFilesAdded={fetchFiles}
       hasSidebar={true}
     >
-      {/* <FocusHeader /> */}
+      <FocusHeader />
       {renderContent()}
     </WorkspaceLayout>
   );

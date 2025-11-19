@@ -181,6 +181,36 @@ export const getUserModules = async (req, res) => {
   }
 };
 
+export const searchModulesByTitle = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const query = req.query.q || "";
+
+    const modules = await prisma.module.findMany({
+      where: {
+        AND: [
+          {
+            OR: [{ ownerId: userId }, { collaborations: { some: { userId } } }],
+          },
+          {
+            title: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      include: { files: true },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    res.json({ modules });
+  } catch (error) {
+    console.error("Error searching modules:", error);
+    res.status(500).json({ error: "Failed to search modules" });
+  }
+};
+
 export const getFilesByModule = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -405,5 +435,41 @@ export const getCollaborators = async (req, res) => {
     res.json({ collaborators });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch collaborators" });
+  }
+};
+
+export const leaveModule = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { moduleId } = req.params;
+
+    const module = await prisma.module.findUnique({
+      where: { id: Number(moduleId) },
+    });
+
+    if (!module) {
+      return res.status(404).json({ error: "Module not found" });
+    }
+
+    if (module.ownerId === userId) {
+      return res
+        .status(403)
+        .json({ error: "Owners cannot leave their own module" });
+    }
+
+    const deleted = await prisma.collaboration.deleteMany({
+      where: { moduleId: Number(moduleId), userId: Number(userId) },
+    });
+
+    if (deleted.count === 0) {
+      return res
+        .status(400)
+        .json({ error: "You are not a collaborator of this module" });
+    }
+
+    res.json({ message: "You have successfully left the module" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to leave module" });
   }
 };
