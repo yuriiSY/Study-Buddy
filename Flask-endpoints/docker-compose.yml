@@ -16,7 +16,7 @@ services:
     environment:
       # OLLAMA_BASE_URL: "http://ollama:11434"
       # OLLAMA_MODEL: "llava:latest"
-      GROQ_API_KEY: "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"
+      GROQ_API_KEY: ""
       GROQ_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct"
       DB_HOST: "dpg-d4cdfrvdiees73922o40-a.frankfurt-postgres.render.com"
       DB_PORT: 5432
