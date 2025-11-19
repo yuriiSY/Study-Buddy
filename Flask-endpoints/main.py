@@ -788,23 +788,27 @@ def health():
         )
 
 
-
 @app.post("/upload-files")
 async def upload_files(
     files: list[UploadFile] = File(...),
-    moduleId: str = Form(None)  
+    moduleId: str = Form(None)
 ):
     results = []
     errors = []
 
+    # Get vector stores
+    store = get_vector_store()
+    clip_store = get_clip_vector_store()
+
     for file in files:
         filename = file.filename
         content = await file.read()
+        file_stream = io.BytesIO(content)
 
         file_id = str(uuid.uuid4())
         timestamp = int(time.time() * 1000)
 
-        # Always match frontend path
+        # S3 key pattern to match frontend
         s3_key = f"modules/{moduleId}/{timestamp}-{filename}" if moduleId else f"uploads/{file_id}-{filename}"
         s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
 
@@ -821,22 +825,63 @@ async def upload_files(
             s3_key = None
             s3_url = None
 
-        # Process file content
-        text, error, images, pdf_data = process_file_content(io.BytesIO(content), filename)
+        # Extract text, images, pdf_data
+        text, error, images, pdf_data = process_file_content(file_stream, filename)
+
+        chunks = []
+        # Store text chunks in vector DB
+        if text and text.strip():
+            splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+            chunks = splitter.split_text(text)
+
+            texts = chunks
+            metadatas = [{
+                "file_id": file_id,
+                "file_name": filename,
+                "chunk_index": i,
+                "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
+                "content_type": "text",
+                "has_images": len(images) > 0
+            } for i in range(len(chunks))]
+            ids = [str(uuid.uuid4()) for _ in chunks]
+            store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
+
+        # Store image descriptions in CLIP vector store
+        if images and len(images) > 0:
+            for img_index, img in enumerate(images):
+                description = generate_image_description(img)
+                clip_store.add_texts(
+                    texts=[description],
+                    metadatas=[{
+                        "file_id": file_id,
+                        "file_name": filename,
+                        "image_index": img_index,
+                        "file_type": "image",
+                        "content_type": "image",
+                        "original_content": description
+                    }],
+                    ids=[str(uuid.uuid4())]
+                )
 
         results.append({
             "file_name": filename,
             "file_id": file_id,
-            "chunks": len(text) if text else 0,
-            "images_processed": len(images) if images else 0,
+            "chunks": len(chunks),
+            "images_processed": len(images),
             "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
             "s3_key": s3_key,
             "s3_url": s3_url,
-            "html": None,  # no html for now
+            "html": None,
             "error": error
         })
 
-    return {"uploaded": results, "errors": errors}
+    response_data = {"uploaded": results}
+    if errors:
+        response_data["errors"] = errors
+
+    return JSONResponse(content=response_data, status_code=201)
+
+
 @app.get("/file-ids")
 def list_file_ids():
     try:
@@ -852,38 +897,12 @@ def list_file_ids():
         conn.commit()
 
         files = [{"file_id": r[0], "file_name": r[1]} for r in rows]
-        return {"files": files}
+        return JSONResponse(content={"files": files}, status_code=200)
 
     except Exception as e:
         conn.rollback()
         return JSONResponse(content={"error": str(e)}, status_code=500)
-
-
-@app.post("/ask")
-def ask(data: dict):
-    question = data.get("question", "").strip()
-    file_ids = data.get("file_ids", [])
-
-    if not file_ids:
-        raise HTTPException(status_code=400, detail="file_ids are required")
-
-    chat_history = get_chat_history(file_ids, limit=3)
-    text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, question, k=4)
-    text_context = "\n---\n".join(text_chunks) if text_chunks else ""
-
-    answer = groq_chat_with_history(text_context, question, chat_history)
-
-    for file_id in file_ids:
-        save_chat_history(file_id, question, answer)
-
-    return {
-        "question": question,
-        "answer": answer,
-        "file_ids_used": file_ids,
-        "chat_history": chat_history,
-        "text_chunks": len(text_chunks)
-    }
-
+    
 @app.get("/chat-history")
 def get_chat_history_endpoint(file_ids: list[str] = Query(...), limit: int = 20):
     if not file_ids:
