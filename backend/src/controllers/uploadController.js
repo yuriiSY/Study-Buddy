@@ -62,8 +62,22 @@ export const uploadFiles = async (req, res) => {
         return res.status(400).json({ error: "Module name is required" });
       }
 
+      let coverImage = req.body.coverImage;
+
+      if (Array.isArray(coverImage)) {
+        coverImage = coverImage[0];
+      }
+
+      if (!coverImage || coverImage === "null" || coverImage === "undefined") {
+        coverImage = null;
+      }
+
       module = await prisma.module.create({
-        data: { title: moduleName, ownerId: req.user.id, isOwner: true },
+        data: {
+          title: moduleName,
+          ownerId: req.user.id,
+          coverImage: coverImage,
+        },
       });
       console.log("Created new module:", module.id);
     }
