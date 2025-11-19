@@ -1,75 +1,66 @@
 import uuid
 import subprocess
 import tempfile
+import io,time
+import os
+import base64
+import random
+from datetime import datetime
+import uvicorn
+import boto3
+import fitz
+import pdfplumber
+from PIL import Image
+from docx import Document
+from pptx import Presentation
+import openpyxl
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+
 from groq import Groq
-from flask_cors import CORS
-import psycopg2 as db
-from flask import Flask, request, jsonify
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
-import os, io
-import base64
-from PIL import Image
-import fitz
+import psycopg2 as db
 from dotenv import load_dotenv
-import random
-from datetime import datetime
+from fastapi import Query
 
-# Load environment variables from .env file
-load_dotenv()  
+# ---------------- ENV & CONFIG ----------------
+load_dotenv()
 
-#---------Flask App Setup---------
-app = Flask(__name__)
-CORS(app)
-
-# Import Office document libraries
-try:
-    from docx import Document
-    DOCX_SUPPORT = True
-except ImportError:
-    DOCX_SUPPORT = False
-    print("DOCX support disabled: install python-docx")
-
-try:
-    from pptx import Presentation
-    PPTX_SUPPORT = True
-except ImportError:
-    PPTX_SUPPORT = False
-    print("PPTX support disabled: install python-pptx")
-
-try:
-    import openpyxl
-    XLSX_SUPPORT = True
-except ImportError:
-    XLSX_SUPPORT = False
-    print("XLSX support disabled: install openpyxl")
-
-# Import PDF processing library
-try:
-    import pdfplumber
-    PDF_SUPPORT = True
-except ImportError:
-    PDF_SUPPORT = False
-    print("PDF support disabled: install pdfplumber")
-
-# ---------------- CONFIG ----------------
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
 CLIP_MODEL_NAME = "clip-ViT-B-32"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 GROQ_MODEL = os.environ.get("GROQ_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
 TABLE_NAME = "langchain_pg_embedding"
 
-# Hosted DB credentials
 DB_HOST = os.environ.get("DB_HOST")
 DB_PORT = os.environ.get("DB_PORT")
 DB_NAME = os.environ.get("DB_NAME")
 DB_USER = os.environ.get("DB_USER")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
 
+S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
+AWS_REGION = os.environ.get("AWS_REGION")
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
+# ---------------- FASTAPI APP ----------------
+app = FastAPI(title="Study Buddy API")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # ---------- Connect to hosted PostgreSQL ----------
 print("Connecting to hosted PostgreSQL...")
 try:
@@ -95,6 +86,13 @@ CLIP_EMBED_DIM = 512
 print(f"Text embedding dimension: {EMBED_DIM}")
 print(f"CLIP embedding dimension: {CLIP_EMBED_DIM}")
 
+# ---------------- S3 ----------------
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    region_name=AWS_REGION
+)
 # ---------- PGVector ----------
 vector_store = None
 clip_vector_store = None
@@ -111,6 +109,33 @@ def get_vector_store():
             pre_delete_collection=False
         )
     return vector_store
+
+# Import Office document libraries
+try:
+    DOCX_SUPPORT = True
+except ImportError:
+    DOCX_SUPPORT = False
+    print("DOCX support disabled: install python-docx")
+
+try:
+    PPTX_SUPPORT = True
+except ImportError:
+    PPTX_SUPPORT = False
+    print("PPTX support disabled: install python-pptx")
+
+try:
+    XLSX_SUPPORT = True
+except ImportError:
+    XLSX_SUPPORT = False
+    print("XLSX support disabled: install openpyxl")
+
+# Import PDF processing library
+try:
+    PDF_SUPPORT = True
+except ImportError:
+    PDF_SUPPORT = False
+    print("PDF support disabled: install pdfplumber")
+
 
 def get_clip_vector_store():
     global clip_vector_store
@@ -141,7 +166,7 @@ def retrieve_by_file_ids(file_ids, query, k=4):
     if not file_ids:
         return [], []
     
-    filter_cond = {"file_id": {"$in": file_ids}}
+    filter_cond = {"file_id": file_ids}
     
     text_docs = store.similarity_search(query, k=k, filter=filter_cond)
     text_results = [doc.page_content for doc in text_docs]
@@ -150,6 +175,7 @@ def retrieve_by_file_ids(file_ids, query, k=4):
     image_results = [doc.page_content for doc in image_docs]
     
     return text_results, image_results
+
 
 # ---------------- DOCUMENT PROCESSING FUNCTIONS ----------------
 
@@ -313,74 +339,116 @@ def generate_image_description(image):
         print(f"Error generating image description: {e}")
         return "Image content"
 
+def convert_image_or_text_to_pdf(file_stream, filename):
+    """
+    Converts image or text files to PDF.
+    Supported:
+    - png, jpg, jpeg, bmp, gif (via PIL image -> PDF)
+    - txt (text -> PDF)
+    """
+    ext = filename.lower().split('.')[-1]
+
+    # IMAGE → PDF
+    if ext in ["png", "jpg", "jpeg", "bmp", "gif"]:
+        try:
+            image = Image.open(file_stream)
+            rgb_image = image.convert("RGB")
+            pdf_out = io.BytesIO()
+            rgb_image.save(pdf_out, format="PDF")
+            return pdf_out.getvalue(), None
+        except Exception as e:
+            return None, f"Image → PDF failed: {e}"
+
+    # TEXT → PDF
+    if ext == "txt":
+        try:
+            text = file_stream.read().decode("utf-8", errors="ignore")
+            pdf_out = io.BytesIO()
+            c = canvas.Canvas(pdf_out, pagesize=letter)
+
+            y = 750
+            for line in text.split("\n"):
+                c.drawString(30, y, line)
+                y -= 15
+                if y < 40:
+                    c.showPage()
+                    y = 750
+
+            c.save()
+            return pdf_out.getvalue(), None
+        except Exception as e:
+            return None, f"Text → PDF failed: {e}"
+
+    return None, "Unsupported file type for conversion to PDF"
+
 def process_file_content(file, filename):
-    """Process different file types with Office-to-PDF conversion"""
+    """
+    Process uploaded file and return:
+    - text content
+    - error message if any
+    - list of images (PIL.Image)
+    - PDF bytes (if converted or original PDF)
+    """
     file_extension = filename.lower().split('.')[-1] if '.' in filename else ''
+    file_bytes = file.read()
+    file_stream = io.BytesIO(file_bytes)
     
-    # Convert Office files to PDF first for full text+image extraction
-    convertible_types = ['docx', 'pptx', 'xlsx', 'doc', 'ppt', 'xls']
-    if file_extension in convertible_types:
+    # ---------- Office files (convert to PDF first) ----------
+    office_types = ['docx', 'pptx', 'xlsx', 'doc', 'ppt', 'xls']
+    if file_extension in office_types:
         print(f"Converting {file_extension.upper()} to PDF for full processing...")
-        
-        file_stream = io.BytesIO(file.read())
         pdf_data, error = convert_office_to_pdf(file_stream, filename)
-        
         if error:
-            # Fallback to text-only extraction if conversion fails
-            print(f"Conversion failed, falling back to text extraction: {error}")
-            if file_extension == 'docx' and DOCX_SUPPORT:
+            print(f"Office → PDF failed: {error}, falling back to native extraction...")
+            # Fallback text extraction
+            try:
                 file_stream.seek(0)
-                text = extract_text_from_docx(file_stream)
-                return text, f"Images not processed. {error}", []
-            elif file_extension == 'pptx' and PPTX_SUPPORT:
-                file_stream.seek(0)
-                text = extract_text_from_pptx(file_stream)
-                return text, f"Images not processed. {error}", []
-            elif file_extension == 'xlsx' and XLSX_SUPPORT:
-                file_stream.seek(0)
-                text = extract_text_from_xlsx(file_stream)
-                return text, f"Images not processed. {error}", []
-            else:
-                return None, f"Conversion failed and no fallback: {error}", []
-        
-        # Process the converted PDF
-        print(f"Successfully converted {filename} to PDF")
+                if file_extension == 'docx' and DOCX_SUPPORT:
+                    return extract_text_from_docx(file_stream), f"Fallback text only. {error}", [], None
+                elif file_extension == 'pptx' and PPTX_SUPPORT:
+                    return extract_text_from_pptx(file_stream), f"Fallback text only. {error}", [], None
+                elif file_extension == 'xlsx' and XLSX_SUPPORT:
+                    return extract_text_from_xlsx(file_stream), f"Fallback text only. {error}", [], None
+                else:
+                    return None, f"No extraction fallback available. {error}", [], None
+            except Exception as e:
+                return None, f"Fallback extraction failed: {e}", [], None
+
+        # Success: extract text and images from PDF
         pdf_stream = io.BytesIO(pdf_data)
-        text = extract_text_from_pdf(pdf_stream)
+        text = extract_text_from_pdf(io.BytesIO(pdf_data))
         pdf_stream.seek(0)
-        images = extract_images_from_pdf(pdf_stream)
-        
-        return text, None, images
-    
-    # Process PDF files directly
+        images = extract_images_from_pdf(io.BytesIO(pdf_data))
+        return text, None, images, pdf_data
+
+    # ---------- PDF files ----------
     elif file_extension == 'pdf':
         if not PDF_SUPPORT:
-            return None, "PDF support not available. Install pdfplumber.", []
+            return None, "PDF support not available. Install pdfplumber.", [], None
         
-        file_stream = io.BytesIO(file.read())
-        text = extract_text_from_pdf(file_stream)
-        file_stream.seek(0)
-        images = extract_images_from_pdf(file_stream)
+        pdf_bytes = file_bytes
+        text = extract_text_from_pdf(io.BytesIO(pdf_bytes))
+        images = extract_images_from_pdf(io.BytesIO(pdf_bytes))
+        return text, None, images, pdf_bytes
+
+    # ---------- Image or text files → PDF ----------
+    elif file_extension in ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'txt']:
+        pdf_data, error = convert_image_or_text_to_pdf(io.BytesIO(file_bytes), filename)
+        if error:
+            return None, error, [], None
         
-        return text, None, images
-        
-    elif file_extension in ['png', 'jpg', 'jpeg', 'gif', 'bmp']:
-        try:
-            image = Image.open(file.stream)
-            description = generate_image_description(image)
-            file.stream.seek(0)
-            return description, None, [image]
-        except Exception as e:
-            return None, f"Error processing image: {e}", []
-            
-    elif file_extension == 'txt':
-        return file.stream.read().decode("utf-8", errors="ignore"), None, []
+        # For images, we usually don’t extract again
+        text = extract_text_from_pdf(io.BytesIO(pdf_data)) if file_extension == 'txt' else ""
+        images = []  # images are embedded in PDF
+        return text, None, images, pdf_data
+
+    # ---------- Plain text fallback ----------
     else:
         try:
-            return file.stream.read().decode("utf-8", errors="ignore"), None, []
-        except:
-            return None, f"Unsupported file type: {file_extension}", []
-        
+            return file_bytes.decode("utf-8", errors="ignore"), None, [], None
+        except Exception as e:
+            return None, f"Unsupported file type: {file_extension}. {e}", [], None
+
 
 # ---------- LLM (Groq API call) ----------
 
@@ -486,7 +554,7 @@ def groq_chat_with_history(context: str, question: str, chat_history: list, imag
     messages = [
         {
             "role": "system", 
-            "content": "You are having a continuous conversation. Always reference and build upon previous questions and answers when relevant."
+            "content": "You are having a continuous conversation. Always reference and build upon previous questions and answers when relevant. If you don't have chat history, then just answer based on the provided context."
         }
     ]
     
@@ -689,68 +757,18 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
     except Exception as e:
         print(f"Groq API error: {e}")
         return [{"error": f"Generation failed: {str(e)}"}]
-    
-def groq_chat_with_history(context: str, question: str, chat_history: list, images: list = None) -> str:
-    client = Groq(api_key=GROQ_API_KEY)
-    
-    messages = [
-        {
-            "role": "system", 
-            "content": "You are a helpful AI using student notes as context. Use the provided context to answer questions. Always cite your sources."
-        }
-    ]
-    
-    # Add chat history naturally as conversation
-    for chat in chat_history:
-        messages.append({"role": "user", "content": chat['question']})
-        messages.append({"role": "assistant", "content": chat['answer']})
-    
-    # Add current context and question
-    user_content = [{"type": "text", "text": f"CONTEXT:\n{context}\n\nQUESTION:\n{question}\n\nAnswer based on the context above. End with: SOURCE: [file(s)]"}]
-    
-    if images and len(images) > 0:
-        for img in images:
-            try:
-                img_byte_arr = io.BytesIO()
-                img.save(img_byte_arr, format='PNG')
-                img_b64 = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
-                user_content.append({
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}
-                })
-            except Exception as e:
-                print(f"Error converting image to base64: {e}")
-                continue
-    
-    messages.append({"role": "user", "content": user_content})
-    
-    try:
-        response = client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=messages,
-            max_tokens=2048,
-            temperature=0.1
-        )
-        
-        content = response.choices[0].message.content
-        return content
-        
-    except Exception as e:
-        error_msg = f"Groq API error: {e}"
-        print(error_msg)
-        return error_msg  
 
 # ------------------- ENDPOINTS --------------------------------------------------------
 
-@app.route('/', methods=['GET'])
+@app.get("/")
 def health():
     try:
         client = Groq(api_key=GROQ_API_KEY)
         models = client.models.list()
         model_names = [model.id for model in models.data]
-        
-        return jsonify({
-            "status": "ok", 
+
+        return {
+            "status": "ok",
             "groq": "connected",
             "model": GROQ_MODEL,
             "clip_ready": True,
@@ -760,72 +778,83 @@ def health():
                 "xlsx": XLSX_SUPPORT,
                 "pdf": PDF_SUPPORT,
                 "libreoffice": True
-            }
-        }), 200
+            },
+            "available_models": model_names
+        }
     except Exception as e:
-        return jsonify({"status": "ok", "groq": "disconnected", "error": str(e)}), 200
+        return JSONResponse(
+            content={"status": "ok", "groq": "disconnected", "error": str(e)},
+            status_code=200
+        )
 
-@app.route('/upload-files', methods=['POST'])
-def upload_files():
-    if 'files' not in request.files:
-        return jsonify({"error": "Missing 'files'"}), 400
 
-    files = request.files.getlist('files')
-    if not files:
-        return jsonify({"error": "No files selected"}), 400
-
-    store = get_vector_store()
-    clip_store = get_clip_vector_store()
+@app.post("/upload-files")
+async def upload_files(
+    files: list[UploadFile] = File(...),
+    moduleId: str = Form(None)
+):
     results = []
     errors = []
 
+    # Get vector stores
+    store = get_vector_store()
+    clip_store = get_clip_vector_store()
+
     for file in files:
-        if not file.filename:
-            continue
-
-        print(f"Processing file: {file.filename}")
-
-        raw_text, error, images = process_file_content(file, file.filename)
-        
-        if error:
-            errors.append({"file_name": file.filename, "error": error})
-            continue
-            
-        if not raw_text or not raw_text.strip():
-            if not images:
-                errors.append({"file_name": file.filename, "error": "No extractable content"})
-                continue
-
-        print(f"Extracted {len(raw_text)} characters and {len(images)} images from {file.filename}")
+        filename = file.filename
+        content = await file.read()
+        file_stream = io.BytesIO(content)
 
         file_id = str(uuid.uuid4())
-        
-        if raw_text and raw_text.strip():
+        timestamp = int(time.time() * 1000)
+
+        # S3 key pattern to match frontend
+        s3_key = f"modules/{moduleId}/{timestamp}-{filename}" if moduleId else f"uploads/{file_id}-{filename}"
+        s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+
+        # Upload to S3
+        try:
+            s3.put_object(
+                Bucket=S3_BUCKET_NAME,
+                Key=s3_key,
+                Body=content,
+                ContentType=file.content_type
+            )
+        except Exception as e:
+            errors.append({"file_name": filename, "error": f"S3 upload failed: {e}"})
+            s3_key = None
+            s3_url = None
+
+        # Extract text, images, pdf_data
+        text, error, images, pdf_data = process_file_content(file_stream, filename)
+
+        chunks = []
+        # Store text chunks in vector DB
+        if text and text.strip():
             splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-            chunks = splitter.split_text(raw_text)
+            chunks = splitter.split_text(text)
 
             texts = chunks
             metadatas = [{
-                "file_id": file_id, 
-                "file_name": file.filename, 
+                "file_id": file_id,
+                "file_name": filename,
                 "chunk_index": i,
-                "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown',
+                "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
                 "content_type": "text",
                 "has_images": len(images) > 0
             } for i in range(len(chunks))]
             ids = [str(uuid.uuid4()) for _ in chunks]
-
             store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
 
+        # Store image descriptions in CLIP vector store
         if images and len(images) > 0:
             for img_index, img in enumerate(images):
                 description = generate_image_description(img)
-                
                 clip_store.add_texts(
                     texts=[description],
                     metadatas=[{
                         "file_id": file_id,
-                        "file_name": file.filename,
+                        "file_name": filename,
                         "image_index": img_index,
                         "file_type": "image",
                         "content_type": "image",
@@ -835,20 +864,25 @@ def upload_files():
                 )
 
         results.append({
-            "file_name": file.filename, 
-            "file_id": file_id, 
-            "chunks": len(chunks) if 'chunks' in locals() else 0,
+            "file_name": filename,
+            "file_id": file_id,
+            "chunks": len(chunks),
             "images_processed": len(images),
-            "file_type": file.filename.lower().split('.')[-1] if '.' in file.filename else 'unknown'
+            "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
+            "s3_key": s3_key,
+            "s3_url": s3_url,
+            "html": None,
+            "error": error
         })
 
     response_data = {"uploaded": results}
     if errors:
         response_data["errors"] = errors
 
-    return jsonify(response_data), 201
+    return JSONResponse(content=response_data, status_code=201)
 
-@app.route('/file-ids', methods=['GET'])
+
+@app.get("/file-ids")
 def list_file_ids():
     try:
         cur = conn.cursor()
@@ -858,97 +892,57 @@ def list_file_ids():
             FROM {TABLE_NAME}
             ORDER BY file_name
         """)
-        
         rows = cur.fetchall()
         cur.close()
         conn.commit()
+
         files = [{"file_id": r[0], "file_name": r[1]} for r in rows]
-        return jsonify({"files": files})
+        return JSONResponse(content={"files": files}, status_code=200)
+
     except Exception as e:
         conn.rollback()
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/ask', methods=['POST'])
-def ask():
-    data = request.get_json()
-    question = data.get("question", "").strip()
-    file_ids = data.get("file_ids", [])
+        return JSONResponse(content={"error": str(e)}, status_code=500)
     
+@app.get("/chat-history")
+def get_chat_history_endpoint(file_ids: list[str] = Query(...), limit: int = 20):
     if not file_ids:
-        return jsonify({"error": "file_ids are required"}), 400
+        raise HTTPException(status_code=400, detail="file_ids are required")
 
-    # Get recent chat history
-    chat_history = get_chat_history(file_ids, limit=3)  # Reduced to save tokens
-    
-    # Get document context
-    text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, question, k=4)
-    text_context = "\n---\n".join(text_chunks) if text_chunks else ""
-    
-    # Generate answer WITH history in message format
-    answer = groq_chat_with_history(text_context, question, chat_history)
-    
-    # Save to chat history
-    for file_id in file_ids:
-        save_chat_history(file_id, question, answer)
-    
-    return jsonify({
-        "question": question,
-        "answer": answer,
-        "file_ids_used": file_ids,
-        "chat_history": chat_history,
-        "text_chunks": len(text_chunks)
-    })
-@app.route('/chat-history', methods=['GET'])
-def get_chat_history_endpoint():
-    """Get chat history for specific files"""
-    file_ids = request.args.getlist('file_ids[]')
-    limit = int(request.args.get('limit', 20))
-    
-    if not file_ids:
-        return jsonify({"error": "file_ids are required"}), 400
-    
     history = get_chat_history(file_ids, limit)
-    
-    return jsonify({
+    return {
         "chat_history": history,
         "file_ids": file_ids,
         "total_messages": len(history)
-    })
+    }
 
-@app.route('/clear-chat-history', methods=['POST'])
-def clear_chat_history():
-    """Clear chat history for specific files"""
-    data = request.get_json()
+@app.post("/clear-chat-history")
+def clear_chat_history(data: dict):
     file_ids = data.get("file_ids", [])
-    
+
     try:
         cur = conn.cursor()
         placeholders = ','.join(['%s'] * len(file_ids))
         cur.execute(f"DELETE FROM chat_history WHERE file_id IN ({placeholders})", file_ids)
-        
+
         conn.commit()
         cur.close()
-        
-        return jsonify({
+
+        return {
             "message": "Chat history cleared successfully",
             "file_ids": file_ids
-        })
+        }
     except Exception as e:
         conn.rollback()
-        return jsonify({"error": f"Failed to clear history: {str(e)}"}), 500
+        return JSONResponse(content={"error": f"Failed to clear history: {str(e)}"}, status_code=500)
 
-
-
-@app.route('/generate-flashcards', methods=['POST'])
-def generate_flashcards():
-    data = request.get_json()
+@app.post("/generate-flashcards")
+def generate_flashcards(data: dict):
     file_ids = data.get("file_ids", [])
     num_flashcards = data.get("num_flashcards", 5)
-    
-    # Random search terms to get different context each time
+
     search_terms = [
         "key concepts",
-        "important information", 
+        "important information",
         "main topics",
         "detailed explanations",
         "examples and applications",
@@ -956,57 +950,52 @@ def generate_flashcards():
         "processes and methods",
         "relationships and connections"
     ]
-    
+
     random_term = random.choice(search_terms)
     context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=6)
     context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
-    
+
     if not context.strip():
-        return jsonify({"error": "No content found in selected files"}), 400
+        raise HTTPException(status_code=400, detail="No content found in selected files")
 
     flashcards = generate_flashcards_with_groq(context, num_flashcards)
-    
-    return jsonify({
+
+    return {
         "flashcards": flashcards,
         "file_ids_used": file_ids,
         "total_generated": len(flashcards)
-    })
+    }
 
-
-@app.route('/generate-mcq', methods=['POST'])
-def generate_mcq():
-    data = request.get_json()
+@app.post("/generate-mcq")
+def generate_mcq(data: dict):
     file_ids = data.get("file_ids", [])
-    num_questions = data.get("num_questions", 5) 
-    
-    # Random search for variety
+    num_questions = data.get("num_questions", 5)
+
     search_terms = [
         "key concepts and definitions",
-        "important principles and theories", 
+        "important principles and theories",
         "formulas and equations",
         "processes and methods",
         "relationships and connections"
     ]
-    
+
     random_term = random.choice(search_terms)
     context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=8)
     context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
-    
+
     if not context.strip():
-        return jsonify({"error": "No content found in selected files"}), 400
+        raise HTTPException(status_code=400, detail="No content found in selected files")
 
     mcqs = generate_mcq_with_groq(context, num_questions)
-    
-    return jsonify({
+
+    return {
         "mcqs": mcqs,
         "file_ids_used": file_ids,
         "total_questions": len(mcqs)
-    })
+    }
 
-
+# ---------------- RUN ----------------
 if __name__ == "__main__":
-    print("Starting Flask ...")
-    app.run(host="0.0.0.0")
+    uvicorn.run(app, host="0.0.0.0", port=3000, reload=True)
 
 
-    
