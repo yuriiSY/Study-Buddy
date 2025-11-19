@@ -887,8 +887,8 @@ async def upload_files(
             "chunks": len(chunks),
             "images_processed": len(images),
             "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
-            "s3_key": s3_key,
-            "s3_url": s3_url,
+            # "s3_key": s3_key,
+            # "s3_url": s3_url,
             "html": None,
             "error": error
         })
