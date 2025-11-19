@@ -24,11 +24,12 @@ const s3 = new S3Client({
 // Upload files (create or update module)
 // ----------------------------------------------------------------------
 export const uploadFiles = async (req, res) => {
+  console.log("=== UPLOAD FILES REQUEST ===");
   console.log("req.body:", req.body);
+  console.log("req.user:", req.user);
+  console.log("=== END REQUEST DATA ===");
 
   const { moduleName, moduleId, file_id, s3Url, s3Key, file_name, coverImage } = req.body;
-
-  console.log("Request Body:", req.body); // Log the incoming request body for debugging
 
   if (!s3Url || !s3Key || !file_name) {
     return res.status(400).json({ error: "Missing file information from Python service" });
@@ -38,6 +39,7 @@ export const uploadFiles = async (req, res) => {
     let module;
 
     if (moduleId) {
+      console.log("Looking for existing module:", moduleId);
       module = await prisma.module.findFirst({
         where: {
           id: Number(moduleId),
@@ -50,9 +52,12 @@ export const uploadFiles = async (req, res) => {
       });
 
       if (!module) {
+        console.log("Module not found or no permission");
         return res.status(403).json({ error: "Not allowed to upload to this module" });
       }
+      console.log("Found module:", module.id);
     } else {
+      console.log("Creating new module with name:", moduleName);
       if (!moduleName || !moduleName.trim()) {
         return res.status(400).json({ error: "Module name is required" });
       }
@@ -60,9 +65,10 @@ export const uploadFiles = async (req, res) => {
       module = await prisma.module.create({
         data: { title: moduleName, ownerId: req.user.id },
       });
+      console.log("Created new module:", module.id);
     }
 
-    
+    console.log("Creating file record...");
     let html = req.body.html || "";
 
     const savedFile = await prisma.file.create({
@@ -76,12 +82,14 @@ export const uploadFiles = async (req, res) => {
         externalId: file_id || null,
       },
     });
+    console.log("File created:", savedFile.id);
 
     const updatedModule = await prisma.module.findUnique({
       where: { id: module.id },
       include: { files: true },
     });
 
+    console.log("Upload completed successfully");
     res.json({
       message: moduleId
         ? "Files added to existing module successfully"
@@ -89,8 +97,21 @@ export const uploadFiles = async (req, res) => {
       module: updatedModule,
     });
   } catch (err) {
-    console.error("Upload failed:", err);
-    res.status(500).json({ error: "Upload failed" });
+    console.error("❌ UPLOAD FAILED - DETAILED ERROR:", err);
+    console.error("Error message:", err.message);
+    console.error("Error stack:", err.stack);
+    
+    // Check for specific Prisma errors
+    if (err.code) {
+      console.error("Database error code:", err.code);
+    }
+    
+    // Check if it's a Prisma validation error
+    if (err.meta) {
+      console.error("Prisma error metadata:", err.meta);
+    }
+    
+    res.status(500).json({ error: `Upload failed: ${err.message}` });
   }
 };
 

@@ -65,14 +65,17 @@ const ModuleModal = ({
         return;
       }
   
-      // ---------- 3️⃣ Build payload for Node (as JSON) ----------
+      // ---------- 3️⃣ Build CORRECT payload for Node ----------
       const nodePayload = {
-        moduleName: mode === "create" ? moduleName : undefined,
-        moduleId: mode === "upload" ? moduleId : undefined,
+        // For CREATE mode, only send moduleName
+        // For UPLOAD mode, only send moduleId as a NUMBER
+        ...(mode === "create" && { moduleName }),
+        ...(mode === "upload" && { moduleId: Number(moduleId) }), // Convert to number
         file_id: uploadedInfo.file_id,
         file_name: uploadedInfo.file_name,
-        s3Url: uploadedInfo.s3_url, // 🟢 map snake_case -> camelCase
-        s3Key: uploadedInfo.s3_key, // 🟢 map snake_case -> camelCase
+        s3Url: uploadedInfo.s3_url,
+        s3Key: uploadedInfo.s3_key,
+        html: uploadedInfo.html || "",
       };
   
       console.log("Node Payload:", nodePayload);
@@ -93,12 +96,12 @@ const ModuleModal = ({
       onClose();
     } catch (err) {
       console.error("Upload failed:", err);
-      alert("Upload failed");
+      console.error("Error details:", err.response?.data); // This will show the actual error from Node.js
+      alert("Upload failed: " + (err.response?.data?.error || err.message));
     } finally {
       setLoading(false);
     }
   };
-  
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
