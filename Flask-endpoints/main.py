@@ -554,7 +554,10 @@ def groq_chat_with_history(context: str, question: str, chat_history: list, imag
     messages = [
         {
             "role": "system", 
-            "content": "You are having a continuous conversation. Always reference and build upon previous questions and answers when relevant. If you don't have chat history, then just answer based on the provided context."
+            "content": "You are an intelligent assistant that answers based on the provided document. "
+                "If chat history is available, use it naturally to maintain continuity. "
+                "If there is no chat history, simply answer the question directly without "
+                "mentioning anything about missing conversation."
         }
     ]
     
@@ -804,7 +807,8 @@ async def upload_files(
         filename = file.filename
         content = await file.read()
         file_stream = io.BytesIO(content)
-
+        # Extract text, images, pdf_data
+        text, error, images, pdf_data = process_file_content(file_stream, filename)
         file_id = str(uuid.uuid4())
         timestamp = int(time.time() * 1000)
 
@@ -825,8 +829,7 @@ async def upload_files(
             s3_key = None
             s3_url = None
 
-        # Extract text, images, pdf_data
-        text, error, images, pdf_data = process_file_content(file_stream, filename)
+
 
         chunks = []
         # Store text chunks in vector DB
@@ -880,6 +883,51 @@ async def upload_files(
         response_data["errors"] = errors
 
     return JSONResponse(content=response_data, status_code=201)
+
+
+class AskRequest(BaseModel):
+    question: str
+    file_ids: list[str]
+
+
+@app.post("/ask")
+def ask(data: AskRequest):
+    question = data.question.strip()
+    file_ids = data.file_ids
+
+    if not file_ids:
+        raise HTTPException(status_code=400, detail="file_ids are required")
+
+    # Get recent chat history
+    chat_history = get_chat_history(file_ids, limit=3)
+
+    # Retrieve chunks and images relevant to the query
+    text_chunks, image_descriptions = retrieve_by_file_ids(
+        file_ids,
+        question,
+        k=4
+    )
+    text_context = "\n---\n".join(text_chunks) if text_chunks else ""
+
+    # Generate answer using Groq with chat history
+    answer = groq_chat_with_history(
+        text_context,
+        question,
+        chat_history
+    )
+
+    # Save updated chat history
+    for file_id in file_ids:
+        save_chat_history(file_id, question, answer)
+
+    
+    return JSONResponse(content={
+        "question": question,
+        "answer": answer,
+        "file_ids_used": file_ids,
+        "chat_history": chat_history,
+        "text_chunks": len(text_chunks)
+    })
 
 
 @app.get("/file-ids")
@@ -996,6 +1044,6 @@ def generate_mcq(data: dict):
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=3000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=3000, debug=True)
 
 

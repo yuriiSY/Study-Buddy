@@ -32,12 +32,12 @@ const ModuleModal = ({
       alert("Please enter a module name.");
       return;
     }
-
+  
     if (uploadedFiles.length === 0) {
       alert("Please upload at least one file.");
       return;
     }
-
+  
     setLoading(true);
     try {
       // ---------- 1️⃣ Build FormData for Python ----------
@@ -48,46 +48,46 @@ const ModuleModal = ({
         pyFormData.append("moduleId", moduleId);
       }
       uploadedFiles.forEach((file) => pyFormData.append("files", file));
-
+  
       // ---------- 2️⃣ Upload to Python ----------
+      
       const respy = await apiPY.post("/upload-files", pyFormData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+  
       console.log("Python Upload successful:", respy.data);
-
-      // Extract file_id from the response
+  
       const uploadedInfo = respy.data.uploaded?.[0];
-      const fileIdFromPython = uploadedInfo?.file_id;
-
-      if (!fileIdFromPython) {
-        console.warn("⚠️ No file_id returned from Python — skipping link.");
+  
+      if (!uploadedInfo) {
+        console.warn("⚠️ No files returned from Python — skipping Node upload.");
+        setLoading(false);
+        return;
       }
-
-      // ---------- 3️⃣ Build new FormData for Node ----------
-      const nodeFormData = new FormData();
-      if (mode === "create") {
-        nodeFormData.append("moduleName", moduleName);
-      } else {
-        nodeFormData.append("moduleId", moduleId);
-      }
-
-      uploadedFiles.forEach((file) => nodeFormData.append("files", file));
-      if (fileIdFromPython) {
-        nodeFormData.append("file_id", fileIdFromPython); // 👈 Add the link
-      }
-
+  
+      // ---------- 3️⃣ Build payload for Node (as JSON) ----------
+      const nodePayload = {
+        moduleName: mode === "create" ? moduleName : undefined,
+        moduleId: mode === "upload" ? moduleId : undefined,
+        file_id: uploadedInfo.file_id,
+        file_name: uploadedInfo.file_name,
+        s3Url: uploadedInfo.s3_url, // 🟢 map snake_case -> camelCase
+        s3Key: uploadedInfo.s3_key, // 🟢 map snake_case -> camelCase
+      };
+  
+      console.log("Node Payload:", nodePayload);
+  
       // ---------- 4️⃣ Upload to Node ----------
-      const res = await api.post("/files/upload", nodeFormData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const res = await api.post("/files/upload", nodePayload, {
+        headers: { "Content-Type": "application/json" },
       });
-
+  
       console.log("Node Upload successful:", res.data);
-
+  
       if (onCreate && res.data?.module) {
         onCreate(res.data.module);
       }
-
+  
       setModuleName("");
       setUploadedFiles([]);
       onClose();
@@ -98,7 +98,7 @@ const ModuleModal = ({
       setLoading(false);
     }
   };
-
+  
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>

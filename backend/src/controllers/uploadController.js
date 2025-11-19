@@ -24,11 +24,15 @@ const s3 = new S3Client({
 // Upload files (create or update module)
 // ----------------------------------------------------------------------
 export const uploadFiles = async (req, res) => {
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).json({ error: "No files uploaded" });
-  }
+  console.log("req.body:", req.body);
 
-  const { moduleName, moduleId, file_id } = req.body;
+  const { moduleName, moduleId, file_id, s3Url, s3Key, file_name, coverImage } = req.body;
+
+  console.log("Request Body:", req.body); // Log the incoming request body for debugging
+
+  if (!s3Url || !s3Key || !file_name) {
+    return res.status(400).json({ error: "Missing file information from Python service" });
+  }
 
   try {
     let module;
@@ -39,18 +43,14 @@ export const uploadFiles = async (req, res) => {
           id: Number(moduleId),
           OR: [
             { ownerId: req.user.id },
-            {
-              collaborations: { some: { userId: req.user.id, role: "editor" } },
-            },
+            { collaborations: { some: { userId: req.user.id, role: "editor" } } },
           ],
         },
         include: { files: true },
       });
 
       if (!module) {
-        return res
-          .status(403)
-          .json({ error: "Not allowed to upload to this module" });
+        return res.status(403).json({ error: "Not allowed to upload to this module" });
       }
     } else {
       if (!moduleName || !moduleName.trim()) {
@@ -58,59 +58,24 @@ export const uploadFiles = async (req, res) => {
       }
 
       module = await prisma.module.create({
-        data: {
-          title: moduleName,
-          ownerId: req.user.id,
-        },
+        data: { title: moduleName, ownerId: req.user.id },
       });
     }
 
-    const uploadedResults = [];
+    
+    let html = req.body.html || "";
 
-    for (const file of req.files) {
-      const filePath = file.path;
-      const fileName = file.originalname;
-
-      const fileBuffer = fs.readFileSync(filePath);
-      const s3Key = `modules/${module.id}/${Date.now()}-${fileName}`;
-
-      await s3.send(
-        new PutObjectCommand({
-          Bucket: process.env.S3_BUCKET_NAME,
-          Key: s3Key,
-          Body: fileBuffer,
-          ContentType: file.mimetype,
-        })
-      );
-
-      const s3Url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
-
-      let html = "";
-      if (
-        file.mimetype ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      ) {
-        html = await convertDocxToHtml(filePath);
-      }
-
-      fs.unlink(filePath, () => {});
-
-      const coverImage = req.body.coverImage;
-
-      const savedFile = await prisma.file.create({
-        data: {
-          filename: fileName,
-          html,
-          s3Url,
-          s3Key,
-          moduleId: module.id,
-          coverImage: coverImage || null,
-          externalId: file_id || null,
-        },
-      });
-
-      uploadedResults.push(savedFile);
-    }
+    const savedFile = await prisma.file.create({
+      data: {
+        filename: file_name,
+        html,
+        s3Url,
+        s3Key,
+        moduleId: module.id,
+        coverImage: coverImage || null,
+        externalId: file_id || null,
+      },
+    });
 
     const updatedModule = await prisma.module.findUnique({
       where: { id: module.id },
@@ -128,6 +93,8 @@ export const uploadFiles = async (req, res) => {
     res.status(500).json({ error: "Upload failed" });
   }
 };
+
+
 
 // ----------------------------------------------------------------------
 // Get signed S3 URL for download
