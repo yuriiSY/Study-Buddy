@@ -63,7 +63,7 @@ export const uploadFiles = async (req, res) => {
       }
 
       module = await prisma.module.create({
-        data: { title: moduleName, ownerId: req.user.id },
+        data: { title: moduleName, ownerId: req.user.id, isOwner: true },
       });
       console.log("Created new module:", module.id);
     }
