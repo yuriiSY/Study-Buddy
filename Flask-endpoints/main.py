@@ -1,7 +1,7 @@
 import uuid
 import subprocess
 import tempfile
-import io,time
+import io,time, json
 import os
 import base64
 import random
@@ -614,6 +614,7 @@ def generate_mcq_with_groq(context: str, num_questions: int = 5):
     - Shuffle Answers like option A,B,C,D , dont always put correct answer at same place
     - Wrong answers should be plausible but incorrect
     - Cover different aspects of the content
+    - Return ONLY valid JSON, no other text
     
     FORMAT:
     [
@@ -629,7 +630,7 @@ def generate_mcq_with_groq(context: str, num_questions: int = 5):
         }}
     ]
     
-    Return ONLY valid JSON.
+    Return ONLY the JSON array, nothing else.
     """
     
     try:
@@ -638,7 +639,7 @@ def generate_mcq_with_groq(context: str, num_questions: int = 5):
             messages=[
                 {
                     "role": "system",
-                    "content": "Create high-quality multiple choice questions with 4 options and one correct answer."
+                    "content": "You are a JSON generator. Always return valid JSON arrays only. No explanations, no additional text."
                 },
                 {
                     "role": "user", 
@@ -653,111 +654,128 @@ def generate_mcq_with_groq(context: str, num_questions: int = 5):
         print(f"Raw MCQ response: {content}")
         
         import json
+        import re
+        
+        # Try to parse directly first
         try:
             mcqs = json.loads(content)
-            
             if isinstance(mcqs, list):
                 return mcqs
-            elif isinstance(mcqs, dict):
-                if 'questions' in mcqs:
-                    return mcqs['questions']
-                else:
-                    return [mcqs]
-            else:
-                return [{"error": "Invalid response format"}]
-                
-        except json.JSONDecodeError as e:
-            print(f"JSON parse error: {e}")
-            import re
-            json_match = re.search(r'\[.*\]', content, re.DOTALL)
-            if json_match:
-                try:
-                    return json.loads(json_match.group())
-                except:
-                    pass
-            return [{"error": "Could not parse MCQs"}]
+        except json.JSONDecodeError:
+            pass
+        
+        # If direct parsing fails, try to extract JSON from the response
+        json_match = re.search(r'\[.*\]', content, re.DOTALL)
+        if json_match:
+            try:
+                mcqs = json.loads(json_match.group())
+                if isinstance(mcqs, list):
+                    return mcqs
+            except json.JSONDecodeError:
+                pass
+        
+        # If all else fails, return a default error structure
+        print(f"Failed to parse JSON from response: {content}")
+        return [{"error": "Failed to generate valid MCQs", "raw_response": content[:100] + "..." if len(content) > 100 else content}]
         
     except Exception as e:
         print(f"Groq API error: {e}")
         return [{"error": f"MCQ generation failed: {str(e)}"}]
-    
 #-----------Flashcard Generation with Groq-----------
 def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
     client = Groq(api_key=GROQ_API_KEY)
     
     prompt = f"""
-    CONTENT:
-    {context}
-    
-    Create {num_flashcards} flashcards from this content.
-    
-    CRITICAL: Hints should GUIDE thinking without revealing the answer and don't repeat the question in hint
-     guide the user to think towards the answer
-    
-    FORMAT:
-    [
-        {{
-            "question": "One word question/expression/formulas/equation of graphs,etc",
-            "answer": "detailed answer", 
-            "hint": "helpful hint"
-        }}
-    ]        
-       example:
-    [
-        {{
-            "question": "Speed",
-            "answer": "The distance travelled pe runit time", 
-            "hint": "The faster this is, the less time it takes to travel"
-        }}
-    ]               
-    """
+CONTENT:
+{context}
+
+Create {num_flashcards} flashcards. Return ONLY JSON array, no other text.
+
+[
+    {{
+        "question": "question here",
+        "answer": "answer here", 
+        "hint": "hint here"
+    }}
+]
+"""
     
     try:
         response = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
-               
                 {
-                    "role": "user", 
+                    "role": "system", 
+                    "content": "You output ONLY JSON arrays. No other text."
+                },
+                {
+                    "role": "user",
                     "content": prompt
                 }
             ],
             max_tokens=2048,
-            temperature=0.9
+            temperature=0.7
         )
         
         content = response.choices[0].message.content.strip()
-        #print(f"Raw Groq response: {content}")
+        print(f"Raw response: {content[:200]}...")
         
         import json
-        try:
-            flashcards = json.loads(content)
-            
-            if isinstance(flashcards, list):
-                return flashcards
-            elif isinstance(flashcards, dict):
-                if 'flashcards' in flashcards:
-                    return flashcards['flashcards']
-                else:
-                    return [flashcards]
-            else:
-                return [{"error": "Invalid response format"}]
-                
-        except json.JSONDecodeError as e:
-            print(f"JSON parse error: {e}")
-            import re
-            json_match = re.search(r'\[.*\]', content, re.DOTALL)
-            if json_match:
-                try:
-                    return json.loads(json_match.group())
-                except:
-                    pass
-            return [{"error": "Could not parse flashcards"}]
+        import re
         
+        # SIMPLE FIX: Find the first [ and last ], extract everything between
+        start = content.find('[')
+        end = content.rfind(']')
+        
+        if start != -1 and end != -1:
+            json_str = content[start:end+1]
+            flashcards = json.loads(json_str)
+            print(f"Successfully parsed {len(flashcards)} flashcards")
+            return flashcards
+        else:
+            print("No JSON array found in response")
+            return []
+            
     except Exception as e:
-        print(f"Groq API error: {e}")
-        return [{"error": f"Generation failed: {str(e)}"}]
+        print(f"Error: {e}")
+        return []
 
+# Database functions - only save, no retrieval
+def save_test_to_db(title, description, file_ids, questions, total_questions):
+    """Save generated test to database"""
+    try:
+        cur = conn.cursor()
+        test_id = str(uuid.uuid4())
+        
+        cur.execute(
+            "INSERT INTO tests (id, title, description, file_ids, questions, total_questions) VALUES (%s, %s, %s, %s, %s, %s)",
+            (test_id, title, description, file_ids, json.dumps(questions), total_questions)
+        )
+        conn.commit()
+        cur.close()
+        return test_id
+    except Exception as e:
+        print(f"Error saving test to DB: {e}")
+        conn.rollback()
+        return None
+
+def save_flashcards_to_db(title, description, file_ids, cards, total_cards):
+    """Save generated flashcards to database"""
+    try:
+        cur = conn.cursor()
+        flashcard_id = str(uuid.uuid4())
+        
+        cur.execute(
+            "INSERT INTO flashcards (id, title, description, file_ids, cards, total_cards) VALUES (%s, %s, %s, %s, %s, %s)",
+            (flashcard_id, title, description, file_ids, json.dumps(cards), total_cards)
+        )
+        conn.commit()
+        cur.close()
+        return flashcard_id
+    except Exception as e:
+        print(f"Error saving flashcards to DB: {e}")
+        conn.rollback()
+        return None
 # ------------------- ENDPOINTS --------------------------------------------------------
 
 @app.get("/")
@@ -935,10 +953,46 @@ def clear_chat_history(data: dict):
         conn.rollback()
         return JSONResponse(content={"error": f"Failed to clear history: {str(e)}"}, status_code=500)
 
+@app.post("/generate-mcq")
+def generate_mcq(data: dict):
+    file_ids = data.get("file_ids", [])
+    num_questions = data.get("num_questions", 5)
+    title = data.get("title", "Generated Test")
+    description = data.get("description", "Automatically generated test from study materials")
+
+    search_terms = [
+        "key concepts and definitions",
+        "important principles and theories",
+        "formulas and equations",
+        "processes and methods",
+        "relationships and connections"
+    ]
+
+    random_term = random.choice(search_terms)
+    context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=8)
+    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
+
+    if not context.strip():
+        raise HTTPException(status_code=400, detail="No content found in selected files")
+
+    mcqs = generate_mcq_with_groq(context, num_questions)
+
+    # Save to database and get ID
+    test_id = save_test_to_db(title, description, file_ids, mcqs, len(mcqs))
+
+    return {
+        "test_id": test_id,
+        "mcqs": mcqs,
+        "file_ids_used": file_ids,
+        "total_questions": len(mcqs)
+    }
+
 @app.post("/generate-flashcards")
 def generate_flashcards(data: dict):
     file_ids = data.get("file_ids", [])
     num_flashcards = data.get("num_flashcards", 5)
+    title = data.get("title", "Generated Flashcards")
+    description = data.get("description", "Automatically generated flashcards from study materials")
 
     search_terms = [
         "key concepts",
@@ -960,40 +1014,15 @@ def generate_flashcards(data: dict):
 
     flashcards = generate_flashcards_with_groq(context, num_flashcards)
 
+    # Save to database and get ID
+    flashcard_id = save_flashcards_to_db(title, description, file_ids, flashcards, len(flashcards))
+
     return {
+        "flashcard_id": flashcard_id,
         "flashcards": flashcards,
         "file_ids_used": file_ids,
         "total_generated": len(flashcards)
     }
-
-@app.post("/generate-mcq")
-def generate_mcq(data: dict):
-    file_ids = data.get("file_ids", [])
-    num_questions = data.get("num_questions", 5)
-
-    search_terms = [
-        "key concepts and definitions",
-        "important principles and theories",
-        "formulas and equations",
-        "processes and methods",
-        "relationships and connections"
-    ]
-
-    random_term = random.choice(search_terms)
-    context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=8)
-    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
-
-    if not context.strip():
-        raise HTTPException(status_code=400, detail="No content found in selected files")
-
-    mcqs = generate_mcq_with_groq(context, num_questions)
-
-    return {
-        "mcqs": mcqs,
-        "file_ids_used": file_ids,
-        "total_questions": len(mcqs)
-    }
-
 # ---------------- RUN ----------------
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=3000, reload=True)
