@@ -18,10 +18,14 @@ services:
       # OLLAMA_MODEL: "llava:latest"
       GROQ_API_KEY: ""
       GROQ_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct"
-      DB_HOST: "dpg-d4cdfrvdiees73922o40-a.frankfurt-postgres.render.com"
+      DB_HOST: ""
       DB_PORT: 5432
       DB_NAME: "mydb_atf9"
       DB_USER: "admin"
-      DB_PASSWORD: "v2v6nmi09ZtEcGYNP4tbdILXPvYd0GP3"
-    # depends_on:
-    #   - ollama
+      DB_PASSWORD: ""
+      AWS_ACCESS_KEY_ID: ""
+      AWS_SECRET_ACCESS_KEY: ""
+      AWS_REGION: "eu-west-1"
+      S3_BUCKET_NAME: "study-buddy-demo"
+    command: >
+      uvicorn main:app --host 0.0.0.0 --port 3000 --reload
