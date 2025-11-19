@@ -93,7 +93,7 @@ export const uploadFiles = async (req, res) => {
         s3Url,
         s3Key,
         moduleId: module.id,
-        coverImage: coverImage || null,
+        //coverImage: coverImage || null,
         externalId: file_id || null,
       },
     });
