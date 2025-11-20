@@ -554,10 +554,7 @@ def groq_chat_with_history(context: str, question: str, chat_history: list, imag
     messages = [
         {
             "role": "system", 
-            "content": "You are an intelligent assistant that answers based on the provided document. "
-                "If chat history is available, use it naturally to maintain continuity. "
-                "If there is no chat history, simply answer the question directly without "
-                "mentioning anything about missing conversation."
+            "content": "You are a helpful AI assistant that answers questions based on the provided document context. Provide clear, direct answers without any references to conversation history or whether this is the first question."
         }
     ]
     
@@ -567,8 +564,7 @@ def groq_chat_with_history(context: str, question: str, chat_history: list, imag
         messages.append({"role": "assistant", "content": chat['answer']})
     
     # Add current context and question
-    user_content = [{"type": "text", "text": f"DOCUMENT CONTEXT:\n{context}\n\nCURRENT QUESTION: {question}\n\nPlease reference our previous conversation when answering."}]
-    
+    user_content = [{"type": "text", "text": f"DOCUMENT CONTEXT:\n{context}\n\nQUESTION: {question}"}]    
     if images and len(images) > 0:
         for img in images:
             try:
