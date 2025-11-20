@@ -16,7 +16,7 @@ from pptx import Presentation
 import openpyxl
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-
+from typing import List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -957,10 +957,12 @@ def list_file_ids():
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
 @app.get("/chat-history")
-def get_chat_history_endpoint(file_ids: list[str] = Query(...), limit: int = 20):
+def get_chat_history_endpoint(file_ids: List[str] = Query(None, alias="file_ids[]"), limit: int = 20):
     if not file_ids:
         raise HTTPException(status_code=400, detail="file_ids are required")
-
+    
+    print(f"Received file_ids: {file_ids}")  # Debug log
+    
     history = get_chat_history(file_ids, limit)
     return {
         "chat_history": history,
@@ -1046,6 +1048,7 @@ def generate_mcq(data: dict):
         "file_ids_used": file_ids,
         "total_questions": len(mcqs)
     }
+
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":

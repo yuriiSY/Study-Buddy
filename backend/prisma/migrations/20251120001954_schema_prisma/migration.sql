@@ -76,7 +76,7 @@ CREATE TABLE "WeeklyForgiveness" (
 -- CreateTable
 CREATE TABLE "chat_history" (
     "id" SERIAL NOT NULL,
-    "file_id" INTEGER NOT NULL,
+    "file_id" VARCHAR(255) NOT NULL,
     "question" TEXT NOT NULL,
     "answer" TEXT NOT NULL,
     "timestamp" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
