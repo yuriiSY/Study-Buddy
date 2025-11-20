@@ -811,19 +811,28 @@ async def upload_files(
         text, error, images, pdf_data = process_file_content(file_stream, filename)
         file_id = str(uuid.uuid4())
         timestamp = int(time.time() * 1000)
-
+        pdf_filename = filename.rsplit('.', 1)[0] + '.pdf'
         # S3 key pattern to match frontend
-        s3_key = f"modules/{moduleId}/{timestamp}-{filename}" if moduleId else f"uploads/{file_id}-{filename}"
+        s3_key = f"modules/{moduleId}/{timestamp}-{pdf_filename}" if moduleId else f"uploads/{file_id}-{pdf_filename}"
         s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
 
-        # Upload to S3
         try:
-            s3.put_object(
-                Bucket=S3_BUCKET_NAME,
-                Key=s3_key,
-                Body=content,
-                ContentType=file.content_type
-            )
+            # If we have PDF data (from conversion), upload that
+            if pdf_data:
+                s3.put_object(
+                    Bucket=S3_BUCKET_NAME,
+                    Key=s3_key,
+                    Body=pdf_data,
+                    ContentType='application/pdf'  # ✅ Set as PDF
+                )
+            else:
+                # Fallback: upload original content
+                s3.put_object(
+                    Bucket=S3_BUCKET_NAME,
+                    Key=s3_key,
+                    Body=content,
+                    ContentType=file.content_type
+                )
         except Exception as e:
             errors.append({"file_name": filename, "error": f"S3 upload failed: {e}"})
             s3_key = None
