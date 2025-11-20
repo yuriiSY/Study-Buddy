@@ -72,6 +72,7 @@ export const uploadFiles = async (req, res) => {
           title: moduleName,
           ownerId: req.user.id,
           coverImage: coverImage,
+          isOwner: true,
         },
       });
     }
