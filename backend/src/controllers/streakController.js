@@ -17,7 +17,7 @@ export const getWeek = async (req, res) => {
   const refDate = req.query.refDate || new Date().toISOString();
 
   try {
-    const data = await streakService.getWeek(userId, refDate);
+    const data = await streakService.getWeekData(userId, refDate);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
