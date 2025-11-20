@@ -34,72 +34,100 @@ const ModuleModal = ({
       alert("Please enter a module name.");
       return;
     }
-
+  
     if (uploadedFiles.length === 0) {
       alert("Please upload at least one file.");
       return;
     }
-
+  
     setLoading(true);
     try {
+      // ---------- 1️⃣ UPLOAD TO PYTHON (S3 + Processing) ----------
       const pyFormData = new FormData();
-      if (mode === "create") {
-        pyFormData.append("moduleName", moduleName);
-      } else {
+      if (mode === "upload") {
         pyFormData.append("moduleId", moduleId);
       }
       uploadedFiles.forEach((file) => pyFormData.append("files", file));
-
+  
       const respy = await apiPY.post("/upload-files", pyFormData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+  
       console.log("Python Upload successful:", respy.data);
-
-      const uploadedInfo = respy.data.uploaded?.[0];
-      const fileIdFromPython = uploadedInfo?.file_id;
-
-      if (!fileIdFromPython) {
-        console.warn("⚠️ No file_id returned from Python — skipping link.");
+  
+      // Check for Python errors
+      if (respy.data.errors && respy.data.errors.length > 0) {
+        console.error("Python upload errors:", respy.data.errors);
+        alert("Some files failed to process: " + respy.data.errors.map(e => e.file_name).join(", "));
       }
-
-      const nodeFormData = new FormData();
-      if (mode === "create") {
-        nodeFormData.append("moduleName", moduleName);
-      } else {
-        nodeFormData.append("moduleId", moduleId);
+  
+      if (!respy.data.uploaded || respy.data.uploaded.length === 0) {
+        alert("No files were successfully processed.");
+        setLoading(false);
+        return;
       }
-
-      uploadedFiles.forEach((file) => nodeFormData.append("files", file));
-      if (fileIdFromPython) {
-        nodeFormData.append("file_id", fileIdFromPython);
+  
+      // ---------- 2️⃣ SEND METADATA TO NODE.JS (Database) ----------
+      let createdModule = null;
+  
+      // Process each file that Python successfully handled
+      for (let i = 0; i < respy.data.uploaded.length; i++) {
+        const uploadedInfo = respy.data.uploaded[i];
+        
+        // Create JSON payload for Node.js - EXACTLY what your backend expects
+        const nodePayload = {
+          // For CREATE mode: only first file creates the module
+          ...(mode === "create" && i === 0 && { moduleName }),
+          // For CREATE mode: subsequent files use the created module ID
+          ...(mode === "create" && i > 0 && createdModule && { moduleId: createdModule.id }),
+          // For UPLOAD mode: always use the provided moduleId
+          ...(mode === "upload" && { moduleId: Number(moduleId) }),
+          
+          // File metadata from Python - EXACTLY what your backend expects
+          file_id: uploadedInfo.file_id,
+          file_name: uploadedInfo.file_name,
+          s3Url: uploadedInfo.s3_url,
+          s3Key: uploadedInfo.s3_key,
+          html: uploadedInfo.html || "",
+          
+          // Cover image (only for first file in create mode)
+          ...(mode === "create" && i === 0 && { coverImage: selectedImage })
+        };
+  
+        console.log(`Sending to Node.js (file ${i + 1}/${respy.data.uploaded.length}):`, nodePayload);
+  
+        // Send JSON to Node.js - NOT FormData
+        const res = await api.post("/files/upload", nodePayload, {
+          headers: { "Content-Type": "application/json" },
+        });
+  
+        console.log("Node.js response:", res.data);
+  
+        // Store the created module for subsequent files
+        if (mode === "create" && i === 0 && res.data.module) {
+          createdModule = res.data.module;
+        }
       }
-
-      if (selectedImage) {
-        nodeFormData.append("coverImage", selectedImage);
+  
+      // Call onCreate callback with the created module
+      if (onCreate && createdModule) {
+        onCreate(createdModule);
       }
-
-      const res = await api.post("/files/upload", nodeFormData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      console.log("Node Upload successful:", res.data);
-
-      if (onCreate && res.data?.module) {
-        onCreate(res.data.module);
-      }
-
+  
+      // Reset form and close modal
       setModuleName("");
       setUploadedFiles([]);
+      setSelectedImage(null);
       onClose();
+  
     } catch (err) {
       console.error("Upload failed:", err);
-      alert("Upload failed");
+      console.error("Error details:", err.response?.data);
+      alert("Upload failed: " + (err.response?.data?.error || err.message));
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
