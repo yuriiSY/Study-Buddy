@@ -34,12 +34,12 @@ const ModuleModal = ({
       alert("Please enter a module name.");
       return;
     }
-
+  
     if (uploadedFiles.length === 0) {
       alert("Please upload at least one file.");
       return;
     }
-
+  
     setLoading(true);
     try {
       const pyFormData = new FormData();
@@ -53,7 +53,7 @@ const ModuleModal = ({
       const respy = await apiPY.post("/upload-files", pyFormData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+  
       console.log("Python Upload successful:", respy.data);
 
       const uploadedInfo = respy.data.uploaded?.[0];
@@ -82,24 +82,24 @@ const ModuleModal = ({
       const res = await api.post("/files/upload", nodeFormData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+  
       console.log("Node Upload successful:", res.data);
-
+  
       if (onCreate && res.data?.module) {
         onCreate(res.data.module);
       }
-
+  
       setModuleName("");
       setUploadedFiles([]);
       onClose();
     } catch (err) {
       console.error("Upload failed:", err);
-      alert("Upload failed");
+      console.error("Error details:", err.response?.data); // This will show the actual error from Node.js
+      alert("Upload failed: " + (err.response?.data?.error || err.message));
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
