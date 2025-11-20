@@ -1,6 +1,7 @@
 import styles from "./ModuleCard.module.css";
 import { useNavigate } from "react-router-dom";
 import { Archive, ArchiveRestore, Trash2, Settings, Play } from "lucide-react";
+import api from "../../api/axios";
 
 const ModuleCard = ({
   id,
@@ -14,7 +15,18 @@ const ModuleCard = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleClick = () => navigate(`/modules/${id}`);
+  const handleClick = async () => {
+    try {
+      await api.post("/streak/study", {
+        date: new Date().toISOString().split("T")[0],
+      });
+    } catch (err) {
+      console.error("Failed to track study activity", err);
+    }
+
+    navigate(`/modules/${id}`);
+  };
+
   const handleArchive = (e) => {
     e.stopPropagation();
     onArchive(id, archived);
