@@ -84,3 +84,13 @@
   color: white;
   border-color: #4b5cff;
 }
+
+.searchInput {
+  width: 100%;
+  max-width: 280px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}

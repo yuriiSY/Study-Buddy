@@ -73,6 +73,7 @@
 .showBtn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   background-color: #1f2937;
   color: white;
@@ -125,4 +126,10 @@
 
 .next {
   justify-content: flex-end;
+}
+
+.btnAnswers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }

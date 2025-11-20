@@ -10,6 +10,7 @@ import AddCard from "../components/AddCard/AddCard";
 import StatsCards from "../components/StatsCards/StatsCards";
 import ManageModuleModal from "../components/ManageModuleModal/ManageModuleModal";
 import LoaderOverlay from "../components/LoaderOverlay/LoaderOverlay";
+import StreakTracker from "../components/StreakTracker/StreakTracker";
 
 export const HomePage = () => {
   const [modules, setModules] = useState([]);
@@ -22,7 +23,8 @@ export const HomePage = () => {
   });
   const [showAllActive, setShowAllActive] = useState(false);
   const [showAllArchived, setShowAllArchived] = useState(false);
-  const [viewMode, setViewMode] = useState("active"); // ✅ "active" | "archived"
+  const [viewMode, setViewMode] = useState("active");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch modules
   useEffect(() => {
@@ -102,6 +104,13 @@ export const HomePage = () => {
 
   const activeModules = modules.filter((m) => !m.archived);
   const archivedModules = modules.filter((m) => m.archived);
+  const filteredActive = activeModules.filter((m) =>
+    m.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredArchived = archivedModules.filter((m) =>
+    m.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <>
@@ -116,6 +125,16 @@ export const HomePage = () => {
                 {/* Header Controls */}
                 <div className={styles.headerSection}>
                   <h2>Your Study Modules</h2>
+                  {(viewMode === "active" && showAllActive) ||
+                  (viewMode === "archived" && showAllArchived) ? (
+                    <input
+                      type="text"
+                      placeholder="Search modules..."
+                      className={styles.searchInput}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  ) : null}
 
                   {viewMode === "active" && (
                     <div>
@@ -154,39 +173,42 @@ export const HomePage = () => {
                 </div>
                 {/* Active or Archived Modules */}
                 <div className={styles.modulesGrid}>
-                  {viewMode === "active"
-                    ? (showAllActive
-                        ? activeModules
-                        : activeModules.slice(0, 4)
-                      ).map((mod) => (
-                        <ModuleCard
-                          key={mod.id}
-                          id={mod.id}
-                          title={mod.title}
-                          date={new Date(mod.createdAt).toLocaleDateString()}
-                          archived={mod.archived}
-                          onArchive={handleArchive}
-                          onDelete={handleDelete}
-                          onManage={handleManage}
-                        />
-                      ))
-                    : (showAllArchived
-                        ? archivedModules
-                        : archivedModules.slice(0, 4)
-                      ).map((mod) => (
-                        <ModuleCard
-                          key={mod.id}
-                          id={mod.id}
-                          title={mod.title}
-                          date={new Date(mod.createdAt).toLocaleDateString()}
-                          archived={mod.archived}
-                          onArchive={handleArchive}
-                          onDelete={handleDelete}
-                          onManage={handleManage}
-                        />
-                      ))}
+                  {viewMode === "active" &&
+                    (showAllActive
+                      ? filteredActive
+                      : filteredActive.slice(0, 4)
+                    ).map((mod) => (
+                      <ModuleCard
+                        key={mod.id}
+                        id={mod.id}
+                        title={mod.title}
+                        date={new Date(mod.createdAt).toLocaleDateString()}
+                        archived={mod.archived}
+                        onArchive={handleArchive}
+                        onDelete={handleDelete}
+                        onManage={handleManage}
+                        coverImage={mod.coverImage}
+                      />
+                    ))}
 
-                  {/* Add Card (only in active view) */}
+                  {viewMode === "archived" &&
+                    (showAllArchived
+                      ? filteredArchived
+                      : filteredArchived.slice(0, 4)
+                    ).map((mod) => (
+                      <ModuleCard
+                        key={mod.id}
+                        id={mod.id}
+                        title={mod.title}
+                        date={new Date(mod.createdAt).toLocaleDateString()}
+                        archived={mod.archived}
+                        onArchive={handleArchive}
+                        onDelete={handleDelete}
+                        onManage={handleManage}
+                        coverImage={mod.coverImage}
+                      />
+                    ))}
+
                   {viewMode === "active" && activeModules.length <= 3 && (
                     <AddCard onClick={handleOpenModal} />
                   )}
@@ -194,6 +216,7 @@ export const HomePage = () => {
               </div>
 
               {/* <StatsCards /> */}
+              <StreakTracker />
             </div>
           )}
         </div>

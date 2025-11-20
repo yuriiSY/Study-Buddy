@@ -3,6 +3,7 @@ import styles from "./ModuleModal.module.css";
 import api from "../../api/axios";
 import apiPY from "../../api/axiosPython";
 
+const imageOptions = ["card-bg1.jpg", "card-bg2.jpg", "card-bg3.jpg"];
 const ModuleModal = ({
   isOpen,
   onClose,
@@ -13,6 +14,7 @@ const ModuleModal = ({
   const [moduleName, setModuleName] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     if (mode === "upload") {
@@ -40,7 +42,6 @@ const ModuleModal = ({
   
     setLoading(true);
     try {
-      // ---------- 1️⃣ Build FormData for Python ----------
       const pyFormData = new FormData();
       if (mode === "create") {
         pyFormData.append("moduleName", moduleName);
@@ -48,41 +49,38 @@ const ModuleModal = ({
         pyFormData.append("moduleId", moduleId);
       }
       uploadedFiles.forEach((file) => pyFormData.append("files", file));
-  
-      // ---------- 2️⃣ Upload to Python ----------
-      
+
       const respy = await apiPY.post("/upload-files", pyFormData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
   
       console.log("Python Upload successful:", respy.data);
-  
+
       const uploadedInfo = respy.data.uploaded?.[0];
-  
-      if (!uploadedInfo) {
-        console.warn("⚠️ No files returned from Python — skipping Node upload.");
-        setLoading(false);
-        return;
+      const fileIdFromPython = uploadedInfo?.file_id;
+
+      if (!fileIdFromPython) {
+        console.warn("⚠️ No file_id returned from Python — skipping link.");
       }
-  
-      // ---------- 3️⃣ Build CORRECT payload for Node ----------
-      const nodePayload = {
-        // For CREATE mode, only send moduleName
-        // For UPLOAD mode, only send moduleId as a NUMBER
-        ...(mode === "create" && { moduleName }),
-        ...(mode === "upload" && { moduleId: Number(moduleId) }), // Convert to number
-        file_id: uploadedInfo.file_id,
-        file_name: uploadedInfo.file_name,
-        s3Url: uploadedInfo.s3_url,
-        s3Key: uploadedInfo.s3_key,
-        html: uploadedInfo.html || "",
-      };
-  
-      console.log("Node Payload:", nodePayload);
-  
-      // ---------- 4️⃣ Upload to Node ----------
-      const res = await api.post("/files/upload", nodePayload, {
-        headers: { "Content-Type": "application/json" },
+
+      const nodeFormData = new FormData();
+      if (mode === "create") {
+        nodeFormData.append("moduleName", moduleName);
+      } else {
+        nodeFormData.append("moduleId", moduleId);
+      }
+
+      uploadedFiles.forEach((file) => nodeFormData.append("files", file));
+      if (fileIdFromPython) {
+        nodeFormData.append("file_id", fileIdFromPython);
+      }
+
+      if (selectedImage) {
+        nodeFormData.append("coverImage", selectedImage);
+      }
+
+      const res = await api.post("/files/upload", nodeFormData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
   
       console.log("Node Upload successful:", res.data);
@@ -134,7 +132,25 @@ const ModuleModal = ({
             />
           </div>
         )}
+        {mode === "create" && (
+          <div className={styles.imagePickerSection}>
+            <label>Choose a Cover Image</label>
 
+            <div className={styles.imageGrid}>
+              {imageOptions.map((img, idx) => (
+                <div
+                  key={idx}
+                  className={`${styles.imageItem} ${
+                    selectedImage === img ? styles.selectedImage : ""
+                  }`}
+                  onClick={() => setSelectedImage(img)}
+                >
+                  <img src={img} alt="cover" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className={styles.uploadSection}>
           <input
             id="fileInput"
