@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/axios";
 import styles from "./StreakTracker.module.css";
+import WeeklyPieChart from "../WeeklyPieChart/WeeklyPieChart";
 
 const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -15,11 +16,11 @@ export default function StreakTracker() {
 
     const token = localStorage.getItem("token");
 
-    const week = await api.get(`/api/streak/week`, {
+    const week = await api.get(`/streak/week`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    const streakRes = await api.get(`/api/streak/streak`, {
+    const streakRes = await api.get(`/streak/streak`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -43,7 +44,7 @@ export default function StreakTracker() {
     const token = localStorage.getItem("token");
 
     await api.post(
-      `/api/streak/forgive`,
+      `/streak/forgive`,
       { date: missed.date },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -55,34 +56,38 @@ export default function StreakTracker() {
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.weekRow}>
-        {weekData.map((day, idx) => (
-          <div key={idx} className={styles.dayColumn}>
-            <span className={styles.dayLabel}>{dayLabels[idx]}</span>
-            <div
-              className={`${styles.circle} ${
-                day.studied ? styles.circleActive : ""
-              }`}
-            />
-          </div>
-        ))}
+      <div className={styles.imageContainer}>
+        <WeeklyPieChart weekData={weekData} />
       </div>
+      <div className={styles.trackerBox}>
+        <div className={styles.weekRow}>
+          {weekData.map((day, idx) => (
+            <div key={idx} className={styles.dayColumn}>
+              <span className={styles.dayLabel}>{dayLabels[idx]}</span>
+              <div
+                className={`${styles.circle} ${
+                  day.studied ? styles.circleActive : ""
+                }`}
+              />
+            </div>
+          ))}
+        </div>
 
-      <p className={styles.description}>
-        We understand that circumstances can be different, so once a week we
-        will not count one of your missed classes.
-      </p>
+        <p className={styles.description}>
+          You have the option to mark a class as missed if you won’t be studying
+          that day. It will help you keep track of your progress.
+        </p>
 
-      <button
-        className={`${styles.button} ${
-          forgivenessUsed ? styles.buttonDisabled : ""
-        }`}
-        disabled={forgivenessUsed}
-        onClick={handleForgive}
-      >
-        Do not count the missed class.
-      </button>
-
+        <button
+          className={`${styles.button} ${
+            forgivenessUsed ? styles.buttonDisabled : ""
+          }`}
+          disabled={forgivenessUsed}
+          onClick={handleForgive}
+        >
+          Do not count the missed class.
+        </button>
+      </div>
       <div className={styles.streakBox}>
         <h1 className={styles.streakNumber}>{streak}</h1>
         <p className={styles.streakLabel}>days in a row</p>

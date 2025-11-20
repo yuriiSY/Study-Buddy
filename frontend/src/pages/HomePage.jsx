@@ -11,6 +11,7 @@ import StatsCards from "../components/StatsCards/StatsCards";
 import ManageModuleModal from "../components/ManageModuleModal/ManageModuleModal";
 import LoaderOverlay from "../components/LoaderOverlay/LoaderOverlay";
 import StreakTracker from "../components/StreakTracker/StreakTracker";
+import { FolderOpen, Archive } from "lucide-react";
 
 export const HomePage = () => {
   const [modules, setModules] = useState([]);
@@ -159,16 +160,27 @@ export const HomePage = () => {
                 </div>
                 <div className={styles.toggleButtons}>
                   <button
-                    className={viewMode === "active" ? styles.activeBtn : ""}
+                    className={
+                      viewMode === "active"
+                        ? styles.activeBtn
+                        : styles.inactiveBtn
+                    }
                     onClick={() => setViewMode("active")}
                   >
-                    Current
+                    <FolderOpen size={18} />
+                    <span>Current</span>
                   </button>
+
                   <button
-                    className={viewMode === "archived" ? styles.activeBtn : ""}
+                    className={
+                      viewMode === "archived"
+                        ? styles.activeBtn
+                        : styles.inactiveBtn
+                    }
                     onClick={() => setViewMode("archived")}
                   >
-                    Archive
+                    <Archive size={18} />
+                    <span>Archive</span>
                   </button>
                 </div>
                 {/* Active or Archived Modules */}

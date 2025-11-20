@@ -80,9 +80,22 @@
 }
 
 .activeBtn {
-  background: #4b5cff;
-  color: white;
-  border-color: #4b5cff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-color: #656596;
+  background: transparent !important;
+  border: 2px solid #656596 !important;
+  color: #5a5ac0;
+}
+
+.inactiveBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent !important;
+  border: 2px solid #000 !important;
+  color: #000;
 }
 
 .searchInput {

@@ -64,3 +64,14 @@
   border-color: #0078ff;
   box-shadow: 0 0 2px #0078ff;
 }
+
+@media (max-width: 768px) {
+  .viewerWrapper {
+    height: 700px;
+  }
+}
+
+.pdfPage canvas {
+  width: 100% !important;
+  height: auto !important;
+}

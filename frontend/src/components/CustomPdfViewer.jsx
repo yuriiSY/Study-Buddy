@@ -14,10 +14,12 @@ export default function CustomPdfViewer({
 }) {
   const [fileUrl, setFileUrl] = useState(null);
   const [numPages, setNumPages] = useState(null);
-  const [scale, setScale] = useState(1.1);
+  const [scale, setScale] = useState(1.6);
   const [currentPage, setCurrentPage] = useState(1);
   const [inputPage, setInputPage] = useState("1");
   const containerRef = useRef();
+
+  const isMobile = window.innerWidth <= 768;
 
   // ✅ Fetch signed S3 URL from backend
   useEffect(() => {
@@ -35,13 +37,32 @@ export default function CustomPdfViewer({
   }, [fileId]);
 
   // ✅ Auto-scale with container width
+  // useEffect(() => {
+  //   const updateScale = () => {
+  //     if (containerRef.current) {
+  //       const width = containerRef.current.offsetWidth;
+  //       setScale(Math.min(width / 600, 2)); // dynamic zoom
+  //     }
+  //   };
+  //   updateScale();
+  //   window.addEventListener("resize", updateScale);
+  //   return () => window.removeEventListener("resize", updateScale);
+  // }, []);
+
+  // 📱💻 Auto-scale for mobile & desktop
   useEffect(() => {
     const updateScale = () => {
-      if (containerRef.current) {
-        const width = containerRef.current.offsetWidth;
-        setScale(Math.min(width / 600, 2)); // dynamic zoom
+      if (!containerRef.current) return;
+
+      const width = containerRef.current.offsetWidth;
+
+      if (width <= 480) {
+        setScale(width / 300); // mobile
+      } else {
+        setScale(width / 600); // desktop
       }
     };
+
     updateScale();
     window.addEventListener("resize", updateScale);
     return () => window.removeEventListener("resize", updateScale);
@@ -134,6 +155,9 @@ export default function CustomPdfViewer({
                   renderMode="canvas"
                   renderAnnotationLayer={false}
                   renderTextLayer={false}
+                  width={
+                    isMobile ? containerRef.current?.offsetWidth : undefined
+                  }
                 />
               </div>
             ))}

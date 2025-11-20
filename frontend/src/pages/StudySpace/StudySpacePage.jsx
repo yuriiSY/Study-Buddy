@@ -252,7 +252,12 @@ export const StudySpacePage = () => {
                 <div className={styles.chatModal}>
                   <div className={styles.chatHeader}>
                     <span>AI Buddy</span>
-                    <button onClick={() => setChatOpen(false)}>Close</button>
+                    <button
+                      className={styles.closeBtn}
+                      onClick={() => setChatOpen(false)}
+                    >
+                      Close
+                    </button>
                   </div>
 
                   <Chat externalId={selectedFile?.externalId} />
