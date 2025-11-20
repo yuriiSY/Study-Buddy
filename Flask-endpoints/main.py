@@ -912,7 +912,19 @@ def ask(data: AskRequest):
         question,
         k=4
     )
+    
+    # ✅ FIX: Include image descriptions in the context
     text_context = "\n---\n".join(text_chunks) if text_chunks else ""
+    
+    # Add image descriptions to the context
+    if image_descriptions:
+        image_context = "\n".join([f"📷 Image: {desc}" for desc in image_descriptions])
+        if text_context:
+            text_context = f"{text_context}\n\nIMAGES IN DOCUMENTS:\n{image_context}"
+        else:
+            text_context = f"IMAGES IN DOCUMENTS:\n{image_context}"
+    
+    print(f"Context sent to AI - Text chunks: {len(text_chunks)}, Image descriptions: {len(image_descriptions)}")  # Debug
 
     # Generate answer using Groq with chat history
     answer = groq_chat_with_history(
@@ -931,7 +943,8 @@ def ask(data: AskRequest):
         "answer": answer,
         "file_ids_used": file_ids,
         "chat_history": chat_history,
-        "text_chunks": len(text_chunks)
+        "text_chunks": len(text_chunks),
+        "image_descriptions_used": len(image_descriptions)  # ✅ Now tracking this
     })
 
 
