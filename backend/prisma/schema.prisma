@@ -4,8 +4,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
@@ -17,50 +17,73 @@ enum Specialization {
   ComputerScience
 }
 
+//
+// ========================
+//        USER
+// ========================
+//
 model User {
-  id              Int             @id @default(autoincrement())
-  name            String
-  email           String          @unique
-  password        String
-  createdAt       DateTime        @default(now())
-  specialization  Specialization?
+  id               Int                 @id @default(autoincrement())
+  name             String
+  email            String              @unique
+  createdAt        DateTime            @default(now())
+  password         String
+  specialization   Specialization?
 
-  ownedModules    Module[]        @relation("OwnedModules")
-  collaborations  Collaboration[]
-  attempts        UserTestAttempt[]
+  collaborations   Collaboration[]
+  ownedModules     Module[]            @relation("OwnedModules")
+
+  dailyActivities    DailyActivity[]
+  weeklyForgiveness  WeeklyForgiveness[]
 }
 
+//
+// ========================
+//        MODULE
+// ========================
+//
 model Module {
-  id              Int              @id @default(autoincrement())
-  title           String
-  ownerId         Int
-  coverImage      String?
-  archived        Boolean          @default(false)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id             Int             @id @default(autoincrement())
+  title          String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  archived       Boolean         @default(false)
+  ownerId        Int
+  coverImage     String?
+  isOwner        Boolean
 
-  owner           User             @relation("OwnedModules", fields: [ownerId], references: [id])
-  isOwner         Boolean
-  files           File[]
-  collaborations  Collaboration[]
+  collaborations Collaboration[]
+  files          File[]
+
+  owner          User @relation("OwnedModules", fields: [ownerId], references: [id])
 }
 
+//
+// ========================
+//        FILE
+// ========================
+//
 model File {
-  id          Int      @id @default(autoincrement())
-  filename    String
-  html        String?
-  s3Url       String
-  s3Key       String
-  embedding   Bytes?
-  externalId  String?  @unique
-  moduleId    Int
-  createdAt   DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  filename   String
+  html       String?
+  createdAt  DateTime @default(now())
+  moduleId   Int
+  s3Key      String
+  s3Url      String
+  embedding  Bytes?
+  externalId String?  @unique
 
-  module      Module   @relation(fields: [moduleId], references: [id])
+  module     Module   @relation(fields: [moduleId], references: [id])
 
-  tests       Test[]
+  chat_history chat_history[]
 }
 
+//
+// ========================
+//      COLLABORATION
+// ========================
+//
 model Collaboration {
   id        Int      @id @default(autoincrement())
   userId    Int
@@ -68,47 +91,17 @@ model Collaboration {
   role      String   @default("editor")
   invitedAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id])
   module    Module   @relation(fields: [moduleId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, moduleId])
 }
 
-model Test {
-  id          Int               @id @default(autoincrement())
-  title       String
-  fileId      Int
-  createdAt   DateTime          @default(now())
-
-  file        File              @relation(fields: [fileId], references: [id])
-  questions   Question[]
-  attempts    UserTestAttempt[]
-}
-
-model Question {
-  id          Int        @id @default(autoincrement())
-  testId      Int
-  text        String
-  options     String[]   
-  answer      Int       
-  createdAt   DateTime   @default(now())
-
-  test        Test       @relation(fields: [testId], references: [id])
-}
-
-model UserTestAttempt {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  testId      Int
-  score       Int
-  takenAt     DateTime @default(now())
-
-  user        User     @relation(fields: [userId], references: [id])
-  test        Test     @relation(fields: [testId], references: [id])
-
-  @@unique([userId, testId])
-}
-
+//
+// ========================
+//     STREAK MODELS
+// ========================
+//
 model DailyActivity {
   id        Int      @id @default(autoincrement())
   userId    Int
@@ -131,3 +124,65 @@ model WeeklyForgiveness {
   @@unique([userId, weekStart])
 }
 
+//
+// ========================
+//     CHAT HISTORY
+// ========================
+//
+model chat_history {
+  id        Int       @id @default(autoincrement())
+  file_id   Int
+  question  String
+  answer    String
+  timestamp DateTime? @default(now()) @db.Timestamp(6)
+
+  file      File?     @relation(fields: [file_id], references: [id])
+}
+
+//
+// ========================
+//  IGNORE EXTERNAL TABLES
+// ========================
+//
+
+/// @ignore
+model flashcards {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String?   @db.VarChar(255)
+  description String?
+  file_ids    String[]
+  cards       Json?
+  total_cards Int?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+/// @ignore
+model tests {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title           String?   @db.VarChar(255)
+  description     String?
+  file_ids        String[]
+  questions       Json?
+  total_questions Int?
+  created_at      DateTime? @default(now()) @db.Timestamp(6)
+}
+
+// /// @ignore
+// model langchain_pg_collection {
+//   uuid                   String                   @id @db.Uuid
+//   name                   String                   @unique @db.VarChar
+//   cmetadata              Json?                    @db.Json
+//   langchain_pg_embedding langchain_pg_embedding[]
+// }
+
+// /// @ignore
+// model langchain_pg_embedding {
+//   id                      String                   @id @db.VarChar
+//   collection_id           String?                  @db.Uuid
+//   embedding               Unsupported("vector")?
+//   document                String?                  @db.VarChar
+//   cmetadata               Json?
+//   langchain_pg_collection langchain_pg_collection? @relation(fields: [collection_id], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+
+//   @@index([cmetadata(ops: JsonbPathOps)], map: "ix_cmetadata_gin", type: Gin)
+// }
