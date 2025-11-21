@@ -500,52 +500,60 @@ def groq_chat(context: str, question: str, images: list = None) -> str:
     
 # Chat History Functions
 def save_chat_history(file_id, question, answer):
-    """Save question-answer to chat history"""
     try:
+        conn = get_db_connection()
         cur = conn.cursor()
+
         cur.execute(
             "INSERT INTO chat_history (file_id, question, answer, timestamp) VALUES (%s, %s, %s, %s)",
             (file_id, question, answer, datetime.now())
         )
+
         conn.commit()
         cur.close()
-        print(f"Chat history saved for file: {file_id}")
+        conn.close()
         return True
+    
     except Exception as e:
         print(f"Error saving chat history: {e}")
-        conn.rollback()
+        try:
+            conn.rollback()
+        except:
+            pass
         return False
 
+
 def get_chat_history(file_ids, limit=10):
-    """Get recent chat history for given file IDs"""
     try:
+        conn = get_db_connection()
         cur = conn.cursor()
-        placeholders = ','.join(['%s'] * len(file_ids))
-        cur.execute(f"""
+
+        placeholders = ",".join(["%s"] * len(file_ids))
+        query = f"""
             SELECT file_id, question, answer, timestamp 
             FROM chat_history 
             WHERE file_id IN ({placeholders})
             ORDER BY timestamp DESC 
             LIMIT %s
-        """, file_ids + [limit])
-        
-        history = cur.fetchall()
+        """
+
+        cur.execute(query, file_ids + [limit])
+        rows = cur.fetchall()
+
         cur.close()
-        
-        # Convert to list of dicts
-        chat_history = []
-        for row in history:
-            chat_history.append({
-                "file_id": row[0],
-                "question": row[1],
-                "answer": row[2],
-                "timestamp": row[3].isoformat() if row[3] else None
-            })
-        
-        return chat_history
+        conn.close()
+
+        return [{
+            "file_id": r[0],
+            "question": r[1],
+            "answer": r[2],
+            "timestamp": r[3].isoformat() if r[3] else None
+        } for r in rows]
+
     except Exception as e:
         print(f"Error getting chat history: {e}")
         return []
+
 
 def groq_chat_with_history(context: str, question: str, chat_history: list, images: list = None) -> str:
     client = Groq(api_key=GROQ_API_KEY)
@@ -679,6 +687,17 @@ def generate_mcq_with_groq(context: str, num_questions: int = 5):
     except Exception as e:
         print(f"Groq API error: {e}")
         return [{"error": f"MCQ generation failed: {str(e)}"}]
+
+def get_db_connection():
+    return db.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        sslmode="require"
+    )
+
     
 #-----------Flashcard Generation with Groq-----------
 def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
