@@ -9,7 +9,6 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* --- IMAGE HEADER --- */
 .cardHeader {
   position: relative;
   height: 200px;
@@ -91,7 +90,6 @@
   background-color: #656596;
 }
 
-/* --- ICONS --- */
 .actions {
   display: flex;
   gap: 8px;
@@ -131,11 +129,9 @@
   padding: 25px;
 }
 
-/* ✅ New round Play button */
-/* --- FLOATING PLAY BUTTON --- */
 .playButton {
   position: absolute;
-  bottom: -30px; /* half inside image, half outside */
+  bottom: -30px;
   left: 80%;
   transform: translateX(-50%);
   width: 70px;
@@ -156,4 +152,21 @@
 .playButton:hover {
   background-color: #656596;
   transform: translateX(-50%) scale(1.08);
+}
+
+.collabLabel {
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+.leaveButton {
+  color: white;
+}
+
+.leaveButton:hover {
+  color: #d33;
 }
