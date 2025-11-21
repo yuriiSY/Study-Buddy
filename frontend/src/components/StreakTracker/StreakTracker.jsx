@@ -11,6 +11,17 @@ export default function StreakTracker() {
   const [forgivenessUsed, setForgivenessUsed] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const getMotivationMessage = (s) => {
+    if (s < 1) return "A fresh start! Today is a great day to begin.";
+    if (s === 1) return "Good job! Every streak begins with the first step.";
+    if (s <= 3) return "Nice! You're building momentum — keep going.";
+    if (s <= 7) return "One week streak! Strong consistency.";
+    if (s <= 14) return "Two weeks in a row! You're becoming unstoppable.";
+    if (s <= 30) return "A whole month! Your discipline is paying off.";
+    if (s <= 50) return "You're in the top 1% of consistent learners!";
+    return "Legendary discipline — you're rewriting who you are.";
+  };
+
   const loadData = async () => {
     setLoading(true);
 
@@ -73,7 +84,7 @@ export default function StreakTracker() {
           ))}
         </div>
 
-        <p className={styles.description}>
+        {/* <p className={styles.description}>
           You have the option to mark a class as missed if you won’t be studying
           that day. It will help you keep track of your progress.
         </p>
@@ -86,7 +97,12 @@ export default function StreakTracker() {
           onClick={handleForgive}
         >
           Do not count the missed class.
-        </button>
+        </button> */}
+        <div className={styles.motivationBox}>
+          <p className={styles.motivationText}>
+            {getMotivationMessage(streak)}
+          </p>
+        </div>
       </div>
       <div className={styles.streakBox}>
         <h1 className={styles.streakNumber}>{streak}</h1>

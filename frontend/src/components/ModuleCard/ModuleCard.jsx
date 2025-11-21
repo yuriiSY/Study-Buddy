@@ -12,6 +12,7 @@ const ModuleCard = ({
   onDelete,
   onManage,
   coverImage,
+  isOwner,
 }) => {
   const navigate = useNavigate();
 
@@ -40,7 +41,18 @@ const ModuleCard = ({
     onManage(id, title);
   };
 
-  console.log(coverImage);
+  const handleLeave = async (e) => {
+    e.stopPropagation();
+    try {
+      const res = await api.get(`/modules/${id}/leave`);
+      alert(res.data.message);
+
+      if (onDelete) onDelete(id);
+    } catch (err) {
+      console.error("Failed to leave module", err);
+      alert(err.response?.data?.error || "Failed to leave module");
+    }
+  };
 
   return (
     <div className={styles.card}>
@@ -61,31 +73,51 @@ const ModuleCard = ({
           <div className={styles.cardHeaderTop}>
             <p className={styles.date}>{date}</p>
             <div className={styles.actions}>
-              <button
-                className={`${styles.iconButton} ${styles.deleteButton}`}
-                onClick={handleDelete}
-                title="Delete"
-              >
-                <Trash2 size={18} />
-              </button>
-              <button
-                className={`${styles.iconButton} ${styles.archiveButton}`}
-                onClick={handleArchive}
-                title={archived ? "Unarchive" : "Archive"}
-              >
-                {archived ? (
-                  <ArchiveRestore size={18} />
-                ) : (
-                  <Archive size={18} />
-                )}
-              </button>
-              <button
-                className={`${styles.iconButton} ${styles.manageButton}`}
-                onClick={handleManage}
-                title="Manage"
-              >
-                <Settings size={18} />
-              </button>
+              {isOwner ? (
+                <>
+                  {/* Owner buttons */}
+                  <button
+                    className={`${styles.iconButton} ${styles.deleteButton}`}
+                    onClick={handleDelete}
+                    title="Delete"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+
+                  <button
+                    className={`${styles.iconButton} ${styles.archiveButton}`}
+                    onClick={handleArchive}
+                    title={archived ? "Unarchive" : "Archive"}
+                  >
+                    {archived ? (
+                      <ArchiveRestore size={18} />
+                    ) : (
+                      <Archive size={18} />
+                    )}
+                  </button>
+
+                  <button
+                    className={`${styles.iconButton} ${styles.manageButton}`}
+                    onClick={handleManage}
+                    title="Manage"
+                  >
+                    <Settings size={18} />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className={styles.collabLabel}>Collaborator</span>
+
+                  {/* NEW: Leave module button */}
+                  <button
+                    className={`${styles.iconButton} ${styles.leaveButton}`}
+                    onClick={handleLeave}
+                    title="Leave Module"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </>
+              )}
             </div>
           </div>
 

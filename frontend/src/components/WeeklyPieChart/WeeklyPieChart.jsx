@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const COLORS = ["#4CAF50", "#F44336"];
+const COLORS = ["#8cce8f", "#e0746c"];
 
 export default function WeeklyPieChart({ weekData }) {
   const studiedCount = weekData.filter((d) => d.studied).length;

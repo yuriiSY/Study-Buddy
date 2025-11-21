@@ -4,11 +4,14 @@ import styles from "./MCQTest.module.css";
 const MCQTest = ({ questions = [], onSubmit }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [showResult, setShowResult] = useState(false);
+  const [score, setScore] = useState(0);
 
   const currentQuestion = questions[currentIndex];
 
-  const handleSelect = (questionId, option) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: option }));
+  const handleSelect = (questionIndex, option) => {
+    const letter = option.trim().charAt(0);
+    setAnswers((prev) => ({ ...prev, [questionIndex]: letter }));
   };
 
   const handleNext = () => {
@@ -24,38 +27,67 @@ const MCQTest = ({ questions = [], onSubmit }) => {
   };
 
   const handleSubmit = () => {
+    let tempScore = 0;
+
+    questions.forEach((q, index) => {
+      console.log("Question:", q);
+      const userLetter = answers[index] || "";
+      const correctLetter = (q.correctAnswer || "").trim();
+      console.log("Comparing:", userLetter);
+      console.log("Comparing:", correctLetter);
+      if (userLetter === correctLetter) {
+        tempScore++;
+      }
+    });
+
+    setScore(tempScore);
+    setShowResult(true);
+
     onSubmit?.(answers);
   };
+
+  if (showResult) {
+    return (
+      <div className={styles.resultContainer}>
+        <h2>Your Score</h2>
+        <p className={styles.score}>
+          {score} / {questions.length}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
       <div className={styles.card}>
         <div className={styles.header}>
-          <span className={styles.tag}>{currentQuestion.topic}</span>
-          <span className={styles.tag}>{currentQuestion.difficulty}</span>
           <span className={styles.mode}>🧠 MCQ</span>
         </div>
 
         <h2 className={styles.question}>{currentQuestion.question}</h2>
 
         <div className={styles.options}>
-          {currentQuestion.options.map((opt, idx) => (
-            <label
-              key={idx}
-              className={`${styles.option} ${
-                answers[currentQuestion.id] === opt ? styles.selected : ""
-              }`}
-            >
-              <input
-                type="radio"
-                name={currentQuestion.id}
-                value={opt}
-                checked={answers[currentQuestion.id] === opt}
-                onChange={() => handleSelect(currentQuestion.id, opt)}
-              />
-              <span>{opt}</span>
-            </label>
-          ))}
+          {currentQuestion.options.map((opt, idx) => {
+            const letter = opt.trim().charAt(0);
+
+            return (
+              <label
+                key={idx}
+                className={`${styles.option} ${
+                  answers[currentIndex] === letter ? styles.selected : ""
+                }`}
+              >
+                <input
+                  type="radio"
+                  name={`q-${currentIndex}`}
+                  value={opt}
+                  checked={answers[currentIndex] === letter}
+                  onChange={() => handleSelect(currentIndex, opt)}
+                />
+                <span>{opt}</span>
+              </label>
+            );
+          })}
         </div>
 
         <div className={styles.actions}>

@@ -107,3 +107,7 @@
   border-radius: 6px;
   margin-bottom: 12px;
 }
+
+.progressText {
+  text-align: left;
+}

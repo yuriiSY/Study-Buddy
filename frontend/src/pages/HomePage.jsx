@@ -139,7 +139,7 @@ export const HomePage = () => {
 
                   {viewMode === "active" && (
                     <div>
-                      {activeModules.length >= 3 && (
+                      {activeModules.length > 3 && (
                         <button
                           className={styles.viewAllBtn}
                           onClick={handleOpenModal}
@@ -200,6 +200,7 @@ export const HomePage = () => {
                         onDelete={handleDelete}
                         onManage={handleManage}
                         coverImage={mod.coverImage}
+                        isOwner={mod.isOwner}
                       />
                     ))}
 
@@ -218,6 +219,7 @@ export const HomePage = () => {
                         onDelete={handleDelete}
                         onManage={handleManage}
                         coverImage={mod.coverImage}
+                        isOwner={mod.isOwner}
                       />
                     ))}
 
@@ -226,9 +228,13 @@ export const HomePage = () => {
                   )}
                 </div>
               </div>
-
               {/* <StatsCards /> */}
-              <StreakTracker />
+              {!(showAllArchived || showAllActive) && (
+                <div>
+                  <h2 className={styles.progressText}>Progress</h2>
+                  <StreakTracker />
+                </div>
+              )}
             </div>
           )}
         </div>

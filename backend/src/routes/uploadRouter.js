@@ -14,6 +14,7 @@ import {
   removeCollaborator,
   getCollaborators,
   searchModulesByTitle,
+  leaveModule,
 } from "../controllers/uploadController.js";
 
 const router = express.Router();
@@ -32,6 +33,7 @@ router.delete("/modules/:moduleId", deleteModule);
 router.get("/modules/search", searchModulesByTitle);
 
 router.post("/modules/:moduleId/collaborators", addCollaborator);
+router.get("/modules/:moduleId/quit", leaveModule);
 router.get("/modules/:moduleId/collaborators", getCollaborators);
 router.delete(
   "/modules/:moduleId/collaborators/:collaboratorId",

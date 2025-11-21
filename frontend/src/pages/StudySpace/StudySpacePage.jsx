@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import Flashcard from "../../components/Flashcard/Flashcard";
 import WorkspaceLayout from "../../components/WorkspaceLayout/WorkspaceLayout";
@@ -49,8 +49,8 @@ const sampleQuestions = [
 
 export const StudySpacePage = () => {
   const { moduleId } = useParams();
-  const [selectedFeature, setSelectedFeature] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+  // const [selectedFeature, setSelectedFeature] = useState(null);
+  // const [selectedFile, setSelectedFile] = useState(null);
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [flashcards, setFlashcards] = useState([]);
@@ -60,6 +60,15 @@ export const StudySpacePage = () => {
   const [loadingMCQ, setLoadingMCQ] = useState(false);
   const [mcqError, setMcqError] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState(
+    localStorage.getItem("selectedFeature") || null
+  );
+
+  const [selectedFile, setSelectedFile] = useState(() => {
+    const saved = localStorage.getItem("selectedFile");
+    return saved ? JSON.parse(saved) : null;
+  });
+  const prevModuleId = useRef(moduleId);
 
   useEffect(() => {
     console.log(selectedFile);
@@ -84,10 +93,25 @@ export const StudySpacePage = () => {
 
       setModules(formattedModules);
 
-      if (!selectedFile && formattedModules.length > 0) {
-        setSelectedFile(formattedModules[0]);
-        setSelectedFeature("Notes");
+      if (formattedModules.length === 0) return;
+
+      const savedFile = localStorage.getItem("selectedFile");
+      const savedFeature = localStorage.getItem("selectedFeature");
+
+      if (savedFile && savedFeature) {
+        const parsed = JSON.parse(savedFile);
+
+        const found = formattedModules.find((f) => f.id === parsed.id);
+
+        if (found) {
+          setSelectedFile(found);
+          setSelectedFeature(savedFeature);
+          return;
+        }
       }
+
+      setSelectedFeature("Notes");
+      setSelectedFile(formattedModules[0]);
     } catch (err) {
       console.error("Failed to fetch files:", err);
     } finally {
@@ -99,9 +123,25 @@ export const StudySpacePage = () => {
     fetchFiles();
   }, [moduleId]);
 
+  useEffect(() => {
+    if (prevModuleId.current !== moduleId) {
+      localStorage.removeItem("selectedFeature");
+      localStorage.removeItem("selectedFile");
+
+      setSelectedFeature(null);
+      setSelectedFile(null);
+
+      prevModuleId.current = moduleId;
+    }
+  }, [moduleId]);
+
   const handleFeatureSelect = (file, feature) => {
     setSelectedFeature(feature);
     setSelectedFile(file);
+
+    localStorage.setItem("selectedFeature", feature);
+    localStorage.setItem("selectedFile", JSON.stringify(file));
+
     console.log(`Selected ${feature} for ${file.title}`);
   };
 
@@ -301,7 +341,7 @@ export const StudySpacePage = () => {
       onFilesAdded={fetchFiles}
       hasSidebar={true}
     >
-      <FocusHeader />
+      {/* <FocusHeader /> */}
       {renderContent()}
     </WorkspaceLayout>
   );

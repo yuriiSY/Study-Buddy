@@ -34,6 +34,10 @@ const Flashcard = ({ cards = [], onFinish }) => {
           <span className={styles.tag}>
             Flashcard {currentIndex + 1} / {cards.length}
           </span>
+          <div className={styles.hintWrapper}>
+            <button className={styles.hintBtn}>💡 Hint</button>
+            <div className={styles.hintPopup}>{currentCard.hint}</div>
+          </div>
         </div>
 
         <div className={styles.content}>
@@ -51,14 +55,14 @@ const Flashcard = ({ cards = [], onFinish }) => {
               >
                 <RiEyeLine className={styles.icon} /> Show Answer
               </button>
-              <button
+              {/* <button
                 className={styles.showBtn}
                 onClick={() => setShowHint(!showHint)}
               >
                 💡 Hint
               </button>
 
-              {showHint && <p className={styles.hint}>{currentCard.hint}</p>}
+              {showHint && <p className={styles.hint}>{currentCard.hint}</p>} */}
             </div>
           )}
         </div>
