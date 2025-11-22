@@ -1,27 +1,27 @@
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #656596;
+  width: 100%;
+  background: linear-gradient(90deg, #4338ca, #6366f1);
   color: #fff;
-  padding: 1rem 2rem;
-  height: 96px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.35);
 }
 
 .container {
-  display: flex;
-  justify-content: space-between;
-  max-width: 1791px;
+  max-width: 1280px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 32px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
 }
 
+/* Left section (logo + optional menu) */
 .left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .menuBtn {
@@ -31,13 +31,13 @@
   font-size: 1.8rem;
   color: #fff;
   cursor: pointer;
-  padding: 0 1rem 0 0;
+  padding: 0 0.5rem 0 0;
 }
 
 .logoSection {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .logoLink {
@@ -51,86 +51,68 @@
 .logo {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
-  background-color: #1a1a1a;
-  padding: 0.5rem;
+  border-radius: 14px;
+  background-color: rgba(15, 23, 42, 0.85);
+  padding: 6px;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.4);
 }
 
 .title {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .subtitle {
   margin: 0;
-  font-size: 0.9rem;
-  color: #ddd;
+  font-size: 0.85rem;
+  color: #e5e7eb;
 }
 
-.stats {
-  display: flex;
-  gap: 1rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.stats li {
-  background-color: #fff;
-  color: #333;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.statLink {
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-}
-
+/* Right section (avatar / auth) */
 .userSection {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .userMenu {
   display: flex;
   align-items: center;
   cursor: pointer;
-  gap: 6px;
+  gap: 8px;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid white;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.35);
 }
 
+/* Dropdown */
 .dropdown {
   position: absolute;
-  top: 55px;
+  top: 56px;
   right: 0;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  width: 180px;
-  padding: 10px 0;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+  width: 190px;
+  padding: 8px 0;
   z-index: 10;
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn 0.15s ease-out;
 }
 
 .menuItem {
   width: 100%;
   background: none;
   border: none;
-  color: #333;
-  font-weight: 600;
+  color: #111827;
+  font-weight: 500;
+  font-size: 0.9rem;
   text-align: left;
   padding: 10px 16px;
   cursor: pointer;
@@ -141,45 +123,59 @@
 }
 
 .divider {
-  margin: 8px 0;
+  margin: 6px 0;
   border: none;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #e5e7eb;
 }
 
 .logout {
   width: 100%;
   background: none;
   border: none;
-  color: #e53e3e;
+  color: #dc2626;
   font-weight: 600;
+  font-size: 0.9rem;
   text-align: left;
   padding: 10px 16px;
   cursor: pointer;
 }
 
 .logout:hover {
-  background: #ffecec;
+  background: #fef2f2;
 }
 
+/* Auth link (when logged out) */
 .authLinks {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .loginLink {
   text-decoration: none;
-  color: #fff;
-  background-color: #4a4a8c;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
+  color: #111827;
+  background-color: #f9fafb;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
   font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  font-size: 0.9rem;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(249, 250, 251, 0.9);
+  transition: background 0.15s ease, color 0.15s ease,
+    transform 0.1s ease, box-shadow 0.1s ease;
 }
 
+.loginLink:hover {
+  background-color: #eef2ff;
+  color: #111827;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.35);
+}
+
+/* Simple fade-in for dropdown */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
@@ -187,9 +183,10 @@
   }
 }
 
+/* Responsive */
 @media (max-width: 1023px) {
-  .stats {
-    display: none;
+  .container {
+    padding: 0 20px;
   }
 
   .menuBtn {

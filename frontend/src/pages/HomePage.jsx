@@ -4,14 +4,14 @@ import Header from "../components/Header/Header";
 import ModuleCard from "../components/ModuleCard/ModuleCard";
 import Onboarding from "../components/Onboarding/Onboarding";
 import ModuleModal from "../components/ModuleModal/ModuleModal";
-import styles from "./HomePage.module.css";
-import api from "../../src/api/axios";
 import AddCard from "../components/AddCard/AddCard";
 import StatsCards from "../components/StatsCards/StatsCards";
 import ManageModuleModal from "../components/ManageModuleModal/ManageModuleModal";
 import LoaderOverlay from "../components/LoaderOverlay/LoaderOverlay";
-import StreakTracker from "../components/StreakTracker/StreakTracker";
-import { FolderOpen, Archive } from "lucide-react";
+import styles from "./HomePage.module.css";
+
+// ⬇️ Adjust this path if your api file lives somewhere else
+import api from "../api/axios";
 
 export const HomePage = () => {
   const [modules, setModules] = useState([]);
@@ -24,8 +24,7 @@ export const HomePage = () => {
   });
   const [showAllActive, setShowAllActive] = useState(false);
   const [showAllArchived, setShowAllArchived] = useState(false);
-  const [viewMode, setViewMode] = useState("active");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState("active"); // "active" | "archived"
 
   // Fetch modules
   useEffect(() => {
@@ -39,6 +38,7 @@ export const HomePage = () => {
         setLoading(false);
       }
     };
+
     fetchModules();
   }, []);
 
@@ -72,6 +72,7 @@ export const HomePage = () => {
       "Are you sure you want to delete this module and all its files?"
     );
     if (!confirmed) return;
+
     try {
       await api.delete(`/files/modules/${id}`);
       setModules((prev) => prev.filter((mod) => mod.id !== id));
@@ -105,13 +106,6 @@ export const HomePage = () => {
 
   const activeModules = modules.filter((m) => !m.archived);
   const archivedModules = modules.filter((m) => m.archived);
-  const filteredActive = activeModules.filter((m) =>
-    m.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredArchived = archivedModules.filter((m) =>
-    m.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <>
@@ -122,119 +116,158 @@ export const HomePage = () => {
             <Onboarding onClick={handleOpenModal} />
           ) : (
             <div className={styles.content}>
-              <div className={styles.modulesSection}>
-                {/* Header Controls */}
-                <div className={styles.headerSection}>
-                  <h2>Your Study Modules</h2>
-                  {(viewMode === "active" && showAllActive) ||
-                  (viewMode === "archived" && showAllArchived) ? (
-                    <input
-                      type="text"
-                      placeholder="Search modules..."
-                      className={styles.searchInput}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  ) : null}
-
-                  {viewMode === "active" && (
-                    <div>
-                      {activeModules.length > 3 && (
-                        <button
-                          className={styles.viewAllBtn}
-                          onClick={handleOpenModal}
-                        >
-                          Add more modules
-                        </button>
-                      )}
-                      {activeModules.length > 4 && (
-                        <button
-                          className={styles.viewAllBtn}
-                          onClick={() => setShowAllActive((prev) => !prev)}
-                        >
-                          {showAllActive ? "View less" : "View all"}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className={styles.toggleButtons}>
-                  <button
-                    className={
-                      viewMode === "active"
-                        ? styles.activeBtn
-                        : styles.inactiveBtn
-                    }
-                    onClick={() => setViewMode("active")}
-                  >
-                    <FolderOpen size={18} />
-                    <span>Current</span>
-                  </button>
-
-                  <button
-                    className={
-                      viewMode === "archived"
-                        ? styles.activeBtn
-                        : styles.inactiveBtn
-                    }
-                    onClick={() => setViewMode("archived")}
-                  >
-                    <Archive size={18} />
-                    <span>Archive</span>
-                  </button>
-                </div>
-                {/* Active or Archived Modules */}
-                <div className={styles.modulesGrid}>
-                  {viewMode === "active" &&
-                    (showAllActive
-                      ? filteredActive
-                      : filteredActive.slice(0, 4)
-                    ).map((mod) => (
-                      <ModuleCard
-                        key={mod.id}
-                        id={mod.id}
-                        title={mod.title}
-                        date={new Date(mod.createdAt).toLocaleDateString()}
-                        archived={mod.archived}
-                        onArchive={handleArchive}
-                        onDelete={handleDelete}
-                        onManage={handleManage}
-                        coverImage={mod.coverImage}
-                        isOwner={mod.isOwner}
-                      />
-                    ))}
-
-                  {viewMode === "archived" &&
-                    (showAllArchived
-                      ? filteredArchived
-                      : filteredArchived.slice(0, 4)
-                    ).map((mod) => (
-                      <ModuleCard
-                        key={mod.id}
-                        id={mod.id}
-                        title={mod.title}
-                        date={new Date(mod.createdAt).toLocaleDateString()}
-                        archived={mod.archived}
-                        onArchive={handleArchive}
-                        onDelete={handleDelete}
-                        onManage={handleManage}
-                        coverImage={mod.coverImage}
-                        isOwner={mod.isOwner}
-                      />
-                    ))}
-
-                  {viewMode === "active" && activeModules.length <= 3 && (
-                    <AddCard onClick={handleOpenModal} />
-                  )}
-                </div>
-              </div>
-              {/* <StatsCards /> */}
-              {!(showAllArchived || showAllActive) && (
+              {/* Page header */}
+              <header className={styles.pageHeader}>
                 <div>
-                  <h2 className={styles.progressText}>Progress</h2>
-                  <StreakTracker />
+                  <h1 className={styles.pageTitle}>Your study space</h1>
+                  <p className={styles.pageSubtitle}>
+                    Pick a module to jump back in, or start something new.
+                  </p>
                 </div>
-              )}
+                <button
+                  className={styles.primaryAction}
+                  onClick={handleOpenModal}
+                >
+                  + New module
+                </button>
+              </header>
+
+              {/* Main layout: modules + progress */}
+              <main className={styles.mainLayout}>
+                {/* Modules */}
+                <section
+                  className={styles.modulesSection}
+                  aria-label="Study modules"
+                >
+                  <div className={styles.sectionHeader}>
+                    <h2 className={styles.sectionTitle}>Your study modules</h2>
+
+                    {viewMode === "active" && activeModules.length > 0 && (
+                      <div className={styles.sectionActions}>
+                        {activeModules.length >= 3 && (
+                          <button
+                            type="button"
+                            className={styles.ghostButton}
+                            onClick={handleOpenModal}
+                          >
+                            Add module
+                          </button>
+                        )}
+                        {activeModules.length > 4 && (
+                          <button
+                            type="button"
+                            className={styles.ghostButton}
+                            onClick={() =>
+                              setShowAllActive((prev) => !prev)
+                            }
+                          >
+                            {showAllActive ? "View less" : "View all"}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Toggle */}
+                  <div className={styles.toggleButtons} role="tablist">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={viewMode === "active"}
+                      className={`${styles.toggleButton} ${
+                        viewMode === "active"
+                          ? styles.toggleButtonActive
+                          : ""
+                      }`}
+                      onClick={() => setViewMode("active")}
+                    >
+                      Current
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={viewMode === "archived"}
+                      className={`${styles.toggleButton} ${
+                        viewMode === "archived"
+                          ? styles.toggleButtonActive
+                          : ""
+                      }`}
+                      onClick={() => setViewMode("archived")}
+                    >
+                      Archive
+                    </button>
+                  </div>
+
+                  {/* Modules grid */}
+                  <div className={styles.modulesGrid}>
+                    {viewMode === "active" &&
+                      (showAllActive
+                        ? activeModules
+                        : activeModules.slice(0, 4)
+                      ).map((mod) => (
+                        <ModuleCard
+						  key={mod.id}
+						  id={mod.id}
+						  title={mod.title}
+						  date={new Date(mod.createdAt).toLocaleDateString()}
+						  coverImage={mod.coverImage || mod.cover_image}   // 👈 add this
+						  archived={mod.archived}
+						  onArchive={handleArchive}
+						  onDelete={handleDelete}
+						  onManage={handleManage}
+						/>
+
+                      ))}
+
+                    {viewMode === "archived" &&
+                      (showAllArchived
+                        ? archivedModules
+                        : archivedModules.slice(0, 4)
+                      ).map((mod) => (
+                        <ModuleCard
+						  key={mod.id}
+						  id={mod.id}
+						  title={mod.title}
+						  date={new Date(mod.createdAt).toLocaleDateString()}
+						  coverImage={mod.coverImage || mod.cover_image}   // 👈 add this
+						  archived={mod.archived}
+						  onArchive={handleArchive}
+						  onDelete={handleDelete}
+						  onManage={handleManage}
+						/>
+
+                      ))}
+
+                    {/* Add Card (only in active view) */}
+                    {viewMode === "active" && activeModules.length <= 3 && (
+                      <AddCard onClick={handleOpenModal} />
+                    )}
+
+                    {/* Empty states */}
+                    {viewMode === "active" && activeModules.length === 0 && (
+                      <p className={styles.emptyState}>
+                        You don’t have any active modules yet. Create one to get
+                        started.
+                      </p>
+                    )}
+
+                    {viewMode === "archived" &&
+                      archivedModules.length === 0 && (
+                        <p className={styles.emptyState}>
+                          No modules in your archive yet.
+                        </p>
+                      )}
+                  </div>
+                </section>
+
+                {/* Progress / stats */}
+                <section
+                  className={styles.progressSection}
+                  aria-label="Study progress"
+                >
+                  <StatsCards />
+                </section>
+              </main>
             </div>
           )}
         </div>

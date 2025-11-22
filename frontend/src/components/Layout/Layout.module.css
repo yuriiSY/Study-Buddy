@@ -1,12 +1,31 @@
-.container {
-  max-width: 1791px;
-  margin: 0 auto;
-  padding: 0 20px;
+/* src/components/Layout/Layout.module.css */
+
+.appShell {
+  width: 100%;
+  min-height: calc(100vh - 72px); /* leave room for header */
+  background: #f5f7ff;            /* soft app background */
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 32px 40px 40px;        /* side padding instead of huge gutters */
 }
 
-@media (max-width: 768px) {
-  .container {
-    width: 100%;
-    padding: 0;
+/* Inner content width */
+.content {
+  width: 100%;
+  max-width: 1280px;  /* was 1320px – now matches Header & HomePage */
+}
+
+/* Tablets & below */
+@media (max-width: 1024px) {
+  .appShell {
+    padding: 24px 20px 32px;
+  }
+}
+
+/* Phones */
+@media (max-width: 640px) {
+  .appShell {
+    padding: 16px;
   }
 }

@@ -1,15 +1,4 @@
-import React from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
-
-const COLORS = ["#8cce8f", "#e0746c"];
-
+// src/components/WeeklyPieChart.jsx
 export default function WeeklyPieChart({ weekData }) {
   const studiedCount = weekData.filter((d) => d.studied).length;
   const missedCount = weekData.length - studiedCount;
@@ -20,7 +9,7 @@ export default function WeeklyPieChart({ weekData }) {
   ];
 
   return (
-    <div style={{ width: "300px", height: "300px" }}>
+    <div style={{ width: "100%", height: 260 }}>
       <ResponsiveContainer>
         <PieChart>
           <Pie

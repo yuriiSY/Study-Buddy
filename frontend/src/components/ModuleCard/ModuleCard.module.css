@@ -1,12 +1,13 @@
 .card {
   display: flex;
   flex-direction: column;
-  width: 419px;
-  min-height: 280px;
-  border-radius: 8px;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 12px;
   overflow: hidden;
   background-color: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.15);
+  box-sizing: border-box;
 }
 
 .cardHeader {
@@ -29,7 +30,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .headerOverlay {
@@ -39,7 +40,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 15px;
+  padding: 14px;
 }
 
 .cardHeaderTop {
@@ -49,7 +50,7 @@
 }
 
 .date {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
   background: rgba(0, 0, 0, 0.5);
   padding: 3px 8px;
@@ -57,85 +58,58 @@
   color: white;
 }
 
-/* --- WHITE BOTTOM SECTION --- */
-/* .cardFooter {
-  background: white;
-  padding: 15px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-} */
-
-.title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #656596;
-  display: block;
-}
-
-/* --- BUTTON --- */
-.learnButton {
-  background-color: #505078;
-  color: #ffffff;
-  width: 100%;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  height: 45px;
-  font-size: 18px;
-  transition: background 0.2s ease;
-}
-
-.learnButton:hover {
-  background-color: #656596;
-}
-
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
+
 .iconButton {
-  background: none;
+  background: rgba(15, 23, 42, 0.85);
   border: none;
   cursor: pointer;
   padding: 4px;
-  border-radius: 6px;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease;
-}
-.iconButton:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  transition: background 0.18s ease, transform 0.1s ease;
 }
 
-.archiveButton svg,
-.deleteButton svg,
-.manageButton svg {
+.iconButton svg {
   color: #ffffff;
 }
-.archiveButton:hover svg {
-  color: #ec9a2b;
-}
-.deleteButton:hover svg {
-  color: #c9302c;
-}
-.manageButton:hover svg {
-  color: #d1d1f0;
+
+.iconButton:hover {
+  background: rgba(79, 70, 229, 0.95);
+  transform: translateY(-1px);
 }
 
-.cardFooter {
-  background: white;
-  padding: 25px;
+.archiveButton:hover svg {
+  color: #fbbf24;
+}
+
+.deleteButton:hover svg {
+  color: #f97373;
+}
+
+.manageButton:hover svg {
+  color: #e5e7eb;
+}
+
+.leaveButton {
+  background: rgba(220, 38, 38, 0.9);
+}
+
+.leaveButton:hover {
+  background: rgba(185, 28, 28, 0.95);
 }
 
 .playButton {
   position: absolute;
-  bottom: -30px;
-  left: 80%;
-  transform: translateX(-50%);
-  width: 70px;
-  height: 70px;
+  bottom: -28px;
+  right: 24px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background-color: #505078;
   color: white;
@@ -143,30 +117,51 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.35);
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: background 0.2s ease, transform 0.12s ease,
+    box-shadow 0.12s ease;
   z-index: 3;
 }
 
 .playButton:hover {
-  background-color: #656596;
-  transform: translateX(-50%) scale(1.08);
+  background-color: #6366f1;
+  transform: translateY(-1px) scale(1.04);
 }
 
-.collabLabel {
-  padding: 3px 8px;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 6px;
-  font-size: 12px;
+.playButton:active {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25);
+}
+
+.cardFooter {
+  background: white;
+  padding: 24px 20px 20px;
+}
+
+.title {
+  font-size: 1.05rem;
   font-weight: 600;
-  color: #333;
+  color: #374151;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.leaveButton {
-  color: white;
-}
+@media (max-width: 640px) {
+  .cardHeader {
+    height: 180px;
+  }
 
-.leaveButton:hover {
-  color: #d33;
+  .title {
+    font-size: 1rem;
+  }
+
+  .playButton {
+    width: 56px;
+    height: 56px;
+    bottom: -24px;
+    right: 18px;
+  }
 }

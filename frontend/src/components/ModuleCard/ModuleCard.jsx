@@ -30,15 +30,17 @@ const ModuleCard = ({
 
   const handleArchive = (e) => {
     e.stopPropagation();
-    onArchive(id, archived);
+    onArchive && onArchive(id, archived);
   };
+
   const handleDelete = (e) => {
     e.stopPropagation();
-    onDelete(id);
+    onDelete && onDelete(id);
   };
+
   const handleManage = (e) => {
     e.stopPropagation();
-    onManage(id, title);
+    onManage && onManage(id, title);
   };
 
   const handleLeave = async (e) => {
@@ -56,7 +58,7 @@ const ModuleCard = ({
 
   return (
     <div className={styles.card}>
-      {/* ✅ Image section */}
+      {/* Image / header section */}
       <div
         className={`${styles.cardHeader} ${coverImage ? styles.withImage : ""}`}
         style={
@@ -72,18 +74,11 @@ const ModuleCard = ({
         <div className={styles.headerOverlay}>
           <div className={styles.cardHeaderTop}>
             <p className={styles.date}>{date}</p>
+
             <div className={styles.actions}>
               {isOwner ? (
                 <>
-                  {/* Owner buttons */}
-                  <button
-                    className={`${styles.iconButton} ${styles.deleteButton}`}
-                    onClick={handleDelete}
-                    title="Delete"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-
+                  {/* Owner: archive, settings, delete */}
                   <button
                     className={`${styles.iconButton} ${styles.archiveButton}`}
                     onClick={handleArchive}
@@ -99,20 +94,26 @@ const ModuleCard = ({
                   <button
                     className={`${styles.iconButton} ${styles.manageButton}`}
                     onClick={handleManage}
-                    title="Manage"
+                    title="Settings"
                   >
                     <Settings size={18} />
+                  </button>
+
+                  <button
+                    className={`${styles.iconButton} ${styles.deleteButton}`}
+                    onClick={handleDelete}
+                    title="Delete"
+                  >
+                    <Trash2 size={18} />
                   </button>
                 </>
               ) : (
                 <>
-                  <span className={styles.collabLabel}>Collaborator</span>
-
-                  {/* NEW: Leave module button */}
+                  {/* Collaborator: only a 'leave module' button, no label */}
                   <button
                     className={`${styles.iconButton} ${styles.leaveButton}`}
                     onClick={handleLeave}
-                    title="Leave Module"
+                    title="Leave module"
                   >
                     <Trash2 size={18} />
                   </button>
@@ -121,18 +122,21 @@ const ModuleCard = ({
             </div>
           </div>
 
-          {/* <p className={styles.title}>{title}</p> */}
-
-          {/* ✅ Floating play button on image */}
-          <button className={styles.playButton} onClick={handleClick}>
+          {/* Floating play button on the image */}
+          <button
+            className={styles.playButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClick();
+            }}
+          >
             <Play size={32} />
           </button>
         </div>
       </div>
 
-      {/* ✅ White footer */}
+      {/* White footer with title */}
       <div className={styles.cardFooter}>
-        {" "}
         <p className={styles.title}>{title}</p>
       </div>
     </div>
