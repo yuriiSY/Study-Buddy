@@ -29,3 +29,19 @@
     padding: 16px;
   }
 }
+
+.appShell {
+  width: 100%;
+  min-height: calc(100vh - 72px);
+  background: var(--sb-bg-app); /* was #f5f7ff */
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 32px 40px 40px;
+}
+
+.content {
+  width: 100%;
+  max-width: 1320px;
+}
+

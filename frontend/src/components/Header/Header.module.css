@@ -70,11 +70,12 @@
   color: #e5e7eb;
 }
 
-/* Right section (avatar / auth) */
+/* Right section (avatar / auth + theme toggle) */
 .userSection {
   position: relative;
   display: flex;
   align-items: center;
+  gap: 0.75rem;
 }
 
 .userMenu {
@@ -90,6 +91,26 @@
   border-radius: 999px;
   border: 2px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.35);
+}
+
+/* Theme toggle */
+.themeToggle {
+  border: none;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.themeToggle:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
 }
 
 /* Dropdown */

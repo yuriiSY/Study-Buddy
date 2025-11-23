@@ -1,5 +1,44 @@
 @import "modern-normalize/modern-normalize.css";
 
+/* ===============================
+   THEME VARIABLES
+   =============================== */
+
+:root {
+  --sb-bg-app: #f5f7ff;
+  --sb-bg-surface: #ffffff;
+  --sb-border-subtle: #e5e7eb;
+
+  --sb-text-primary: #111827;
+  --sb-text-secondary: #6b7280;
+
+  --sb-accent: #4f46e5;
+  --sb-accent-strong: #4338ca;
+
+  --sb-card-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  --sb-card-shadow-strong: 0 12px 35px rgba(15, 23, 42, 0.1);
+}
+
+/* Dark mode overrides */
+body.dark {
+  --sb-bg-app: #020617;
+  --sb-bg-surface: #0f172a; /* slightly lighter than body */
+  --sb-border-subtle: #1e293b;
+
+  --sb-text-primary: #e5e7eb;
+  --sb-text-secondary: #94a3b8;
+
+  --sb-accent: #6366f1;
+  --sb-accent-strong: #4f46e5;
+
+  --sb-card-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
+  --sb-card-shadow-strong: 0 24px 55px rgba(0, 0, 0, 0.85);
+}
+
+/* ===============================
+   GLOBAL RESET + TYPOGRAPHY
+   =============================== */
+
 html {
   box-sizing: border-box;
   scroll-behavior: smooth;
@@ -19,8 +58,15 @@ body {
   font-size: 14px;
   letter-spacing: -0.02em;
   line-height: 1.5;
+
+  /* THEME-DRIVEN COLORS */
+  background-color: var(--sb-bg-app);
+  color: var(--sb-text-primary);
+
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+/* Headings inherit theme text colors */
 h1,
 h2,
 h3,
@@ -31,8 +77,15 @@ p {
   margin: 0;
   font-family: "Poppins", Arial, sans-serif;
   font-weight: 600;
+  color: var(--sb-text-primary);
 }
 
+p {
+  font-weight: 400;
+  color: var(--sb-text-secondary);
+}
+
+/* Lists */
 ol,
 ul {
   list-style: none;
@@ -40,20 +93,24 @@ ul {
   padding: 0;
 }
 
+/* Links */
 a {
   text-decoration: none;
   background-color: transparent;
-
-  &:hover {
-    text-decoration: none;
-  }
+  color: var(--sb-accent);
 }
 
+a:hover {
+  text-decoration: none;
+}
+
+/* Images */
 img {
   vertical-align: middle;
   border-style: none;
 }
 
+/* Buttons */
 button {
   border: none;
   margin: 0;
@@ -61,12 +118,14 @@ button {
   width: auto;
   overflow: visible;
   background: transparent;
-
-  &:focus {
-    outline: none;
-  }
+  font: inherit;
 }
 
+button:focus {
+  outline: none;
+}
+
+/* Inputs */
 input,
 button,
 textarea,
@@ -74,15 +133,18 @@ select {
   font: inherit;
 }
 
+/* Hidden attribute */
 [hidden] {
   display: none;
 }
 
+/* MUI overrides */
 .MuiInputBase-root.MuiOutlinedInput-root {
   border: none;
   outline: none;
 }
 
+/* Responsive image utility */
 .image-responsive {
   width: 300px;
   height: 200px;

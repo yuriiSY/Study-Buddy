@@ -21,21 +21,25 @@
 .pageTitle {
   font-size: 1.7rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--sb-text-primary);
   margin: 0;
 }
 
 .pageSubtitle {
   margin: 0.35rem 0 0;
   font-size: 0.95rem;
-  color: #6b7280;
+  color: var(--sb-text-secondary);
 }
 
 .primaryAction {
   padding: 0.7rem 1.4rem;
   border-radius: 999px;
   border: none;
-  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  background: linear-gradient(
+    135deg,
+    var(--sb-accent),
+    var(--sb-accent-strong)
+  );
   color: #ffffff;
   font-weight: 600;
   font-size: 0.95rem;
@@ -46,7 +50,11 @@
 }
 
 .primaryAction:hover {
-  background: linear-gradient(135deg, #4338ca, #4f46e5);
+  background: linear-gradient(
+    135deg,
+    var(--sb-accent-strong),
+    var(--sb-accent)
+  );
   box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
   transform: translateY(-1px);
 }
@@ -67,18 +75,18 @@
 /* Card-style sections */
 .modulesSection {
   padding: 1.5rem 1.75rem 2rem;
-  background: #ffffff;
+  background: var(--sb-bg-surface);
   border-radius: 18px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--sb-card-shadow);
   width: 100%;
   box-sizing: border-box;
 }
 
 .progressSection {
-  background: #ffffff;
+  background: var(--sb-bg-surface);
   border-radius: 1.2rem;
   padding: 1.5rem 1.6rem 1.8rem;
-  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.07);
+  box-shadow: var(--sb-card-shadow-strong);
   width: 100%;
   box-sizing: border-box;
 }
@@ -95,7 +103,7 @@
 .sectionTitle {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--sb-text-primary);
   margin: 0;
 }
 
@@ -107,28 +115,28 @@
 .ghostButton {
   padding: 0.4rem 0.9rem;
   border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border: 1px solid var(--sb-border-subtle);
+  background: rgba(249, 250, 251, 0.95);
   font-size: 0.85rem;
   font-weight: 500;
-  color: #4b5563;
+  color: var(--sb-text-secondary);
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease,
     color 0.15s ease;
 }
 
 .ghostButton:hover {
-  background: #eef2ff;
-  border-color: #4f46e5;
-  color: #111827;
+  background: rgba(238, 242, 255, 0.98);
+  border-color: var(--sb-accent);
+  color: var(--sb-text-primary);
 }
 
 /* Toggle buttons (Current / Archive) */
 .toggleButtons {
   padding: 8px 18px;
   border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #f3f4ff;
+  border: 1px solid var(--sb-border-subtle);
+  background: rgba(243, 244, 255, 0.85);
   font-size: 0.9rem;
   display: inline-flex;
   gap: 2px;
@@ -141,14 +149,14 @@
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #4b5563;
+  color: var(--sb-text-secondary);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease,
     box-shadow 0.15s ease;
 }
 
 .toggleButtonActive {
-  background: #4f46e5;
+  background: var(--sb-accent);
   color: #ffffff;
 }
 
@@ -170,8 +178,8 @@
 .emptyState {
   grid-column: 1 / -1;
   font-size: 0.95rem;
-  color: #6b7280;
-  background: #f9fafb;
+  color: var(--sb-text-secondary);
+  background: rgba(249, 250, 251, 0.95);
   border-radius: 0.9rem;
   padding: 0.9rem 1rem;
 }

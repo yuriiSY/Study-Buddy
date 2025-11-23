@@ -7,6 +7,9 @@ import { logoutUser } from "../../store/auth/authSlice";
 import { Link } from "react-router-dom";
 import ProfileModal from "../ProfileModal/ProfileModal";
 
+// 👇 NEW: theme hook
+import { useTheme } from "../../context/ThemeContext";
+
 const Header = ({ onMenuClick, hasSidebar = false }) => {
   const [open, setOpen] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
@@ -14,6 +17,9 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
   const dispatch = useDispatch();
 
   const { isLoggedIn } = useSelector((state) => state.auth);
+
+  // 👇 NEW: access current theme + toggle
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -55,32 +61,19 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
             </div>
           </div>
 
-          {/* {isLoggedIn && (
-        <ul className={styles.stats}>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🏅</span> 1,245
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>📈</span> Rank #42
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🔥</span> Streak Master
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🎯</span> Quick Learner
-            </a>
-          </li>
-        </ul>
-      )} */}
-
           <div className={styles.userSection} ref={menuRef}>
+            {/* Light and dark mode toggle represented by moon and sun */}
+            <button
+              type="button"
+              className={styles.themeToggle}
+              onClick={toggleTheme}
+              aria-label={`Switch to ${
+                theme === "light" ? "dark" : "light"
+              } mode`}
+            >
+              {theme === "light" ? "🌙" : "☀️"}
+            </button>
+
             {isLoggedIn ? (
               <>
                 <div
