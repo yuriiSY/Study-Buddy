@@ -3,7 +3,7 @@
   left: -280px;
   top: 0;
   height: 100%;
-  width: 280px;
+  width: 300px;
   background-color: #f8f9fc;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   transition: left 0.3s ease;
@@ -25,7 +25,7 @@
 }
 
 .title {
-  font-size: 1.3rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: #1d2d5b;
 }
@@ -58,6 +58,8 @@
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 18px;
+  font-weight: 500;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -85,7 +87,7 @@
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  font-size: 0.95rem;
+  font-size: 18px;
   color: #333;
   border-radius: 6px;
   transition: background 0.2s;
@@ -124,6 +126,7 @@
   padding: 10px 0;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  font-size: 18px;
 }
 
 .addFileBtn:hover {
