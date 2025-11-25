@@ -1,0 +1,77 @@
+.wrapper {
+  width: 100%;
+}
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #f6f7fb;
+  border-radius: 12px;
+  width: fit-content;
+  margin: auto;
+}
+
+.tab {
+  padding: 6px 16px;
+  font-size: 14px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.tab.active {
+  background: #e2e7ff;
+  color: #3b4dff;
+  font-weight: 600;
+}
+
+.tab:hover {
+  background: #ddd;
+}
+
+.active {
+  background: #fff;
+  border-bottom: 3px solid #4a6cff;
+  font-weight: bold;
+}
+
+.notesPanel {
+  padding: 20px;
+}
+
+.notesDisplay {
+  white-space: pre-wrap;
+  background: #fafafa;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  min-height: 150px;
+}
+
+.textArea {
+  width: 100%;
+  height: 200px;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #bbb;
+  resize: vertical;
+}
+
+.editBtn,
+.saveBtn {
+  margin-top: 15px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #4a6cff;
+  color: white;
+}
+
+.editBtn:hover,
+.saveBtn:hover {
+  background: #3b55d4;
+}

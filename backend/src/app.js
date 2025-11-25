@@ -5,6 +5,7 @@ import authRouter from "./routes/authRouter.js";
 import uploadRouter from "./routes/uploadRouter.js";
 import authenticateToken from "./middlewares/authMiddlewar.js";
 import streakRouter from "./routes/streakRouter.js";
+import notesRouter from "./routes/notesRouter.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -17,6 +18,7 @@ app.use(express.json());
 // Routes
 app.use("/api/files", authenticateToken, uploadRouter);
 app.use("/api/streak", authenticateToken, streakRouter);
+app.use("/api/notes", authenticateToken, notesRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRoutes);
 

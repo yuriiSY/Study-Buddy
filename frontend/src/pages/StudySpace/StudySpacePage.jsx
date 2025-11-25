@@ -9,6 +9,7 @@ import styles from "./StudySpacePage.module.css";
 import FocusHeader from "../../components/FocusHeader/FocusHeader";
 import LoaderOverlay from "../../components/LoaderOverlay/LoaderOverlay";
 import CustomPdfViewer from "../../components/CustomPdfViewer";
+import TutorTabs from "../../components/TutorTabs/TutorTabs";
 
 import api from "../../api/axios";
 import apiPY from "../../api/axiosPython";
@@ -300,7 +301,8 @@ export const StudySpacePage = () => {
                     </button>
                   </div>
 
-                  <Chat externalId={selectedFile?.externalId} />
+                  {/* <Chat externalId={selectedFile?.externalId} /> */}
+                  <TutorTabs externalId={selectedFile?.externalId} />
                 </div>
               )}
             </div>
@@ -315,7 +317,8 @@ export const StudySpacePage = () => {
               fileName={`${selectedFile?.title}`}
               height="80vh"
             />
-            <Chat externalId={selectedFile?.externalId} />
+            {/* <Chat externalId={selectedFile?.externalId} /> */}
+            <TutorTabs externalId={selectedFile?.externalId} />
           </div>
         );
       default:
