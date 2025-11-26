@@ -3,7 +3,9 @@ import { getNote, upsertNote, appendToNote } from "../services/notesService.js";
 export const getUserNote = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log("fileId query param:", req.query.fileId);
     const fileId = Number(req.query.fileId);
+    console.log("fileId query param:", req.query.fileId);
 
     const note = await getNote(userId, fileId);
     return res.json(note ?? { content: "" });
