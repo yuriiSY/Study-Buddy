@@ -9,6 +9,6 @@ const router = express.Router();
 
 router.get("/", getUserNote);
 router.post("/", saveNote);
-router.post("/notes/append", appendNote);
+router.post("/append", appendNote);
 
 export default router;
