@@ -19,7 +19,7 @@ export const saveNote = async (req, res) => {
   try {
     const userId = req.user.id;
     const { fileId, content } = req.body;
-    console.log("Appending to note - fileId:", fileId, "text:", text);
+    console.log("Appending to note - fileId:", fileId, "text:", content);
 
     const note = await upsertNote(userId, Number(fileId), content);
     return res.json(note);
