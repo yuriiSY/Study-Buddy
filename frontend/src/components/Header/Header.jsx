@@ -6,21 +6,20 @@ import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
 import { Link } from "react-router-dom";
 import ProfileModal from "../ProfileModal/ProfileModal";
-
-// 👇 NEW: theme hook
 import { useTheme } from "../../context/ThemeContext";
+import CommandPalette from "../CommandPalette/CommandPalette";
 
 const Header = ({ onMenuClick, hasSidebar = false }) => {
   const [open, setOpen] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const menuRef = useRef();
   const dispatch = useDispatch();
 
   const { isLoggedIn } = useSelector((state) => state.auth);
-
-  // 👇 NEW: access current theme + toggle
   const { theme, toggleTheme } = useTheme();
 
+  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -28,7 +27,22 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Global keyboard shortcut: Cmd+K / Ctrl+K opens command palette
+  useEffect(() => {
+    const handleKey = (e) => {
+      const isK = e.key.toLowerCase() === "k";
+      if ((e.metaKey || e.ctrlKey) && isK) {
+        e.preventDefault();
+        setIsPaletteOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
   const handleLogout = () => {
@@ -62,7 +76,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
           </div>
 
           <div className={styles.userSection} ref={menuRef}>
-            {/* Light and dark mode toggle represented by moon and sun */}
+            {/* Dark / light mode toggle */}
             <button
               type="button"
               className={styles.themeToggle}
@@ -72,6 +86,16 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
               } mode`}
             >
               {theme === "light" ? "🌙" : "☀️"}
+            </button>
+
+            {/* Command palette button (also available via Ctrl+K / Cmd+K) */}
+            <button
+              type="button"
+              className={styles.themeToggle}
+              onClick={() => setIsPaletteOpen(true)}
+              aria-label="Open command palette (Ctrl+K / Cmd+K)"
+            >
+              ⌘K
             </button>
 
             {isLoggedIn ? (
@@ -112,7 +136,13 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
           </div>
         </div>
       </header>
+
       {openProfile && <ProfileModal onClose={() => setOpenProfile(false)} />}
+
+      <CommandPalette
+        isOpen={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+      />
     </>
   );
 };

@@ -1,0 +1,107 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+  z-index: 999;
+}
+
+.dialog {
+  width: 100%;
+  max-width: 540px;
+  background: var(--sb-bg-surface);
+  border-radius: 16px;
+  box-shadow: var(--sb-card-shadow-strong);
+  padding: 12px 12px 10px;
+  box-sizing: border-box;
+}
+
+/* Search row */
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--sb-border-subtle);
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.searchIcon {
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.18);
+  color: var(--sb-text-secondary);
+}
+
+.input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.95rem;
+  color: var(--sb-text-primary);
+}
+
+/* Hint row */
+.hintRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  padding: 0 2px;
+  font-size: 0.75rem;
+  color: var(--sb-text-secondary);
+}
+
+.loadingText {
+  font-style: italic;
+}
+
+/* Results list */
+.list {
+  margin: 8px 0 0;
+  padding: 4px 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.item {
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.item:hover {
+  background: rgba(79, 70, 229, 0.08);
+}
+
+.itemActive {
+  background: rgba(79, 70, 229, 0.18);
+}
+
+.itemLabel {
+  font-size: 0.9rem;
+  color: var(--sb-text-primary);
+}
+
+.itemMeta {
+  font-size: 0.75rem;
+  color: var(--sb-text-secondary);
+}
+
+.empty {
+  padding: 10px;
+  font-size: 0.85rem;
+  color: var(--sb-text-secondary);
+}
