@@ -19,6 +19,7 @@ export const upsertNote = async (userId, fileId, content) => {
 };
 
 export const appendToNote = async (userId, fileId, text) => {
+  console.log("Appending to note - fileId1:", fileId, "text:", text);
   const existing = await prisma.note.findUnique({
     where: { userId_fileId: { userId, fileId } },
   });
