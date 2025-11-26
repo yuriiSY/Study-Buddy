@@ -19,6 +19,7 @@ export const saveNote = async (req, res) => {
   try {
     const userId = req.user.id;
     const { fileId, content } = req.body;
+    console.log("Appending to note - fileId:", fileId, "text:", text);
 
     const note = await upsertNote(userId, Number(fileId), content);
     return res.json(note);
@@ -32,6 +33,8 @@ export const appendNote = async (req, res) => {
   try {
     const userId = req.user.id;
     const { fileId, text } = req.body;
+
+    console.log("Appending to note - fileId:", fileId, "text:", text);
 
     const note = await appendToNote(userId, Number(fileId), text);
     return res.json(note);
