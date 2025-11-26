@@ -76,10 +76,10 @@ CREATE TABLE "WeeklyForgiveness" (
 -- CreateTable
 CREATE TABLE "chat_history" (
     "id" SERIAL NOT NULL,
-    "file_id" VARCHAR(255) NOT NULL,
+    "file_id" TEXT NOT NULL,
     "question" TEXT NOT NULL,
     "answer" TEXT NOT NULL,
-    "timestamp" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "timestamp" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "chat_history_pkey" PRIMARY KEY ("id")
 );
@@ -110,6 +110,18 @@ CREATE TABLE "tests" (
     CONSTRAINT "tests_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Note" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "fileId" INTEGER NOT NULL,
+    "content" TEXT NOT NULL DEFAULT '',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Note_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -124,6 +136,9 @@ CREATE UNIQUE INDEX "DailyActivity_userId_date_key" ON "DailyActivity"("userId",
 
 -- CreateIndex
 CREATE UNIQUE INDEX "WeeklyForgiveness_userId_weekStart_key" ON "WeeklyForgiveness"("userId", "weekStart");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Note_userId_fileId_key" ON "Note"("userId", "fileId");
 
 -- AddForeignKey
 ALTER TABLE "Module" ADD CONSTRAINT "Module_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -144,4 +159,7 @@ ALTER TABLE "DailyActivity" ADD CONSTRAINT "DailyActivity_userId_fkey" FOREIGN K
 ALTER TABLE "WeeklyForgiveness" ADD CONSTRAINT "WeeklyForgiveness_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "chat_history" ADD CONSTRAINT "chat_history_file_id_fkey" FOREIGN KEY ("file_id") REFERENCES "File"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Note" ADD CONSTRAINT "Note_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Note" ADD CONSTRAINT "Note_fileId_fkey" FOREIGN KEY ("fileId") REFERENCES "File"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
