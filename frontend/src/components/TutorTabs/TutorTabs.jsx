@@ -3,18 +3,18 @@ import Chat from "../Chat/Chat";
 import styles from "./TutorTabs.module.css";
 import api from "../../api/axios";
 
-const TutorTabs = ({ externalId, userId }) => {
+const TutorTabs = ({ externalId, userId, fileid }) => {
   const [activeTab, setActiveTab] = useState("tutor");
   const [notes, setNotes] = useState("");
   const [editing, setEditing] = useState(false);
 
   useEffect(() => {
-    if (!externalId || !userId) return;
+    if (!externalId) return;
 
     const loadNotes = async () => {
       try {
         const res = await api.get("/notes", {
-          params: { userId, fileId: externalId },
+          params: { userId, fileId: fileid },
         });
 
         setNotes(res.data?.content || "");
@@ -24,13 +24,14 @@ const TutorTabs = ({ externalId, userId }) => {
     };
 
     loadNotes();
-  }, [externalId, userId]);
+  }, [externalId, userId, fileid]);
 
   const handleSaveNotes = async () => {
+    console.log("Saving notes for fileId:", fileid, "notes:", notes);
     try {
       await api.post("/notes", {
         userId,
-        fileId: externalId,
+        fileId: fileid,
         content: notes,
       });
 
@@ -44,7 +45,7 @@ const TutorTabs = ({ externalId, userId }) => {
     try {
       const res = await api.post("/notes/append", {
         userId,
-        fileId: externalId,
+        fileId: fileid,
         text,
       });
 

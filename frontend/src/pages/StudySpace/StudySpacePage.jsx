@@ -302,7 +302,10 @@ export const StudySpacePage = () => {
                   </div>
 
                   {/* <Chat externalId={selectedFile?.externalId} /> */}
-                  <TutorTabs externalId={selectedFile?.externalId} />
+                  <TutorTabs
+                    externalId={selectedFile?.externalId}
+                    fileid={selectedFile?.id}
+                  />
                 </div>
               )}
             </div>
@@ -318,7 +321,10 @@ export const StudySpacePage = () => {
               height="80vh"
             />
             {/* <Chat externalId={selectedFile?.externalId} /> */}
-            <TutorTabs externalId={selectedFile?.externalId} />
+            <TutorTabs
+              externalId={selectedFile?.externalId}
+              fileid={selectedFile?.id}
+            />
           </div>
         );
       default:
