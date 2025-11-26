@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: true, // allow access from Docker container
     port: 5173,
+    open: '/Study-Buddy', // open the app in the browser on server start
     proxy: {
       "/api": {
         target: "http://backend:5000", // container-to-container call
