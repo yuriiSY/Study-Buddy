@@ -35,6 +35,7 @@ model User {
   dailyActivities    DailyActivity[]
   weeklyForgiveness  WeeklyForgiveness[]
   notes Note[]
+  testScores TestScore[]
 }
 
 //
@@ -163,6 +164,8 @@ model tests {
   questions       Json?
   total_questions Int?
   created_at      DateTime? @default(now()) @db.Timestamp(6)
+
+  scores TestScore[]
 }
 
 
@@ -199,3 +202,17 @@ model Note {
 
 //   @@index([cmetadata(ops: JsonbPathOps)], map: "ix_cmetadata_gin", type: Gin)
 // }
+
+
+model TestScore {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  testId    String
+  score     Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  test tests @relation(fields: [testId], references: [id])
+
+  @@unique([userId, testId]) 
+}
