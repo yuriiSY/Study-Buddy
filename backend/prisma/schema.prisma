@@ -207,12 +207,12 @@ model Note {
 model TestScore {
   id        Int      @id @default(autoincrement())
   userId    Int
-  testId    String
+  testId    String   @db.Uuid
   score     Int
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
   test tests @relation(fields: [testId], references: [id])
 
-  @@unique([userId, testId]) 
+  @@unique([userId, testId])
 }
