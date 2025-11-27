@@ -122,6 +122,17 @@ CREATE TABLE "Note" (
     CONSTRAINT "Note_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "TestScore" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "testId" UUID NOT NULL,
+    "score" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "TestScore_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -139,6 +150,9 @@ CREATE UNIQUE INDEX "WeeklyForgiveness_userId_weekStart_key" ON "WeeklyForgivene
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Note_userId_fileId_key" ON "Note"("userId", "fileId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TestScore_userId_testId_key" ON "TestScore"("userId", "testId");
 
 -- AddForeignKey
 ALTER TABLE "Module" ADD CONSTRAINT "Module_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -163,3 +177,9 @@ ALTER TABLE "Note" ADD CONSTRAINT "Note_userId_fkey" FOREIGN KEY ("userId") REFE
 
 -- AddForeignKey
 ALTER TABLE "Note" ADD CONSTRAINT "Note_fileId_fkey" FOREIGN KEY ("fileId") REFERENCES "File"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TestScore" ADD CONSTRAINT "TestScore_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TestScore" ADD CONSTRAINT "TestScore_testId_fkey" FOREIGN KEY ("testId") REFERENCES "tests"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
