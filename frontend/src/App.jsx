@@ -13,17 +13,12 @@ import PublicRoute from "./routes/PublicRoute";
 
 export default function App() {
   return (
-    <div className="h-screen flex items-center justify-center">
+    <div>
       <Routes>
-        {/* Public routes */}
-        <Route
-          path="/welcome"
-          element={
-            <PublicRoute>
-              <WelcomePage />
-            </PublicRoute>
-          }
-        />
+        {/* PUBLIC LANDING PAGE */}
+        <Route path="/" element={<WelcomePage />} />
+
+        {/* PUBLIC AUTH ROUTES */}
         <Route
           path="/login"
           element={
@@ -40,17 +35,10 @@ export default function App() {
             </PublicRoute>
           }
         />
+
+        {/* PROTECTED APP ROUTES */}
         <Route
-          path="/test/:fileId"
-          element={
-            <PrivateRoute>
-              <TestPage />
-            </PrivateRoute>
-          }
-        />
-        {/* Private routes */}
-        <Route
-          path="/"
+          path="/home"
           element={
             <PrivateRoute>
               <HomePage />
@@ -62,6 +50,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <StudySpacePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/test/:fileId"
+          element={
+            <PrivateRoute>
+              <TestPage />
             </PrivateRoute>
           }
         />

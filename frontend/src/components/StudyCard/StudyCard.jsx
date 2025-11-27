@@ -7,7 +7,7 @@ const StudyCard = ({ title, color, image, text }) => {
       <h3 className={styles.title}>{title}</h3>
       <div className={styles.content}>
         <img src={image} alt={title} className={styles.image} />
-        <p className={styles.text}>{text}</p>
+        {text && <p className={styles.text}>{text}</p>}
       </div>
     </div>
   );

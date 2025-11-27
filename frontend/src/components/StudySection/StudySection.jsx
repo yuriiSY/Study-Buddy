@@ -1,5 +1,7 @@
+// src/components/StudySection/StudySection.jsx
 import React from "react";
 import styles from "./StudySection.module.css";
+import { useNavigate } from "react-router-dom";
 
 const StudySection = ({
   title,
@@ -7,12 +9,13 @@ const StudySection = ({
   buttonText,
   image,
   reverse = false,
-  bgColor = "#f5f7fb",
 }) => {
+  const navigate = useNavigate();
+  const goToAuth = () => navigate("/login");
+
   return (
     <section
       className={`${styles.section} ${reverse ? styles.reverse : ""}`}
-      style={{ backgroundColor: bgColor }}
     >
       <div className={styles.imageWrapper}>
         <img src={image} alt={title} className={styles.image} />
@@ -21,7 +24,9 @@ const StudySection = ({
       <div className={styles.textContent}>
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.description}>{description}</p>
-        <button className={styles.button}>{buttonText}</button>
+        <button className={styles.button} onClick={goToAuth}>
+          {buttonText}
+        </button>
       </div>
     </section>
   );

@@ -15,7 +15,6 @@ export const WelcomePage = () => {
         "Turn flashcards into multiple-choice questions and more using Study Mode. Strengthen your knowledge with fun learning games like Matching.",
       buttonText: "Start",
       image: intoImg3,
-      bgColor: "#f9faff",
       reverse: false,
     },
     {
