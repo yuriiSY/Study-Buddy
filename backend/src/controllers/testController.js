@@ -10,22 +10,13 @@ import {
 
 export const getLeaderboard = async (req, res) => {
   try {
-    const { testId, moduleId } = req.query;
+    const { testId } = req.query;
 
     if (!testId) {
       return res.status(400).json({ message: "testId is required" });
     }
 
-    let leaderboard;
-
-    if (moduleId) {
-      leaderboard = await getLeaderboardForCollaborators(
-        testId,
-        Number(moduleId)
-      );
-    } else {
-      leaderboard = await getFullLeaderboard(testId);
-    }
+    const leaderboard = await getFullLeaderboard(testId);
 
     return res.json(leaderboard);
   } catch (err) {

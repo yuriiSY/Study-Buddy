@@ -81,10 +81,10 @@ export const createTestFromMCQs = async ({
 
   return prisma.tests.create({
     data: {
-      file_ids: [file_id], // you use file_ids array in getTestsByFileId
+      file_ids: [file_id],
       title,
       description,
-      questions: mcqs, // MCQ JSON saved here
+      questions: mcqs,
     },
   });
 };
