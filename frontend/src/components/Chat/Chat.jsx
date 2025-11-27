@@ -3,7 +3,7 @@ import styles from "./Chat.module.css";
 import Message from "../Message/Message";
 import apiPY from "../../api/axiosPython";
 
-const Chat = ({ externalId }) => {
+const Chat = ({ externalId, onAddNote }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -73,11 +73,23 @@ const Chat = ({ externalId }) => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.chatContainer}>
-        <h2 className={styles.title}>AI Tutor</h2>
+        {/* <h2 className={styles.title}>AI Tutor</h2> */}
 
         <div className={styles.chatBox}>
           {messages.map((msg, idx) => (
-            <Message key={idx} sender={msg.sender} text={msg.text} />
+            <div key={idx} className={styles.messageWrapper}>
+              <Message sender={msg.sender} text={msg.text} />
+
+              {/* Show button only for AI messages */}
+              {msg.sender === "bot" && (
+                <button
+                  className={styles.addToNotesBtn}
+                  onClick={() => onAddNote(msg.text)}
+                >
+                  ➕ Add to Notes
+                </button>
+              )}
+            </div>
           ))}
           {loading && <Message sender="bot" text="Thinking..." />}
         </div>
