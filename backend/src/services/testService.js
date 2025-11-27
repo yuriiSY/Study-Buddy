@@ -68,3 +68,23 @@ export const getTestsByFileId = async (fileId) => {
     orderBy: { created_at: "desc" },
   });
 };
+
+export const createTestFromMCQs = async ({
+  file_id,
+  title,
+  description,
+  mcqs,
+}) => {
+  if (!file_id || !mcqs) {
+    throw new Error("file_id and mcqs are required");
+  }
+
+  return prisma.tests.create({
+    data: {
+      file_ids: [file_id], // you use file_ids array in getTestsByFileId
+      title,
+      description,
+      questions: mcqs, // MCQ JSON saved here
+    },
+  });
+};

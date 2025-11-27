@@ -5,6 +5,7 @@ import {
   getTestById,
   deleteTest,
   getTestsByFileId,
+  createTestFromMCQs,
 } from "../services/testService.js";
 
 export const getLeaderboard = async (req, res) => {
@@ -94,5 +95,23 @@ export const getTestsForFile = async (req, res) => {
   } catch (error) {
     console.error("Error loading tests for file:", error);
     return res.status(500).json({ message: "Failed to load tests for file" });
+  }
+};
+
+export const createFromMCQs = async (req, res) => {
+  try {
+    const { file_id, title, description, mcqs } = req.body;
+
+    const test = await createTestFromMCQs({
+      file_id,
+      title,
+      description,
+      mcqs,
+    });
+
+    res.json(test);
+  } catch (err) {
+    console.error("Create test error:", err);
+    res.status(500).json({ error: "Failed to create test" });
   }
 };
