@@ -68,8 +68,6 @@ const TestsList = ({ fileId, onSelectTest }) => {
               <h3 className={styles.testName}>{test.title}</h3>
               <p className={styles.testDesc}>{test.description}</p>
             </div>
-
-            {/* ⭐ SEND ONLY test.id TO PARENT ⭐ */}
             <button
               className={styles.takeTestBtn}
               onClick={() => onSelectTest(test.id)}
