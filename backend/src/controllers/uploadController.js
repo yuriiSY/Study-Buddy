@@ -175,12 +175,7 @@ export const getUserModules = async (req, res) => {
     const userId = req.user.id;
     const modules = await uploadService.getModulesByUserId(userId);
 
-    const withOwnership = modules.map((m) => ({
-      ...m,
-      isOwner: m.ownerId === userId,
-    }));
-
-    res.json({ modules: withOwnership });
+    res.json({ modules });
   } catch (error) {
     console.error("Error fetching modules:", error);
     res.status(500).json({ error: "Failed to fetch modules" });
