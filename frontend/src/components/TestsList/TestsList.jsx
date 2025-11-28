@@ -72,7 +72,7 @@ const TestsList = ({ fileId, onSelectTest }) => {
               className={styles.takeTestBtn}
               onClick={() => onSelectTest(test.id)}
             >
-              Take Test →
+              Take Test
             </button>
           </div>
         ))}

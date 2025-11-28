@@ -5,7 +5,7 @@ const AddCard = ({ onClick }) => {
   return (
     <div className={styles.addCard} onClick={onClick}>
       <span>
-        <svg width="24" height="24" fill="#273da4">
+        <svg width="24" height="24" fill="#ffffff">
           <use href={`${icons}#icon-plus`} />
         </svg>
       </span>

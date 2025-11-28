@@ -15,13 +15,13 @@
 .headerSection h2 {
   font-size: 1.4rem;
   font-weight: 600;
-  color: #333;
+  color: #fff;
   margin: 0;
 }
 
 .viewAllBtn {
   background: none;
-  color: #656596;
+  color: #fff;
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
@@ -68,7 +68,7 @@
 
 .toggleButtons button {
   padding: 8px 16px;
-  border: 1px solid #ccc;
+  border: 1px solid #080e4b;
   background: #f4f4f4;
   border-radius: 6px;
   cursor: pointer;
@@ -85,8 +85,8 @@
   gap: 6px;
   border-color: #656596;
   background: transparent !important;
-  border: 2px solid #656596 !important;
-  color: #5a5ac0;
+  border: 2px solid #fff !important;
+  color: #fff;
 }
 
 .inactiveBtn {
@@ -94,8 +94,8 @@
   align-items: center;
   gap: 6px;
   background: transparent !important;
-  border: 2px solid #000 !important;
-  color: #000;
+  border: 2px solid #080e4b !important;
+  color: #080e4b;
 }
 
 .searchInput {
@@ -110,4 +110,5 @@
 
 .progressText {
   text-align: left;
+  color: #fff;
 }
