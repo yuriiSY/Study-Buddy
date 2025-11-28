@@ -11,7 +11,7 @@
 }
 
 .modal {
-  background: #ffffff;
+  background: #1a205e;
   width: 95%;
   max-width: 520px;
   padding: 2rem 1.8rem;
@@ -29,7 +29,7 @@
   right: 16px;
   background: none;
   border: none;
-  color: #444;
+  color: #fff;
   font-size: 1.6rem;
   cursor: pointer;
   transition: 0.2s;
@@ -44,11 +44,15 @@
   margin-bottom: 26px;
 }
 
+.section p {
+  color: #fff;
+}
+
 .section h4 {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 600;
-  color: #222;
+  color: #fff;
 }
 
 .formRow {

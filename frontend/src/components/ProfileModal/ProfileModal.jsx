@@ -67,7 +67,9 @@ const ProfileModal = ({ onClose }) => {
         </button>
         <h2>Edit Profile</h2>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <label htmlFor="name">Name</label>
+          <label className={styles.label} htmlFor="name">
+            Name
+          </label>
           <input
             id="name"
             type="text"
@@ -77,7 +79,9 @@ const ProfileModal = ({ onClose }) => {
             required
           />
 
-          <label htmlFor="email">Email</label>
+          <label className={styles.label} htmlFor="email">
+            Email
+          </label>
           <input
             id="email"
             type="email"
@@ -87,7 +91,9 @@ const ProfileModal = ({ onClose }) => {
             required
           />
 
-          <label htmlFor="specialization">Specialization</label>
+          <label className={styles.label} htmlFor="specialization">
+            Specialization
+          </label>
           <select
             id="specialization"
             value={specialization}

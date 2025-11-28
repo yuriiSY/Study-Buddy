@@ -29,10 +29,13 @@ export const uploadFiles = async (req, res) => {
   console.log("req.user:", req.user);
   console.log("=== END REQUEST DATA ===");
 
-  const { moduleName, moduleId, file_id, s3Url, s3Key, file_name, coverImage } = req.body;
+  const { moduleName, moduleId, file_id, s3Url, s3Key, file_name, coverImage } =
+    req.body;
 
   if (!s3Url || !s3Key || !file_name) {
-    return res.status(400).json({ error: "Missing file information from Python service" });
+    return res
+      .status(400)
+      .json({ error: "Missing file information from Python service" });
   }
 
   try {
@@ -45,7 +48,9 @@ export const uploadFiles = async (req, res) => {
           id: Number(moduleId),
           OR: [
             { ownerId: req.user.id },
-            { collaborations: { some: { userId: req.user.id, role: "editor" } } },
+            {
+              collaborations: { some: { userId: req.user.id, role: "editor" } },
+            },
           ],
         },
         include: { files: true },
@@ -53,7 +58,9 @@ export const uploadFiles = async (req, res) => {
 
       if (!module) {
         console.log("Module not found or no permission");
-        return res.status(403).json({ error: "Not allowed to upload to this module" });
+        return res
+          .status(403)
+          .json({ error: "Not allowed to upload to this module" });
       }
       console.log("Found module:", module.id);
     } else {
@@ -115,22 +122,20 @@ export const uploadFiles = async (req, res) => {
     console.error("❌ UPLOAD FAILED - DETAILED ERROR:", err);
     console.error("Error message:", err.message);
     console.error("Error stack:", err.stack);
-    
+
     // Check for specific Prisma errors
     if (err.code) {
       console.error("Database error code:", err.code);
     }
-    
+
     // Check if it's a Prisma validation error
     if (err.meta) {
       console.error("Prisma error metadata:", err.meta);
     }
-    
+
     res.status(500).json({ error: `Upload failed: ${err.message}` });
   }
 };
-
-
 
 // ----------------------------------------------------------------------
 // Get signed S3 URL for download
@@ -169,6 +174,7 @@ export const getUserModules = async (req, res) => {
   try {
     const userId = req.user.id;
     const modules = await uploadService.getModulesByUserId(userId);
+
     res.json({ modules });
   } catch (error) {
     console.error("Error fetching modules:", error);

@@ -5,7 +5,6 @@ import styles from "./Flashcard.module.css";
 const Flashcard = ({ cards = [], onFinish }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [showHint, setShowHint] = useState(false);
 
   const currentCard = cards[currentIndex];
 
@@ -13,7 +12,6 @@ const Flashcard = ({ cards = [], onFinish }) => {
     if (currentIndex < cards.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       setShowAnswer(false);
-      setShowHint(false);
     } else {
       onFinish?.();
     }
@@ -23,48 +21,53 @@ const Flashcard = ({ cards = [], onFinish }) => {
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
       setShowAnswer(false);
-      setShowHint(false);
     }
   };
 
   return (
     <div className={styles.container}>
-      <div className={styles.card}>
-        <div className={styles.header}>
-          <span className={styles.tag}>
-            Flashcard {currentIndex + 1} / {cards.length}
-          </span>
-          <div className={styles.hintWrapper}>
-            <button className={styles.hintBtn}>💡 Hint</button>
-            <div className={styles.hintPopup}>{currentCard.hint}</div>
-          </div>
-        </div>
+      <div className={styles.flipWrapper}>
+        <div className={`${styles.flipCard} ${showAnswer ? styles.flip : ""}`}>
+          {/* FRONT (QUESTION) */}
+          <div className={styles.front}>
+            <div className={styles.card}>
+              <div className={styles.header}>
+                <span className={styles.tag}>
+                  Flashcard {currentIndex + 1} / {cards.length}
+                </span>
+              </div>
 
-        <div className={styles.content}>
-          {!showAnswer ? (
-            <h2 className={styles.question}>{currentCard.question}</h2>
-          ) : (
-            <p className={styles.answer}>{currentCard.answer}</p>
-          )}
+              <div className={styles.content}>
+                <h2 className={styles.question}>{currentCard.question}</h2>
 
-          {!showAnswer && (
-            <div className={styles.btnAnswers}>
-              <button
-                className={styles.showBtn}
-                onClick={() => setShowAnswer(true)}
-              >
-                <RiEyeLine className={styles.icon} /> Show Answer
-              </button>
-              {/* <button
-                className={styles.showBtn}
-                onClick={() => setShowHint(!showHint)}
-              >
-                💡 Hint
-              </button>
-
-              {showHint && <p className={styles.hint}>{currentCard.hint}</p>} */}
+                <button
+                  className={styles.showBtn}
+                  onClick={() => setShowAnswer(true)}
+                >
+                  <RiEyeLine className={styles.icon} /> Show Answer
+                </button>
+              </div>
             </div>
-          )}
+          </div>
+
+          <div className={`${styles.back}`}>
+            <div className={styles.card}>
+              <div className={styles.header}>
+                <span className={styles.tag}>Answer</span>
+              </div>
+
+              <div className={styles.content}>
+                <p className={styles.answer}>{currentCard.answer}</p>
+
+                <button
+                  className={styles.showBtn}
+                  onClick={() => setShowAnswer(false)}
+                >
+                  🔄 Show Question
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

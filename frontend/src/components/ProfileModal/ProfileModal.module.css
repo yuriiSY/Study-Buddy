@@ -1,4 +1,3 @@
-/* Overlay */
 .overlay {
   position: fixed;
   inset: 0;
@@ -11,9 +10,12 @@
   animation: fadeIn 0.25s ease-out;
 }
 
-/* Modal Container */
+.lable {
+  color: #fff;
+}
+
 .modal {
-  background: #ffffff;
+  background: #1a205e;
   width: 95%;
   max-width: 460px;
   padding: 2.2rem 2rem;
@@ -23,7 +25,6 @@
   animation: slideUp 0.35s ease;
 }
 
-/* Close Button */
 .closeIcon {
   position: absolute;
   top: 14px;
@@ -31,7 +32,7 @@
   background: none;
   border: none;
   font-size: 1.4rem;
-  color: #444;
+  color: #fff;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -41,27 +42,25 @@
   transform: scale(1.15);
 }
 
-/* Header */
 h2 {
   margin: 0 0 1.2rem 0;
   text-align: center;
   font-size: 1.45rem;
   font-weight: 700;
-  color: #222;
+  color: #fff;
 }
 
-/* Form Layout */
 .form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  color: #fff;
 }
 
-/* Labels */
 .form label {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #333;
+  font-weight: 600;
+  color: #fff;
+  font-size: 16px;
 }
 
 .modal input,
@@ -82,7 +81,6 @@ h2 {
   outline: none;
 }
 
-/* Buttons Row */
 .actions {
   display: flex;
   justify-content: flex-end;
@@ -90,10 +88,9 @@ h2 {
   margin-top: 1.2rem;
 }
 
-/* Cancel Button */
 .cancel {
-  background: #f1f1f4;
-  color: #444;
+  background: #080e4b;
+  color: #ed4e4e;
   border: none;
   padding: 0.55rem 1.1rem;
   border-radius: 8px;
@@ -107,7 +104,7 @@ h2 {
 }
 
 .save {
-  background: #656596;
+  background: #080e4b;
   color: white;
   border: none;
   padding: 0.62rem 1.25rem;

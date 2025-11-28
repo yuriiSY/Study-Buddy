@@ -22,7 +22,7 @@
 }
 
 .createBtn {
-  background: #2563eb;
+  background: #4f46e5;
   color: white;
   border: none;
   padding: 8px 14px;
@@ -33,7 +33,7 @@
 }
 
 .createBtn:hover {
-  background: #1d4ed8;
+  background: #1a205e;
 }
 
 .empty {
@@ -88,4 +88,14 @@
   padding: 20px;
   color: #6b7280;
   font-size: 14px;
+}
+
+.takeTestBtn {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
 }
