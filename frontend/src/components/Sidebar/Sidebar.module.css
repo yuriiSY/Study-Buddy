@@ -4,13 +4,14 @@
   top: 0;
   height: 100%;
   width: 300px;
-  background-color: #f8f9fc;
+  background: #080e4b;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   transition: left 0.3s ease;
   padding: 20px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
+  border-right: 1px solid #fff;
 }
 
 .open {
@@ -27,7 +28,7 @@
 .title {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #1d2d5b;
+  color: #fff;
 }
 
 .closeBtn {
@@ -63,7 +64,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #222;
+  color: #fff;
   transition: background 0.2s;
 }
 
@@ -88,7 +89,7 @@
   align-items: center;
   padding: 8px 12px;
   font-size: 18px;
-  color: #333;
+  color: #fff;
   border-radius: 6px;
   transition: background 0.2s;
   cursor: pointer;
@@ -105,10 +106,6 @@
 }
 
 .footer {
-  margin-top: auto;
-  padding: 16px;
-  border-top: 1px solid #e2e8f0;
-  background-color: #f9fafb;
   text-align: center;
 }
 
@@ -118,7 +115,7 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  background-color: #656596;
+  background-color: #4f46e5;
   color: white;
   font-weight: 500;
   border: none;
@@ -130,7 +127,7 @@
 }
 
 .addFileBtn:hover {
-  background-color: #505078;
+  background-color: #1a205e;
 }
 
 @media (max-width: 1023px) {

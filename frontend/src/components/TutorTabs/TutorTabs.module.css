@@ -48,16 +48,18 @@
   padding: 15px;
   border-radius: 10px;
   border: 1px solid #ddd;
-  min-height: 150px;
+  min-height: 450px;
+  font-size: 16px;
 }
 
 .textArea {
   width: 100%;
-  height: 200px;
+  height: 450px;
   padding: 15px;
   border-radius: 10px;
   border: 1px solid #bbb;
   resize: vertical;
+  font-size: 16px;
 }
 
 .editBtn,
@@ -67,11 +69,11 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background: #4a6cff;
+  background: #4f46e5;
   color: white;
 }
 
 .editBtn:hover,
 .saveBtn:hover {
-  background: #3b55d4;
+  background: #4f46e5;
 }

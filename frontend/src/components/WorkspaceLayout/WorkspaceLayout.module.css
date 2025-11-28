@@ -13,7 +13,6 @@
 
 /* === Sidebar base === */
 .layoutWrapper > :first-child {
-  background: #f8f9fc;
   border-right: 1px solid #e2e8f0;
   z-index: 20;
   transition: all 0.3s ease;
@@ -25,7 +24,7 @@
   padding: 24px;
   overflow-y: auto;
   height: calc(100vh - 84px);
-  background: #f9fafb;
+  background: #1a205e;
   transition: margin-left 0.3s ease;
 }
 
@@ -33,10 +32,9 @@
 @media (min-width: 1024px) {
   .layoutWrapper > :first-child {
     position: fixed;
-    top: 84px;
     left: 0;
-    height: calc(100vh - 84px);
     width: 260px;
+    padding-top: 150px;
   }
 
   .main {
@@ -88,9 +86,10 @@
     width: 100%;
     height: 100vh;
     transform: translateX(-100%);
-    background: #f8f9fc;
+    background: #1a205e;
     transition: transform 0.3s ease;
     z-index: 30;
+    color: #fff;
     box-shadow: none;
   }
 

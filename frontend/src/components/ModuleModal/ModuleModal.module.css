@@ -12,7 +12,7 @@
 }
 
 .modal {
-  background: #fff;
+  background: #1a205e;
   width: 720px;
   max-height: 1200px;
   border-radius: 12px;
@@ -42,9 +42,10 @@
 }
 
 .subtitle {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #f9fafb;
+  margin: 20px 0;
   line-height: 1.4;
 }
 
@@ -54,10 +55,11 @@
   flex-direction: column;
 }
 
-label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: 6px;
+.formGroup label {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #fff;
 }
 
 .input {
@@ -92,8 +94,8 @@ label {
 }
 
 .activeTab {
-  border-bottom: 2px solid #2563eb;
-  color: #2563eb;
+  border-bottom: 2px solid #080e4b;
+  color: #080e4b;
   font-weight: 500;
 }
 
@@ -163,7 +165,7 @@ label {
   margin-top: 16px;
   padding-top: 12px;
   font-size: 0.9rem;
-  color: #555;
+  color: #fff;
 }
 
 .actions {
@@ -185,7 +187,7 @@ label {
 }
 
 .createButton {
-  background: #2563eb;
+  background: #080e4b;
   color: white;
   border: none;
   border-radius: 6px;
@@ -197,7 +199,7 @@ label {
 }
 
 .createButton:hover {
-  background: #1d4ed8;
+  background: #080e4b;
 }
 
 .createButton:disabled {
@@ -211,7 +213,7 @@ label {
 
 .uploadButton {
   display: inline-block;
-  background-color: #4a6cf7;
+  background-color: #080e4b;
   color: white;
   font-weight: 500;
   padding: 10px 16px;
@@ -248,6 +250,9 @@ label {
 }
 
 .imagePickerSection {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
   margin-bottom: 20px;
 }
 
@@ -255,6 +260,7 @@ label {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  margin-top: 12px;
 }
 
 .imageItem {
@@ -274,6 +280,6 @@ label {
 }
 
 .selectedImage {
-  border-color: #656596;
-  box-shadow: 0px 0px 6px #656596;
+  border-color: #fff;
+  box-shadow: 0px 0px 6px #fff;
 }

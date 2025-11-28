@@ -8,6 +8,7 @@
   height: 96px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   z-index: 999;
+  border-bottom: 1px solid #fff;
 }
 
 .container {

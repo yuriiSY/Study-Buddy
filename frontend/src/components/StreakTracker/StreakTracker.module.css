@@ -3,7 +3,7 @@
   border-radius: 16px;
   border: 1px solid #eee;
   gap: 20px;
-  background: #fff;
+  background: #080e4b;
   max-width: 980px;
 }
 
@@ -70,24 +70,26 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background-color: #080e4b;
   padding-right: 24px;
 }
 
 .streakNumber {
   font-size: 64px;
   margin: 0;
-  color: #222;
+  color: #fff;
   font-weight: 700;
 }
 
 .streakLabel {
   font-size: 18px;
-  color: #444;
+  color: #fff;
 }
 
 .trackerBox {
   border-right: #eee 2px solid;
   border-left: #eee 2px solid;
+  background-color: #080e4b;
   padding: 24px;
 }
 
