@@ -34,92 +34,98 @@ const ModuleModal = ({
       alert("Please enter a module name.");
       return;
     }
-  
+
     if (uploadedFiles.length === 0) {
       alert("Please upload at least one file.");
       return;
     }
-  
+
     setLoading(true);
     try {
-      // ---------- 1️⃣ UPLOAD TO PYTHON (S3 + Processing) ----------
       const pyFormData = new FormData();
       if (mode === "upload") {
         pyFormData.append("moduleId", moduleId);
       }
       uploadedFiles.forEach((file) => pyFormData.append("files", file));
-  
+
       const respy = await apiPY.post("/upload-files", pyFormData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-  
+
       console.log("Python Upload successful:", respy.data);
-  
+
       // Check for Python errors
       if (respy.data.errors && respy.data.errors.length > 0) {
         console.error("Python upload errors:", respy.data.errors);
-        alert("Some files failed to process: " + respy.data.errors.map(e => e.file_name).join(", "));
+        alert(
+          "Some files failed to process: " +
+            respy.data.errors.map((e) => e.file_name).join(", ")
+        );
       }
-  
+
       if (!respy.data.uploaded || respy.data.uploaded.length === 0) {
         alert("No files were successfully processed.");
         setLoading(false);
         return;
       }
-  
+
       // ---------- 2️⃣ SEND METADATA TO NODE.JS (Database) ----------
       let createdModule = null;
-  
+
       // Process each file that Python successfully handled
       for (let i = 0; i < respy.data.uploaded.length; i++) {
         const uploadedInfo = respy.data.uploaded[i];
-        
+
         // Create JSON payload for Node.js - EXACTLY what your backend expects
         const nodePayload = {
           // For CREATE mode: only first file creates the module
           ...(mode === "create" && i === 0 && { moduleName }),
           // For CREATE mode: subsequent files use the created module ID
-          ...(mode === "create" && i > 0 && createdModule && { moduleId: createdModule.id }),
+          ...(mode === "create" &&
+            i > 0 &&
+            createdModule && { moduleId: createdModule.id }),
           // For UPLOAD mode: always use the provided moduleId
           ...(mode === "upload" && { moduleId: Number(moduleId) }),
-          
+
           // File metadata from Python - EXACTLY what your backend expects
           file_id: uploadedInfo.file_id,
           file_name: uploadedInfo.file_name,
           s3Url: uploadedInfo.s3_url,
           s3Key: uploadedInfo.s3_key,
           html: uploadedInfo.html || "",
-          
+
           // Cover image (only for first file in create mode)
-          ...(mode === "create" && i === 0 && { coverImage: selectedImage })
+          ...(mode === "create" && i === 0 && { coverImage: selectedImage }),
         };
-  
-        console.log(`Sending to Node.js (file ${i + 1}/${respy.data.uploaded.length}):`, nodePayload);
-  
+
+        console.log(
+          `Sending to Node.js (file ${i + 1}/${respy.data.uploaded.length}):`,
+          nodePayload
+        );
+
         // Send JSON to Node.js - NOT FormData
         const res = await api.post("/files/upload", nodePayload, {
           headers: { "Content-Type": "application/json" },
         });
-  
+
         console.log("Node.js response:", res.data);
-  
+
         // Store the created module for subsequent files
         if (mode === "create" && i === 0 && res.data.module) {
           createdModule = res.data.module;
         }
       }
-  
+
       // Call onCreate callback with the created module
       if (onCreate && createdModule) {
         onCreate(createdModule);
       }
-  
+
       // Reset form and close modal
       setModuleName("");
       setUploadedFiles([]);
       setSelectedImage(null);
       onClose();
-  
     } catch (err) {
       console.error("Upload failed:", err);
       console.error("Error details:", err.response?.data);
