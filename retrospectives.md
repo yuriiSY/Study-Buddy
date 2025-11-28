@@ -107,3 +107,15 @@
 ### What actions are being taken  
 • Application updates are being sent to the deployed version  
 • Interface updates  
+
+## Week 10 Retrospectives:
+### What went well
+• Backend improvements  
+• Moved to AWS  
+• Scratchpad (notes) feature upgraded to also take in the ai summarisation  
+### What to improve
+• Interface needs an overhaul  
+### What actions are being taken  
+• OCR improvements  
+• Interface may adapt to utilise DaisyUI for an upgraded interface  
+• Registration redirect automatically  
