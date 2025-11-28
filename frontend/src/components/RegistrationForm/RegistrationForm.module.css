@@ -2,21 +2,23 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  background-color: #ffffff;
-  border-radius: 1rem;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid var(--border-color-light);
 }
 
 .inputGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
   align-items: flex-start;
 }
 
 .label {
   font-size: 0.95rem;
   font-weight: 500;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .inputContainer {
@@ -30,17 +32,22 @@
   width: 100%;
   padding: 0.75rem 2.75rem 0.75rem 2.75rem;
   font-size: 0.95rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  background-color: #f9fafb;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   transition: all 0.2s ease;
+}
+
+.input::placeholder {
+  color: var(--text-light);
 }
 
 .input:focus {
   outline: none;
-  border-color: #4f46e5;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  border-color: var(--color-primary);
+  background-color: var(--bg-secondary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .iconLeft {
@@ -48,7 +55,7 @@
   left: 0.8rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--text-tertiary);
   font-size: 1.2rem;
 }
 
@@ -62,36 +69,38 @@
 
 .icon {
   font-size: 1.2rem;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   transition: color 0.2s ease;
 }
 
 .iconRight:hover .icon {
-  color: #4f46e5;
+  color: var(--color-primary);
 }
 
 .error {
-  color: #ef4444;
+  color: var(--color-error);
   font-size: 0.85rem;
   margin-top: 0.25rem;
 }
 
 .button {
-  background-color: #1f2937;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: #fff;
-  padding: 0.75rem;
+  padding: 0.875rem;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
 }
 
 .button:hover {
-  background-color: #111827;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .button:active {
-  transform: scale(0.98);
+  transform: translateY(0);
 }

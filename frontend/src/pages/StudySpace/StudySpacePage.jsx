@@ -22,10 +22,10 @@ export const StudySpacePage = () => {
   const [flashcards, setFlashcards] = useState([]);
   const [loadingFlashcards, setLoadingFlashcards] = useState(false);
   const [flashcardsError, setFlashcardsError] = useState(null);
-  const [chatOpen, setChatOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState(
-    localStorage.getItem("selectedFeature") || null
+    localStorage.getItem("selectedFeature") || "AI Buddy"
   );
+  const [showSidebar, setShowSidebar] = useState(false);
 
   const [selectedTest, setSelectedTest] = useState(null);
 
@@ -77,7 +77,7 @@ export const StudySpacePage = () => {
         }
       }
 
-      setSelectedFeature("Notes");
+      setSelectedFeature("AI Buddy");
       setSelectedFile(formattedModules[0]);
     } catch (err) {
       console.error("Failed to fetch files:", err);
@@ -149,6 +149,22 @@ export const StudySpacePage = () => {
     } finally {
       setLoadingFlashcards(false);
     }
+  };
+
+  const handleGenerateFlashcards = async () => {
+    setShowSidebar(true);
+    setSelectedFeature("Flashcards");
+    localStorage.setItem("selectedFeature", "Flashcards");
+    
+    if (selectedFile) {
+      loadFlashcards(selectedFile.externalId);
+    }
+  };
+
+  const handleGenerateQuiz = () => {
+    setShowSidebar(true);
+    setSelectedFeature("Quiz");
+    localStorage.setItem("selectedFeature", "Quiz");
   };
 
   const handleSelectTest = async (testId) => {
@@ -226,56 +242,13 @@ export const StudySpacePage = () => {
         );
 
       case "AI Buddy":
-        if (isMobile) {
-          return (
-            <div className={styles.studySpaceContainer}>
-              <CustomPdfViewer
-                fileId={selectedFile?.id}
-                fileName={`${selectedFile?.title}`}
-                height="80vh"
-              />
-
-              {/* Floating Chat Button */}
-              <button
-                className={styles.openChatBtn}
-                onClick={() => setChatOpen(true)}
-              >
-                Open Chat
-              </button>
-
-              {chatOpen && (
-                <div className={styles.chatModal}>
-                  <div className={styles.chatHeader}>
-                    <span>AI Buddy</span>
-                    <button
-                      className={styles.closeBtn}
-                      onClick={() => setChatOpen(false)}
-                    >
-                      Close
-                    </button>
-                  </div>
-
-                  <TutorTabs
-                    externalId={selectedFile?.externalId}
-                    fileid={selectedFile?.id}
-                  />
-                </div>
-              )}
-            </div>
-          );
-        }
-
-        // DESKTOP VIEW
         return (
-          <div className={styles.studySpaceContainer}>
-            <CustomPdfViewer
-              fileId={selectedFile?.id}
-              fileName={`${selectedFile?.title}`}
-              height="80vh"
-            />
+          <div className={styles.aiBuddyContainer}>
             <TutorTabs
               externalId={selectedFile?.externalId}
               fileid={selectedFile?.id}
+              onGenerateFlashcards={handleGenerateFlashcards}
+              onGenerateQuiz={handleGenerateQuiz}
             />
           </div>
         );
@@ -295,15 +268,38 @@ export const StudySpacePage = () => {
 
   if (loading) return <LoaderOverlay />;
 
+  const shouldShowSidebar = showSidebar || selectedFeature !== "AI Buddy";
+
   return (
     <WorkspaceLayout
       modules={modules}
       onFeatureSelect={handleFeatureSelect}
       selectedModuleId={moduleId}
       onFilesAdded={fetchFiles}
-      hasSidebar={true}
+      hasSidebar={shouldShowSidebar}
+      hideSearch={true}
     >
-      {renderContent()}
+      <div className={styles.contentWrapper}>
+        {selectedFeature === "AI Buddy" && (
+          <div className={styles.fileSelector}>
+            <select 
+              value={selectedFile?.id || ""} 
+              onChange={(e) => {
+                const file = modules.find(m => m.id === e.target.value);
+                if (file) handleFeatureSelect(file, "AI Buddy");
+              }}
+              className={styles.fileDropdown}
+            >
+              {modules.map(file => (
+                <option key={file.id} value={file.id}>
+                  {file.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        {renderContent()}
+      </div>
     </WorkspaceLayout>
   );
 };

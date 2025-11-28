@@ -3,7 +3,13 @@ import Chat from "../Chat/Chat";
 import styles from "./TutorTabs.module.css";
 import api from "../../api/axios";
 
-const TutorTabs = ({ externalId, userId, fileid }) => {
+const TutorTabs = ({ 
+  externalId, 
+  userId, 
+  fileid, 
+  onGenerateFlashcards,
+  onGenerateQuiz 
+}) => {
   const [activeTab, setActiveTab] = useState("tutor");
   const [notes, setNotes] = useState("");
   const [editing, setEditing] = useState(false);
@@ -81,7 +87,12 @@ const TutorTabs = ({ externalId, userId, fileid }) => {
 
       {/* AI Tutor Tab */}
       {activeTab === "tutor" && (
-        <Chat externalId={externalId} onAddNote={handleAddNote} />
+        <Chat 
+          externalId={externalId} 
+          onAddNote={handleAddNote}
+          onGenerateFlashcards={onGenerateFlashcards}
+          onGenerateQuiz={onGenerateQuiz}
+        />
       )}
 
       {/* Notes Tab */}

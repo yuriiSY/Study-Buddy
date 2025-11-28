@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import styles from "./Header.module.css";
-import avatarImg from "../../assets/avatar.png";
-import logoImg from "../../assets/logo.png";
+import logoImg from "../../assets/logo2.png";
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
 import { Link } from "react-router-dom";
 import ProfileModal from "../ProfileModal/ProfileModal";
+import { Home, MessageSquare, User, LogOut, Menu, X } from "lucide-react";
 
-const Header = ({ onMenuClick, hasSidebar = false }) => {
-  const [open, setOpen] = useState(false);
+const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchChange = () => {}, hideSearch = false }) => {
   const [openProfile, setOpenProfile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef();
   const dispatch = useDispatch();
 
@@ -18,7 +18,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setOpen(false);
+        setMobileMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -27,7 +27,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
 
   const handleLogout = () => {
     dispatch(logoutUser());
-    setOpen(false);
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -55,55 +55,84 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
             </div>
           </div>
 
-          {/* {isLoggedIn && (
-        <ul className={styles.stats}>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🏅</span> 1,245
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>📈</span> Rank #42
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🔥</span> Streak Master
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🎯</span> Quick Learner
-            </a>
-          </li>
-        </ul>
-      )} */}
+          {isLoggedIn && (
+            <>
+              {!hideSearch && (
+                <input
+                  type="text"
+                  placeholder="Search modules..."
+                  className={styles.searchBar}
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                />
+              )}
+              <nav className={styles.navbar}>
+                <Link to="/" className={styles.navItem}>
+                  <Home size={18} />
+                  <span>Dashboard</span>
+                </Link>
+                <Link to="/discussions" className={styles.navItem}>
+                  <MessageSquare size={18} />
+                  <span>Discussions</span>
+                </Link>
+                <button
+                  className={styles.navItem}
+                  onClick={() => setOpenProfile(true)}
+                >
+                  <User size={18} />
+                  <span>My Account</span>
+                </button>
+                <button className={styles.navItem} onClick={handleLogout}>
+                  <LogOut size={18} />
+                  <span>Logout</span>
+                </button>
+              </nav>
+            </>
+          )}
 
-          <div className={styles.userSection} ref={menuRef}>
+          <div className={styles.mobileMenu} ref={menuRef}>
             {isLoggedIn ? (
               <>
-                <div
-                  className={styles.userMenu}
-                  onClick={() => setOpen((prev) => !prev)}
+                <button
+                  className={styles.mobileMenuBtn}
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 >
-                  <img
-                    src={avatarImg}
-                    alt="User Avatar"
-                    className={styles.avatar}
-                  />
-                </div>
+                  {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
 
-                {open && (
-                  <div className={styles.dropdown}>
-                    <button
-                      className={styles.menuItem}
-                      onClick={() => setOpenProfile(true)}
+                {mobileMenuOpen && (
+                  <div className={styles.mobileDropdown}>
+                    <Link
+                      to="/"
+                      className={styles.mobileNavItem}
+                      onClick={() => setMobileMenuOpen(false)}
                     >
+                      <Home size={18} />
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/discussions"
+                      className={styles.mobileNavItem}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <MessageSquare size={18} />
+                      Discussions
+                    </Link>
+                    <button
+                      className={styles.mobileNavItem}
+                      onClick={() => {
+                        setOpenProfile(true);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <User size={18} />
                       My Account
                     </button>
-                    <hr className={styles.divider} />
-                    <button onClick={handleLogout} className={styles.logout}>
+                    <button
+                      className={styles.mobileNavItem}
+                      onClick={handleLogout}
+                    >
+                      <LogOut size={18} />
                       Logout
                     </button>
                   </div>

@@ -4,24 +4,28 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .modal {
-  background: #1a205e;
+  background: var(--bg-secondary);
   width: 720px;
   max-height: 1200px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-xl);
+  padding: 28px;
   position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  animation: slideUp 0.4s ease;
 }
 
 .closeButton {
@@ -30,23 +34,40 @@
   right: 16px;
   background: transparent;
   border: none;
-  font-size: 20px;
+  font-size: 24px;
   cursor: pointer;
-  color: #555;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.closeButton:hover {
+  color: var(--color-error);
+  background-color: var(--bg-tertiary);
 }
 
 .title {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .subtitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: #f9fafb;
-  margin: 20px 0;
-  line-height: 1.4;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 12px 0 20px 0;
+  line-height: 1.5;
 }
 
 .formGroup {
@@ -56,86 +77,120 @@
 }
 
 .formGroup label {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 12px;
-  color: #fff;
+  margin-bottom: 8px;
+  color: var(--text-primary);
 }
 
 .input {
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   font-size: 0.95rem;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background-color: var(--bg-secondary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .tabs {
   display: flex;
-  gap: 6px;
-  border-bottom: 1px solid #e5e7eb;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color-light);
   margin-bottom: 12px;
 }
 
 .tabButton {
   flex: 1;
-  padding: 8px 0;
+  padding: 10px 8px;
   text-align: center;
   background: none;
   border: none;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  color: #555;
+  border-bottom: 3px solid transparent;
+  color: var(--text-tertiary);
   transition: all 0.2s ease;
 }
 
 .tabButton:hover {
-  background: #f9fafb;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: 6px;
 }
 
 .activeTab {
-  border-bottom: 2px solid #080e4b;
-  color: #080e4b;
-  font-weight: 500;
+  border-bottom: 3px solid var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 .fileList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   max-height: 500px;
   overflow-y: auto;
-  padding-right: 6px;
+  padding-right: 8px;
+}
+
+.fileList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fileList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fileList::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
 }
 
 .fileItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 10px 12px;
-  background: #fafafa;
-  transition: background 0.2s ease;
+  gap: 12px;
+  border: 1px solid var(--border-color-light);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  transition: all 0.2s ease;
 }
 
 .fileItem:hover {
-  background: #f3f4f6;
+  background: var(--bg-tertiary);
+  border-color: var(--color-primary);
 }
 
 .fileInfo {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .fileName {
   font-weight: 500;
   font-size: 0.95rem;
+  color: var(--text-primary);
 }
 
 .fileMeta {
-  font-size: 0.8rem;
-  color: #777;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-top: 2px;
 }
 
 /* Upload section */
@@ -161,50 +216,62 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid #e5e7eb;
-  margin-top: 16px;
-  padding-top: 12px;
+  border-top: 1px solid var(--border-color-light);
+  margin-top: 20px;
+  padding-top: 16px;
   font-size: 0.9rem;
-  color: #fff;
+  color: var(--text-secondary);
 }
 
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cancelButton {
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 16px;
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
 }
 
 .cancelButton:hover {
-  background: #e5e7eb;
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
 }
 
 .createButton {
-  background: #080e4b;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 7px 16px;
+  border-radius: 8px;
+  padding: 8px 18px;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
 }
 
-.createButton:hover {
-  background: #080e4b;
+.createButton:hover:not(:disabled) {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.createButton:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .createButton:disabled {
-  background: #9ca3af;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .hiddenFileInput {
@@ -213,19 +280,23 @@
 
 .uploadButton {
   display: inline-block;
-  background-color: #080e4b;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: white;
-  font-weight: 500;
+  font-weight: 600;
   padding: 10px 16px;
   border-radius: 8px;
+  border: none;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
   margin-bottom: 12px;
   text-align: center;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-md);
 }
 
 .uploadButton:hover {
-  background-color: #3652d9;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .uploadList {
@@ -250,27 +321,28 @@
 }
 
 .imagePickerSection {
-  color: #fff;
-  font-size: 16px;
+  color: var(--text-primary);
+  font-size: 14px;
   font-weight: 600;
   margin-bottom: 20px;
 }
 
 .imageGrid {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
   margin-top: 12px;
 }
 
 .imageItem {
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.2s ease;
+  border: 3px solid var(--border-color);
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .imageItem img {
@@ -279,7 +351,15 @@
   object-fit: cover;
 }
 
+.imageItem:hover {
+  border-color: var(--color-primary);
+  transform: scale(1.05);
+}
+
 .selectedImage {
-  border-color: #fff;
-  box-shadow: 0px 0px 6px #fff;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--bg-secondary), 
+              0 0 0 4px var(--color-primary),
+              0 4px 12px rgba(91, 158, 255, 0.4);
+  transform: scale(1.05);
 }

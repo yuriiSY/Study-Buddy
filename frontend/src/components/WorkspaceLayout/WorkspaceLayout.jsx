@@ -10,6 +10,8 @@ const WorkspaceLayout = ({
   onFeatureSelect,
   selectedModuleId,
   onFilesAdded,
+  hasSidebar = true,
+  hideSearch = false,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -29,19 +31,22 @@ const WorkspaceLayout = ({
     >
       <Header
         onMenuClick={() => setIsSidebarOpen((prev) => !prev)}
-        hasSidebar={true}
+        hasSidebar={hasSidebar}
+        hideSearch={hideSearch}
       />
 
       <div className={styles.layoutWrapper}>
-        <Sidebar
-          modules={modules}
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-          onFeatureSelect={onFeatureSelect}
-          onAddFile={() => setIsUploadOpen(true)}
-        />
+        {hasSidebar && (
+          <Sidebar
+            modules={modules}
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+            onFeatureSelect={onFeatureSelect}
+            onAddFile={() => setIsUploadOpen(true)}
+          />
+        )}
 
-        <main className={styles.main}>{children}</main>
+        <main className={hasSidebar ? styles.main : styles.mainNoSidebar}>{children}</main>
 
         <ModuleModal
           isOpen={isUploadOpen}

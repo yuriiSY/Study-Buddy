@@ -2,28 +2,31 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #080e4b;
-  color: #fff;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   padding: 1rem 2rem;
-  height: 96px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  height: 80px;
+  box-shadow: var(--shadow-sm);
   z-index: 999;
-  border-bottom: 1px solid #fff;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   max-width: 1791px;
   width: 100%;
   margin: 0 auto;
   padding: 0 20px;
+  gap: 1.5rem;
 }
 
 .left {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .menuBtn {
@@ -31,7 +34,7 @@
   background: none;
   border: none;
   font-size: 1.8rem;
-  color: #fff;
+  color: var(--text-primary);
   cursor: pointer;
   padding: 0 1rem 0 0;
 }
@@ -39,35 +42,36 @@
 .logoSection {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .logoLink {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0px;
   text-decoration: none;
   color: inherit;
 }
 
 .logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background-color: #1a1a1a;
-  padding: 0.5rem;
+  width: 103px;
+  height: 76px;
+  border-radius: 12px;
+  background-color: transparent;
+  padding: 0;
+  margin-right: 12px;
 }
 
 .title {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
 }
 
 .subtitle {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #ddd;
+  display: none;
 }
 
 .stats {
@@ -96,71 +100,112 @@
   cursor: pointer;
 }
 
-.userSection {
+.navbar {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 8px 0;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.navItem:hover {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.navItem svg {
+  width: 18px;
+  height: 18px;
+}
+
+.searchBar {
+  flex: 1;
+  max-width: 380px;
+  min-width: 250px;
+  padding: 9px 14px;
+  font-size: 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  margin: 0 1rem;
+}
+
+.searchBar::placeholder {
+  color: var(--text-tertiary);
+}
+
+.searchBar:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background-color: var(--bg-secondary);
+  box-shadow: 0 0 0 2px rgba(91, 158, 255, 0.1);
+}
+
+.mobileMenu {
+  display: none;
   position: relative;
 }
 
-.userMenu {
-  display: flex;
-  align-items: center;
+.mobileMenuBtn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
   cursor: pointer;
-  gap: 6px;
+  padding: 8px;
 }
 
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid white;
-}
-
-.dropdown {
+.mobileDropdown {
   position: absolute;
-  top: 55px;
+  top: 100%;
   right: 0;
-  background: white;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color-light);
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  width: 180px;
-  padding: 10px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 200px;
+  padding: 8px 0;
   z-index: 10;
   animation: fadeIn 0.2s ease;
+  margin-top: 8px;
 }
 
-.menuItem {
+.mobileNavItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   width: 100%;
   background: none;
   border: none;
-  color: #333;
-  font-weight: 600;
+  color: var(--text-primary);
+  font-weight: 500;
   text-align: left;
-  padding: 10px 16px;
+  padding: 12px 16px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
 }
 
-.menuItem:hover {
-  background: #f3f4f6;
-}
-
-.divider {
-  margin: 8px 0;
-  border: none;
-  border-top: 1px solid #eee;
-}
-
-.logout {
-  width: 100%;
-  background: none;
-  border: none;
-  color: #e53e3e;
-  font-weight: 600;
-  text-align: left;
-  padding: 10px 16px;
-  cursor: pointer;
-}
-
-.logout:hover {
-  background: #ffecec;
+.mobileNavItem:hover {
+  background: var(--bg-tertiary);
+  color: var(--color-primary);
 }
 
 .authLinks {
@@ -171,7 +216,7 @@
 .loginLink {
   text-decoration: none;
   color: #fff;
-  background-color: #4a4a8c;
+  background-color: var(--color-primary);
   padding: 0.4rem 0.8rem;
   border-radius: 8px;
   font-weight: 500;
@@ -189,16 +234,118 @@
   }
 }
 
-@media (max-width: 1023px) {
-  .stats {
+@media (max-width: 1024px) {
+  .navbar {
     display: none;
   }
 
-  .menuBtn {
-    display: block;
+  .mobileMenu {
+    display: flex;
+    align-items: center;
+  }
+
+  .mobileMenuBtn {
+    display: flex;
+    align-items: center;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    height: 72px;
+    padding: 0.65rem 1rem;
+  }
+
+  .logo {
+    width: 75px;
+    height: 55px;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .subtitle {
+    display: none;
   }
 
   .logoSection {
+    gap: 0px;
+  }
+
+  .logo {
+    margin-right: 10px;
+  }
+
+  .left {
+    gap: 6px;
+  }
+
+  .menuBtn {
+    font-size: 1.3rem;
+  }
+
+  .mobileDropdown {
+    width: 180px;
+  }
+
+  .searchBar {
+    flex: 0 1 250px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar {
+    gap: 1rem;
+  }
+
+  .searchBar {
+    flex: 0 1 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    height: 65px;
+    padding: 0.5rem;
+  }
+
+  .container {
+    padding: 0 10px;
+    gap: 0.75rem;
+  }
+
+  .logo {
+    width: 55px;
+    height: 40px;
+  }
+
+  .title {
+    font-size: 1rem;
     display: none;
+  }
+
+  .subtitle {
+    display: none;
+  }
+
+  .logoLink {
+    gap: 6px;
+  }
+
+  .navbar {
+    display: none;
+  }
+
+  .searchBar {
+    flex: 0 1 160px;
+    padding: 7px 10px;
+    font-size: 0.8rem;
   }
 }

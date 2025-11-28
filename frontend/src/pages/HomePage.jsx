@@ -10,7 +10,8 @@ import AddCard from "../components/AddCard/AddCard";
 import StatsCards from "../components/StatsCards/StatsCards";
 import ManageModuleModal from "../components/ManageModuleModal/ManageModuleModal";
 import LoaderOverlay from "../components/LoaderOverlay/LoaderOverlay";
-import StreakTracker from "../components/StreakTracker/StreakTracker";
+import TopDiscussions from "../components/TopDiscussions/TopDiscussions";
+import StatsOverview from "../components/StatsOverview/StatsOverview";
 import { FolderOpen, Archive } from "lucide-react";
 
 export const HomePage = () => {
@@ -115,27 +116,18 @@ export const HomePage = () => {
 
   return (
     <>
-      <Header />
+      <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
       <Layout>
         <div className={styles.homePage}>
           {modules.length === 0 ? (
             <Onboarding onClick={handleOpenModal} />
           ) : (
             <div className={styles.content}>
+              <div className={styles.mainContent}>
               <div className={styles.modulesSection}>
                 {/* Header Controls */}
                 <div className={styles.headerSection}>
-                  <h2>Your Study Modules</h2>
-                  {(viewMode === "active" && showAllActive) ||
-                  (viewMode === "archived" && showAllArchived) ? (
-                    <input
-                      type="text"
-                      placeholder="Search modules..."
-                      className={styles.searchInput}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  ) : null}
+                  <h2>Modules</h2>
 
                   {viewMode === "active" && (
                     <div>
@@ -153,6 +145,19 @@ export const HomePage = () => {
                           onClick={() => setShowAllActive((prev) => !prev)}
                         >
                           {showAllActive ? "View less" : "View all"}
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {viewMode === "archived" && (
+                    <div>
+                      {archivedModules.length > 4 && (
+                        <button
+                          className={styles.viewAllBtn}
+                          onClick={() => setShowAllArchived((prev) => !prev)}
+                        >
+                          {showAllArchived ? "View less" : "View all"}
                         </button>
                       )}
                     </div>
@@ -228,13 +233,13 @@ export const HomePage = () => {
                   )}
                 </div>
               </div>
-              {/* <StatsCards /> */}
               {!(showAllArchived || showAllActive) && (
-                <div>
-                  <h2 className={styles.progressText}>Progress</h2>
-                  <StreakTracker />
-                </div>
+                <StatsOverview />
               )}
+              </div>
+              <div className={styles.sidebar}>
+                <TopDiscussions />
+              </div>
             </div>
           )}
         </div>

@@ -3,7 +3,12 @@ import styles from "./Chat.module.css";
 import Message from "../Message/Message";
 import apiPY from "../../api/axiosPython";
 
-const Chat = ({ externalId, onAddNote }) => {
+const Chat = ({ 
+  externalId, 
+  onAddNote,
+  onGenerateFlashcards,
+  onGenerateQuiz 
+}) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -112,6 +117,25 @@ const Chat = ({ externalId, onAddNote }) => {
             ➤
           </button>
         </form>
+
+        <div className={styles.actionButtons}>
+          <button
+            className={styles.actionBtn}
+            onClick={onGenerateFlashcards}
+            disabled={!externalId}
+            title={!externalId ? "Select a file first" : "Generate flashcards"}
+          >
+            📇 Generate Flashcards
+          </button>
+          <button
+            className={styles.actionBtn}
+            onClick={onGenerateQuiz}
+            disabled={!externalId}
+            title={!externalId ? "Select a file first" : "Generate quiz"}
+          >
+            ❓ Generate Quiz
+          </button>
+        </div>
       </div>
     </div>
   );

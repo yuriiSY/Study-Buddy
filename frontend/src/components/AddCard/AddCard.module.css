@@ -2,10 +2,19 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  max-width: 389px;
   width: 100%;
   min-height: 280px;
-  padding: 15px;
-  border: 1px dashed #fff;
-  border-radius: 8px;
+  padding: 20px;
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(75, 158, 255, 0.05) 0%, rgba(91, 192, 222, 0.05) 100%);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.addCard:hover {
+  border-color: var(--color-primary);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
 }
