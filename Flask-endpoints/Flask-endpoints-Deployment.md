@@ -199,6 +199,12 @@ curl -v http://108.130.178.225/health
 These should also return `200 OK`.
 
 ---
+# Building frontend with nginx
+cd ~/Study-Buddy/frontend
+npm run build
+sudo rm -rf /var/www/study-buddy/*
+sudo cp -r dist/* /var/www/study-buddy/
+sudo systemctl reload nginx
 
 ## 5. Commands to Start / Restart the Service (Day-to-day Use)
 
