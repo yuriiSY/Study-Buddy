@@ -30,11 +30,8 @@ const MCQTest = ({ questions = [], onSubmit }) => {
     let tempScore = 0;
 
     questions.forEach((q, index) => {
-      console.log("Question:", q);
       const userLetter = answers[index] || "";
-      const correctLetter = (q.correctAnswer || "").trim();
-      console.log("Comparing:", userLetter);
-      console.log("Comparing:", correctLetter);
+      const correctLetter = (q.correct_answer || "").trim();
       if (userLetter === correctLetter) {
         tempScore++;
       }
@@ -43,7 +40,7 @@ const MCQTest = ({ questions = [], onSubmit }) => {
     setScore(tempScore);
     setShowResult(true);
 
-    onSubmit?.(answers);
+    onSubmit?.(answers, tempScore);
   };
 
   if (showResult) {

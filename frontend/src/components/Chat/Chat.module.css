@@ -1,8 +1,7 @@
 .wrapper {
   display: flex;
   flex-direction: column;
-  /* height: 1020px; */
-  width: 900px;
+  height: 100%;
   padding-left: 2rem;
 }
 
@@ -16,14 +15,14 @@
   overflow: hidden;
 }
 
-.title {
+/* .title {
   background: #eef2ff;
   padding: 12px 20px;
   font-size: 1.2rem;
   font-weight: 600;
   color: #4b5cff;
   border-bottom: 1px solid #dce1f9;
-}
+} */
 
 .chatBox {
   flex: 1;
@@ -91,6 +90,26 @@
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.2s;
+}
+
+.messageWrapper {
+  margin-bottom: 10px;
+}
+
+.addToNotesBtn {
+  background: #f1f3ff;
+  color: #4751d0;
+  border: none;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 48px;
+  margin-top: 4px;
+}
+
+.addToNotesBtn:hover {
+  background: #e0e4ff;
 }
 
 .sendBtn:hover {
