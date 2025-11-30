@@ -48,13 +48,15 @@
   color: inherit;
 }
 
+/* SVG logo styling */
 .logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  background-color: rgba(15, 23, 42, 0.85);
-  padding: 6px;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.4);
+  width: 42px;
+  height: 42px;
+  display: block;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
 .title {
@@ -69,6 +71,24 @@
   font-size: 0.85rem;
   color: #e5e7eb;
 }
+
+.logoWrapper {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px; /* Rounded edges */
+  overflow: hidden; /* Makes the SVG respect the rounding */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15); /* Subtle glass look */
+  backdrop-filter: blur(4px);
+}
+
+.logo {
+  width: 42px;
+  height: 42px;
+}
+
 
 /* Right section (avatar / auth + theme toggle) */
 .userSection {
@@ -93,7 +113,7 @@
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.35);
 }
 
-/* Theme toggle */
+/* Theme toggle + ⌘K button */
 .themeToggle {
   border: none;
   background: rgba(255, 255, 255, 0.16);

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import styles from "./Header.module.css";
 import avatarImg from "../../assets/avatar.png";
-import logoImg from "../../assets/logo.png";
+import logoImg from "../../assets/logo.svg"; // ⬅️ SVG logo
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
 import { Link } from "react-router-dom";
@@ -19,7 +19,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
   const { isLoggedIn } = useSelector((state) => state.auth);
   const { theme, toggleTheme } = useTheme();
 
-  // Close dropdown on outside click
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -31,7 +31,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Global keyboard shortcut: Cmd+K / Ctrl+K opens command palette
+  // Global keyboard shortcut: Cmd+K / Ctrl+K for command palette
   useEffect(() => {
     const handleKey = (e) => {
       const isK = e.key.toLowerCase() === "k";
@@ -62,11 +62,14 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
             )}
             <div className={styles.logoSection}>
               <Link to="/" className={styles.logoLink}>
-                <img
-                  src={logoImg}
-                  alt="Study Buddy Logo"
-                  className={styles.logo}
-                />
+            <div className={styles.logoWrapper}>
+              <img
+                src={logoImg}
+                alt="Study Buddy Logo"
+                className={styles.logo}
+              />
+            </div>
+
                 <div>
                   <h1 className={styles.title}>Study Buddy</h1>
                   <p className={styles.subtitle}>Your smart learning partner</p>
@@ -88,7 +91,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
               {theme === "light" ? "🌙" : "☀️"}
             </button>
 
-            {/* Command palette button (also available via Ctrl+K / Cmd+K) */}
+            {/* Command palette (also opens with Ctrl+K / Cmd+K) */}
             <button
               type="button"
               className={styles.themeToggle}
