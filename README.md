@@ -81,3 +81,11 @@ Alternatively, to run the server without nodemon:
 ```bash
 npm start
 ```
+### 6. Redo-ing Docker files
+cd backend
+docker compose down --volumes --remove-orphans --rmi local
+docker compose up --build -d
+
+cd Flask-endpoints
+docker compose down --volumes --remove-orphans --rmi local
+docker compose up --build -d
