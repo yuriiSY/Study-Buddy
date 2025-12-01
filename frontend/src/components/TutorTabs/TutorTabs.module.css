@@ -96,3 +96,33 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(91, 158, 255, 0.3);
 }
+
+.content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.flashcardsPanel,
+.quizPanel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.loadingIndicator {
+  display: inline-block;
+  margin-left: 6px;
+  font-weight: bold;
+  animation: pulse 1.4s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}

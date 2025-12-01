@@ -4,6 +4,7 @@ import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import styles from "./CustomPdfViewer.module.css";
 import { getFileUrl } from "../api/filesApi";
+import { ZoomIn, ZoomOut } from "lucide-react";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -104,6 +105,18 @@ export default function CustomPdfViewer({
     return () => container.removeEventListener("scroll", handleScroll);
   }, [numPages]);
 
+  const handleZoomIn = () => {
+    setScale((prev) => Math.min(prev + 0.2, 3));
+  };
+
+  const handleZoomOut = () => {
+    setScale((prev) => Math.max(prev - 0.2, 0.5));
+  };
+
+  const handleResetZoom = () => {
+    setScale(1.6);
+  };
+
   // ✅ Jump to specific page via input
   const handlePageInputChange = (e) => setInputPage(e.target.value);
   const handlePageInputSubmit = (e) => {
@@ -130,6 +143,30 @@ export default function CustomPdfViewer({
       {/* Header */}
       <div className={styles.header}>
         <span className={styles.fileName}>{fileName}</span>
+        <div className={styles.zoomControls}>
+          <button
+            onClick={handleZoomOut}
+            className={styles.zoomBtn}
+            title="Zoom Out"
+          >
+            <ZoomOut size={18} />
+          </button>
+          <span className={styles.zoomLevel}>{Math.round(scale * 100)}%</span>
+          <button
+            onClick={handleZoomIn}
+            className={styles.zoomBtn}
+            title="Zoom In"
+          >
+            <ZoomIn size={18} />
+          </button>
+          <button
+            onClick={handleResetZoom}
+            className={styles.resetBtn}
+            title="Reset Zoom"
+          >
+            Reset
+          </button>
+        </div>
       </div>
 
       {/* PDF Scroll Block */}

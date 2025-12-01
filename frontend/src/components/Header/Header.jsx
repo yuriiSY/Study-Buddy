@@ -3,7 +3,7 @@ import styles from "./Header.module.css";
 import logoImg from "../../assets/logo2.png";
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import ProfileModal from "../ProfileModal/ProfileModal";
 import { Home, MessageSquare, User, LogOut, Menu, X } from "lucide-react";
 
@@ -12,6 +12,7 @@ const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchCha
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef();
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const { isLoggedIn } = useSelector((state) => state.auth);
 
@@ -67,11 +68,11 @@ const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchCha
                 />
               )}
               <nav className={styles.navbar}>
-                <Link to="/" className={styles.navItem}>
+                <Link to="/" className={`${styles.navItem} ${location.pathname === "/" ? styles.active : ""}`}>
                   <Home size={18} />
                   <span>Dashboard</span>
                 </Link>
-                <Link to="/discussions" className={styles.navItem}>
+                <Link to="/discussions" className={`${styles.navItem} ${location.pathname === "/discussions" ? styles.active : ""}`}>
                   <MessageSquare size={18} />
                   <span>Discussions</span>
                 </Link>

@@ -73,28 +73,68 @@
 
 .inputArea {
   display: flex;
-  padding: 10px;
-  background: #fff;
-  border-top: 1px solid #ddd;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
   gap: 8px;
+  align-items: center;
 }
 
 .input {
   flex: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   outline: none;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(91, 158, 255, 0.1);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .sendBtn {
   padding: 10px 16px;
-  background: #4b5cff;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  box-shadow: 0 2px 8px rgba(91, 158, 255, 0.2);
+}
+
+.sendBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(91, 158, 255, 0.3);
+}
+
+.sendBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.sendBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .actionButtons {
@@ -116,6 +156,9 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .actionBtn:hover:not(:disabled) {
@@ -123,6 +166,7 @@
   color: white;
   border-color: var(--color-primary);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(91, 158, 255, 0.2);
 }
 
 .actionBtn:disabled {
@@ -135,19 +179,27 @@
 }
 
 .addToNotesBtn {
-  background: #f1f3ff;
-  color: #4751d0;
-  border: none;
-  border-radius: 8px;
-  padding: 4px 10px;
+  background: var(--bg-tertiary);
+  color: var(--color-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 12px;
   font-size: 12px;
   cursor: pointer;
   margin-left: 48px;
-  margin-top: 4px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .addToNotesBtn:hover {
-  background: #e0e4ff;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: white;
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
 }
 
 .sendBtn:hover {

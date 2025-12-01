@@ -3,17 +3,17 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f9fafb;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 50%, #f9fafb 100%);
   padding: 1rem;
 }
 
 .card {
-  background-color: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(91, 158, 255, 0.15);
   width: 100%;
-  max-width: 420px;
-  padding: 2rem;
+  max-width: 440px;
+  padding: 2.5rem;
   text-align: center;
 }
 
@@ -21,32 +21,25 @@
   margin-bottom: 1.5rem;
 }
 
-.iconCircle {
-  width: 60px;
-  height: 60px;
-  background-color: #1f2937;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.logo {
+  width: 130px;
+  height: 100px;
+  border-radius: 12px;
   margin: 0 auto 1rem auto;
-}
-
-.icon {
-  font-size: 1.8rem;
-  color: #ffffff;
+  display: block;
 }
 
 .title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #4b5563;
-  margin-bottom: 0.25rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
 }
 
 .subtitle {
   font-size: 0.95rem;
-  color: #6b7280;
+  color: var(--text-secondary);
+  margin: 0;
 }
 
 .formContainer {
@@ -56,19 +49,21 @@
 .toggleText {
   margin-top: 1.5rem;
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .toggleButton {
   background: none;
   border: none;
-  color: #4f46e5;
+  color: var(--color-primary);
   cursor: pointer;
-  font-weight: 500;
-  text-decoration: underline;
-  transition: color 0.2s ease;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  padding: 0;
 }
 
 .toggleButton:hover {
-  color: #3730a3;
+  color: var(--color-secondary);
+  text-decoration: underline;
 }

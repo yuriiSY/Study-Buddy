@@ -128,6 +128,11 @@
   border-bottom-color: var(--color-primary);
 }
 
+.navItem.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
 .navItem svg {
   width: 18px;
   height: 18px;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./Chat.module.css";
 import Message from "../Message/Message";
 import apiPY from "../../api/axiosPython";
+import { Send, BookMarked, Lightbulb } from "lucide-react";
 
 const Chat = ({ 
   externalId, 
@@ -85,13 +86,14 @@ const Chat = ({
             <div key={idx} className={styles.messageWrapper}>
               <Message sender={msg.sender} text={msg.text} />
 
-              {/* Show button only for AI messages */}
               {msg.sender === "bot" && (
                 <button
                   className={styles.addToNotesBtn}
                   onClick={() => onAddNote(msg.text)}
+                  title="Add this response to notes"
                 >
-                  ➕ Add to Notes
+                  <BookMarked size={14} />
+                  Add to Notes
                 </button>
               )}
             </div>
@@ -102,7 +104,7 @@ const Chat = ({
         <form onSubmit={sendMessage} className={styles.inputArea}>
           <input
             type="text"
-            placeholder="Ask about your uploaded notes..."
+            placeholder="Ask a question about your notes..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className={styles.input}
@@ -114,7 +116,7 @@ const Chat = ({
             disabled={loading || !externalId}
             title={!externalId ? "Select a file first" : "Send message"}
           >
-            ➤
+            <Send size={18} />
           </button>
         </form>
 
@@ -125,7 +127,8 @@ const Chat = ({
             disabled={!externalId}
             title={!externalId ? "Select a file first" : "Generate flashcards"}
           >
-            📇 Generate Flashcards
+            <BookMarked size={16} />
+            Generate Flashcards
           </button>
           <button
             className={styles.actionBtn}
@@ -133,7 +136,8 @@ const Chat = ({
             disabled={!externalId}
             title={!externalId ? "Select a file first" : "Generate quiz"}
           >
-            ❓ Generate Quiz
+            <Lightbulb size={16} />
+            Generate Quiz
           </button>
         </div>
       </div>

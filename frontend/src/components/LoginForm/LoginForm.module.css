@@ -2,10 +2,10 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  background-color: var(--bg-secondary);
-  border-radius: 12px;
-  padding: 2rem;
-  border: 1px solid var(--border-color-light);
+  background-color: transparent;
+  border-radius: 0;
+  padding: 0;
+  border: none;
 }
 
 .inputGroup {
@@ -30,13 +30,14 @@
 
 .input {
   width: 100%;
-  padding: 0.75rem 2.75rem 0.75rem 2.75rem;
+  padding: 0.85rem 2.75rem 0.85rem 2.75rem;
   font-size: 0.95rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .input::placeholder {
@@ -47,7 +48,7 @@
   outline: none;
   border-color: var(--color-primary);
   background-color: var(--bg-secondary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 4px rgba(91, 158, 255, 0.15);
 }
 
 .iconLeft {
@@ -81,6 +82,11 @@
   color: var(--color-error);
   font-size: 0.85rem;
   margin-top: 0.25rem;
+  padding: 8px 12px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-left: 3px solid var(--color-error);
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
 }
 
 .optionsRow {
@@ -111,22 +117,33 @@
 
 .button {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-  color: #fff;
-  padding: 0.875rem;
+  color: white;
+  padding: 0.95rem 1.5rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 15px rgba(91, 158, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.3px;
 }
 
 .button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 25px rgba(91, 158, 255, 0.4);
 }
 
 .button:active {
-  transform: translateY(0);
+  transform: translateY(-1px);
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
