@@ -146,33 +146,58 @@
   height: 18px;
 }
 
-.searchBar {
-  flex: 1;
+.searchContainer {
+  display: flex;
+  align-items: center;
   max-width: 380px;
   min-width: 250px;
-  padding: 9px 14px;
-  font-size: 0.9rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background-color: var(--bg-secondary);
+  margin: 0 1rem;
+  transition: all 0.2s ease;
+}
+
+.searchContainer:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.searchBar {
+  flex: 1;
+  padding: 9px 14px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 8px 0 0 8px;
+  background-color: transparent;
   color: var(--text-primary);
   transition: all 0.2s ease;
-  margin: 0 1rem;
+  outline: none;
 }
 
 .searchBar::placeholder {
   color: var(--text-tertiary);
 }
 
-.searchBar:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  background-color: var(--bg-secondary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+.clearSearchBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.clearSearchBtn:hover {
+  color: var(--color-primary);
 }
 
 @media (prefers-color-scheme: dark) {
-  .searchBar:focus {
+  .searchContainer:focus-within {
     box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.3);
   }
 }
@@ -204,6 +229,21 @@
   animation: slideDown 0.2s ease;
 }
 
+.mobileSearchContainer {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  transition: all 0.2s ease;
+}
+
+.mobileSearchContainer:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -216,31 +256,19 @@
 }
 
 .mobileSearchInput {
-  width: 100%;
   flex: 1;
   padding: 10px 12px;
   font-size: 0.9rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background-color: var(--bg-secondary);
+  border: none;
+  border-radius: 8px 0 0 8px;
+  background-color: transparent;
   color: var(--text-primary);
   transition: all 0.2s ease;
+  outline: none;
 }
 
 .mobileSearchInput::placeholder {
   color: var(--text-tertiary);
-}
-
-.mobileSearchInput:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-}
-
-@media (prefers-color-scheme: dark) {
-  .mobileSearchInput:focus {
-    box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.3);
-  }
 }
 
 .mobileMenu {

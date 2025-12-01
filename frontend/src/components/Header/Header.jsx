@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
 import { Link, useLocation } from "react-router-dom";
 import ProfileModal from "../ProfileModal/ProfileModal";
-import { Home, MessageSquare, User, LogOut, Menu, X, Search } from "lucide-react";
+import { Home, MessageSquare, User, LogOut, Menu, X, Search, XCircle } from "lucide-react";
 
 const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchChange = () => {}, hideSearch = false }) => {
   const [openProfile, setOpenProfile] = useState(false);
@@ -65,13 +65,25 @@ const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchCha
             <>
               {!hideSearch && (
                 <>
-                  <input
-                    type="text"
-                    placeholder="Search modules..."
-                    className={styles.searchBar}
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                  />
+                  <div className={styles.searchContainer}>
+                    <input
+                      type="text"
+                      placeholder="Search modules..."
+                      className={styles.searchBar}
+                      value={searchQuery}
+                      onChange={(e) => onSearchChange(e.target.value)}
+                    />
+                    {searchQuery && (
+                      <button
+                        className={styles.clearSearchBtn}
+                        onClick={() => onSearchChange("")}
+                        title="Clear search"
+                        aria-label="Clear search"
+                      >
+                        <XCircle size={18} />
+                      </button>
+                    )}
+                  </div>
                   <button
                     className={styles.mobileSearchBtn}
                     onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
@@ -166,14 +178,26 @@ const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchCha
       
       {mobileSearchOpen && (
         <div className={styles.mobileSearchOverlay} ref={searchRef}>
-          <input
-            type="text"
-            placeholder="Search modules..."
-            className={styles.mobileSearchInput}
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            autoFocus
-          />
+          <div className={styles.mobileSearchContainer}>
+            <input
+              type="text"
+              placeholder="Search modules..."
+              className={styles.mobileSearchInput}
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              autoFocus
+            />
+            {searchQuery && (
+              <button
+                className={styles.clearSearchBtn}
+                onClick={() => onSearchChange("")}
+                title="Clear search"
+                aria-label="Clear search"
+              >
+                <XCircle size={18} />
+              </button>
+            )}
+          </div>
         </div>
       )}
 

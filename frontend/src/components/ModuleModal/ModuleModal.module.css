@@ -70,6 +70,75 @@
   line-height: 1.5;
 }
 
+.uploadButtonContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.infoTooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  color: var(--text-tertiary);
+  cursor: help;
+  transition: color 0.2s ease;
+  font-size: 13px;
+}
+
+.infoTooltip:hover {
+  color: var(--color-primary);
+}
+
+.infoTooltip:hover .tooltipContent {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.supportedText {
+  font-size: 13px;
+  font-weight: 500;
+  color: inherit;
+}
+
+.tooltipContent {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  z-index: 1000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+  margin-bottom: 8px;
+}
+
+.tooltipTitle {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.formatsList {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
 .formGroup {
   margin-bottom: 20px;
   display: flex;

@@ -192,14 +192,16 @@ export const HomePage = () => {
                   {viewMode === "active" && filteredActive.length === 0 ? (
                     <div className={styles.emptyState}>
                       <FolderOpen size={48} />
-                      <h3>No Active Modules</h3>
-                      <p>Create your first module to get started</p>
-                      <button
-                        className={styles.emptyStateBtn}
-                        onClick={handleOpenModal}
-                      >
-                        Create Module
-                      </button>
+                      <h3>{searchQuery ? "No modules found" : "No Active Modules"}</h3>
+                      <p>{searchQuery ? "Try a different search term" : "Create your first module to get started"}</p>
+                      {!searchQuery && (
+                        <button
+                          className={styles.emptyStateBtn}
+                          onClick={handleOpenModal}
+                        >
+                          Create Module
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div className={styles.modulesGrid}>
@@ -244,8 +246,8 @@ export const HomePage = () => {
                   {viewMode === "archived" && filteredArchived.length === 0 && (
                     <div className={styles.emptyState}>
                       <Archive size={48} />
-                      <h3>No Archived Modules</h3>
-                      <p>Archive modules to organize your workspace</p>
+                      <h3>{searchQuery ? "No modules found" : "No Archived Modules"}</h3>
+                      <p>{searchQuery ? "Try a different search term" : "Archive modules to organize your workspace"}</p>
                     </div>
                   )}
                 </div>
