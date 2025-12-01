@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import styles from "./Header.module.css";
 import avatarImg from "../../assets/avatar.png";
-import logoImg from "../../assets/logo.svg"; // ⬅️ SVG logo
+import logoImg from "../../assets/logo.svg";
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
 import { Link } from "react-router-dom";
@@ -13,6 +13,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
   const [open, setOpen] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef();
   const dispatch = useDispatch();
 
@@ -29,6 +30,17 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () =>
       document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Shrink header + add shadow when scrolling
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Global keyboard shortcut: Cmd+K / Ctrl+K for command palette
@@ -52,8 +64,16 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
 
   return (
     <>
-      <header className={styles.header}>
-        <div className={styles.container}>
+      <header
+        className={`${styles.header} ${
+          isScrolled ? styles.headerScrolled : ""
+        }`}
+      >
+        <div
+          className={`${styles.container} ${
+            isScrolled ? styles.containerScrolled : ""
+          }`}
+        >
           <div className={styles.left}>
             {hasSidebar && (
               <button className={styles.menuBtn} onClick={onMenuClick}>
@@ -62,17 +82,18 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
             )}
             <div className={styles.logoSection}>
               <Link to="/" className={styles.logoLink}>
-            <div className={styles.logoWrapper}>
-              <img
-                src={logoImg}
-                alt="Study Buddy Logo"
-                className={styles.logo}
-              />
-            </div>
-
+                <div className={styles.logoWrapper}>
+                  <img
+                    src={logoImg}
+                    alt="Study Buddy Logo"
+                    className={styles.logo}
+                  />
+                </div>
                 <div>
                   <h1 className={styles.title}>Study Buddy</h1>
-                  <p className={styles.subtitle}>Your smart learning partner</p>
+                  <p className={styles.subtitle}>
+                    Your smart learning partner
+                  </p>
                 </div>
               </Link>
             </div>

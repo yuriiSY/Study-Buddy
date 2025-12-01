@@ -1,8 +1,20 @@
 .header {
   width: 100%;
-  background: linear-gradient(90deg, #4338ca, #6366f1);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.35);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: linear-gradient(
+    90deg,
+    rgba(67, 56, 202, 0.96),
+    rgba(99, 102, 241, 0.96)
+  );
+  backdrop-filter: blur(10px); /* glass effect */
+  transition: box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: none; /* shadow only when scrolled */
+}
+
+.headerScrolled {
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.4);
 }
 
 .container {
@@ -15,6 +27,12 @@
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
+  transition: height 0.18s ease, padding 0.18s ease;
+}
+
+.containerScrolled {
+  height: 64px;
+  padding: 0 28px;
 }
 
 /* Left section (logo + optional menu) */
@@ -48,15 +66,31 @@
   color: inherit;
 }
 
-/* SVG logo styling */
+/* Rounded badge for logo */
+.logoWrapper {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(118, 169, 218, 0.35); /* secondary accent (logo blue) */
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.45);
+  transition: transform 0.18s ease, box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.logoWrapper:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.55);
+  background: rgba(118, 169, 218, 0.5);
+}
+
 .logo {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   display: block;
-  padding: 0;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
 }
 
 .title {
@@ -71,24 +105,6 @@
   font-size: 0.85rem;
   color: #e5e7eb;
 }
-
-.logoWrapper {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px; /* Rounded edges */
-  overflow: hidden; /* Makes the SVG respect the rounding */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.15); /* Subtle glass look */
-  backdrop-filter: blur(4px);
-}
-
-.logo {
-  width: 42px;
-  height: 42px;
-}
-
 
 /* Right section (avatar / auth + theme toggle) */
 .userSection {
@@ -105,32 +121,38 @@
   gap: 8px;
 }
 
+/* Glassy avatar */
 .avatar {
   width: 42px;
   height: 42px;
   border-radius: 999px;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.5);
 }
 
-/* Theme toggle + ⌘K button */
+/* Theme toggle + ⌘K button (pill-style) */
 .themeToggle {
   border: none;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(118, 169, 218, 0.26); /* logo blue as subtle accent */
   border-radius: 999px;
   padding: 0.35rem 0.7rem;
   font-size: 0.9rem;
   cursor: pointer;
   color: #fff;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s ease, transform 0.1s ease;
+  align-items: centre;
+  justify-content: centre;
+  transition: background 0.15s ease, transform 0.1s ease,
+    box-shadow 0.15s ease;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.35);
 }
 
 .themeToggle:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(129, 199, 255, 0.35);
   transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.5);
 }
 
 /* Dropdown */
@@ -194,13 +216,13 @@
 .loginLink {
   text-decoration: none;
   color: #111827;
-  background-color: #f9fafb;
+  background-color: rgba(249, 250, 251, 0.92);
   padding: 0.45rem 1rem;
   border-radius: 999px;
   font-weight: 500;
   font-size: 0.9rem;
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
-  border: 1px solid rgba(249, 250, 251, 0.9);
+  border: 1px solid rgba(241, 245, 249, 0.95);
   transition: background 0.15s ease, color 0.15s ease,
     transform 0.1s ease, box-shadow 0.1s ease;
 }
@@ -228,6 +250,10 @@
 @media (max-width: 1023px) {
   .container {
     padding: 0 20px;
+  }
+
+  .containerScrolled {
+    padding: 0 18px;
   }
 
   .menuBtn {
