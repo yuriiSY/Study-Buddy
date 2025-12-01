@@ -168,11 +168,25 @@ def retrieve_by_file_ids(file_ids, query, k=4):
     
     filter_cond = {"file_id": file_ids}
     
+    # Get text
     text_docs = store.similarity_search(query, k=k, filter=filter_cond)
     text_results = [doc.page_content for doc in text_docs]
     
+    print(f"DEBUG retrieve: Searching images for query: '{query}'")
+    print(f"DEBUG retrieve: Filter condition: {filter_cond}")
+    
+    # Get image descriptions
     image_docs = clip_store.similarity_search(query, k=2, filter=filter_cond)
     image_results = [doc.page_content for doc in image_docs]
+    
+    print(f"DEBUG retrieve: Found {len(text_results)} text chunks, {len(image_results)} image descriptions")
+    
+    # Also search for generic images if no specific ones found
+    if len(image_results) == 0:
+        print("DEBUG retrieve: No specific images found, trying generic image search...")
+        generic_image_docs = clip_store.similarity_search("image diagram graph chart picture", k=2, filter=filter_cond)
+        image_results = [doc.page_content for doc in generic_image_docs]
+        print(f"DEBUG retrieve: Generic search found {len(image_results)} images")
     
     return text_results, image_results
 
@@ -700,52 +714,88 @@ def get_db_connection():
 
     
 #-----------Flashcard Generation with Groq-----------
-def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
+def generate_flashcards_with_groq(context: str, num_flashcards: int = 5, fill_gaps: bool = False):
+    """Generate flashcards - with option to fill knowledge gaps"""
     client = Groq(api_key=GROQ_API_KEY)
     
-    prompt = f"""
-    CONTENT:
-    {context}
-    
-    Create {num_flashcards} flashcards from this content.
-    
-    CRITICAL: Hints should GUIDE thinking without revealing the answer and don't repeat the question in hint
-     guide the user to think towards the answer
-    
-    FORMAT:
-    [
-        {{
-            "question": "One word question/expression/formulas/equation of graphs,etc",
-            "answer": "detailed answer", 
-            "hint": "helpful hint"
+    # Choose prompt based on fill_gaps flag
+    if fill_gaps:
+        prompt = f"""
+        CONTENT FROM USER'S NOTES:
+        {context}
+        
+        Create {num_flashcards} SMART flashcards that fill knowledge gaps and make the student an expert.
+        
+        CRITICAL: Don't just repeat what's in the notes. Create cards that:
+        1. Add missing information the notes don't cover
+        2. Connect concepts to real-world applications
+        3. Address common misunderstandings
+        4. Explain WHY concepts matter
+        5. Build from basic to advanced understanding
+        
+        For each card, include:
+        - question: Thought-provoking, addresses a gap
+        - answer: Comprehensive explanation that TEACHES
+        - hint: Guides thinking without giving answer away
+        
+        Return ONLY this JSON format:
+        [
+            {{
+                "question": "question text",
+                "answer": "answer text", 
+                "hint": "hint text"
+            }}
+        ]
+        
+        Example for sparse notes:
+        Notes: "Force = mass × acceleration"
+        Card: {{
+            "question": "While your notes show F=ma, how do we calculate force when an object is on an inclined plane?",
+            "answer": "On an inclined plane, we resolve weight into components. The force parallel to the plane = mg·sinθ, perpendicular = mg·cosθ. Friction force = μ·(mg·cosθ).",
+            "hint": "Think about breaking gravity into components parallel and perpendicular to the surface."
         }}
-    ]        
-       example:
-    [
-        {{
-            "question": "Speed",
-            "answer": "The distance travelled pe runit time", 
-            "hint": "The faster this is, the less time it takes to travel"
-        }}
-    ]               
-    """
+        """
+    else:
+        prompt = f"""
+        CONTENT FROM USER'S NOTES:
+        {context}
+        
+        Create {num_flashcards} high-quality flashcards based on this content.
+        
+        REQUIREMENTS:
+        - Questions should test understanding of key concepts
+        - Answers should be clear and educational
+        - Hints should guide thinking without revealing answers
+        - Focus on the most important information
+        
+        Return ONLY this JSON format:
+        [
+            {{
+                "question": "question text",
+                "answer": "answer text", 
+                "hint": "hint text"
+            }}
+        ]
+        """
     
     try:
         response = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
-               
+                {
+                    "role": "system",
+                    "content": "You are an expert educational content creator. Create effective flashcards that help students learn."
+                },
                 {
                     "role": "user", 
                     "content": prompt
                 }
             ],
-            max_tokens=2048,
-            temperature=0.9
+            max_tokens=2000,
+            temperature=0.7
         )
         
         content = response.choices[0].message.content.strip()
-        #print(f"Raw Groq response: {content}")
         
         import json
         try:
@@ -774,8 +824,79 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5):
         
     except Exception as e:
         print(f"Groq API error: {e}")
-        return [{"error": f"Generation failed: {str(e)}"}]
-
+        return [{"error": f"Flashcard generation failed: {str(e)}"}]
+    
+def generate_missing_notes(context: str):
+    """Generate additional notes to fill knowledge gaps"""
+    client = Groq(api_key=GROQ_API_KEY)
+    
+    prompt = f"""
+    STUDENT'S CURRENT NOTES:
+    {context}
+    
+    TASK: Create additional notes that fill knowledge gaps and make these notes complete.
+    
+    INSTRUCTIONS:
+    1. Analyze what's MISSING or shallow in these notes
+    2. Create 3-5 sections of additional educational content
+    3. Each section should address a specific gap
+    4. Write in clear, study-friendly language
+    5. Include examples and key takeaways
+    
+    IMPORTANT: Do NOT repeat what's already in the notes. Only add NEW, VALUABLE information.
+    
+    Return ONLY this JSON format:
+    {{
+        "missing_notes": [
+            {{
+                "title": "Section title",
+                "content": "Educational content that fills a gap",
+                "why_important": "Why this was missing from original notes"
+            }}
+        ],
+        "study_advice": "Brief advice on how to study with these enhanced notes"
+    }}
+    
+    Example response:
+    {{
+        "missing_notes": [
+            {{
+                "title": "Real-World Applications of Newton's Laws",
+                "content": "Newton's laws apply everywhere: 1) Car safety (seatbelts), 2) Sports (throwing balls), 3) Space travel...",
+                "why_important": "Original notes only gave formulas, no applications"
+            }}
+        ],
+        "study_advice": "Add these sections after your formula notes to understand practical use"
+    }}
+    """
+    
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert tutor enhancing student notes with missing information."
+                },
+                {
+                    "role": "user", 
+                    "content": prompt
+                }
+            ],
+            max_tokens=2500,
+            temperature=0.6
+        )
+        
+        import json
+        result = json.loads(response.choices[0].message.content)
+        return result
+        
+    except Exception as e:
+        print(f"Groq API error in notes generation: {e}")
+        return {
+            "missing_notes": [],
+            "study_advice": "Could not generate additional notes. Please try again."
+        }
 # ------------------- ENDPOINTS --------------------------------------------------------
 
 @app.get("/")
@@ -922,51 +1043,92 @@ def ask(data: AskRequest):
     if not file_ids:
         raise HTTPException(status_code=400, detail="file_ids are required")
 
-    # Get recent chat history
-    chat_history = get_chat_history(file_ids, limit=3)
-
-    # Retrieve chunks and images relevant to the query
-    text_chunks, image_descriptions = retrieve_by_file_ids(
-        file_ids,
-        question,
-        k=4
-    )
+    # 1. Get relevant content (text + images)
+    text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, question, k=8)
     
-    # ✅ FIX: Include image descriptions in the context
-    text_context = "\n---\n".join(text_chunks) if text_chunks else ""
+    # DEBUG: Print what we retrieved
+    print(f"DEBUG: Retrieved {len(text_chunks)} text chunks, {len(image_descriptions)} image descriptions")
     
-    # Add image descriptions to the context
     if image_descriptions:
-        image_context = "\n".join([f"📷 Image: {desc}" for desc in image_descriptions])
-        if text_context:
-            text_context = f"{text_context}\n\nIMAGES IN DOCUMENTS:\n{image_context}"
-        else:
-            text_context = f"IMAGES IN DOCUMENTS:\n{image_context}"
+        print(f"DEBUG: First image description: {image_descriptions[0][:100]}...")
     
-    print(f"Context sent to AI - Text chunks: {len(text_chunks)}, Image descriptions: {len(image_descriptions)}")  # Debug
-
-    # Generate answer using Groq with chat history
-    answer = groq_chat_with_history(
-        text_context,
-        question,
-        chat_history
-    )
-
-    # Save updated chat history
-    for file_id in file_ids:
-        save_chat_history(file_id, question, answer)
-
+    # 2. Build BETTER context with clear labeling
+    context_parts = []
     
-    return JSONResponse(content={
-        "question": question,
-        "answer": answer,
-        "file_ids_used": file_ids,
-        "chat_history": chat_history,
-        "text_chunks": len(text_chunks),
-        "image_descriptions_used": len(image_descriptions)  # ✅ Now tracking this
-    })
+    if text_chunks:
+        # Add text with clear identifier
+        text_context = "TEXT FROM DOCUMENTS:\n" + "\n---\n".join(text_chunks)
+        context_parts.append(text_context)
+    
+    if image_descriptions:
+        # Add image descriptions with clear identifier
+        image_context = "IMAGES IN DOCUMENTS:\n"
+        for i, desc in enumerate(image_descriptions):
+            # Clean up the description
+            clean_desc = desc.replace("This image shows", "Shows").replace("The image depicts", "Depicts")
+            image_context += f"- {clean_desc}\n"
+        context_parts.append(image_context)
+    
+    context = "\n\n".join(context_parts) if context_parts else "No content found."
+    
+    # 3. Get chat history
+    chat_history = get_chat_history(file_ids, limit=3)
+    
+    # 4. Call Groq with BETTER system prompt
+    client = Groq(api_key=GROQ_API_KEY)
+    
+    messages = [
+        {
+            "role": "system", 
+            "content": "You are analyzing document content provided by the user. The user will provide text excerpts and descriptions of any images/diagrams. Answer their questions using this provided content. When referring to visual content, do so naturally (e.g., 'the diagram shows', 'as seen in the graph', 'the illustration demonstrates')."
+        }
+    ]
+    
+    # Add chat history
+    for chat in chat_history:
+        messages.append({"role": "user", "content": chat['question']})
+        messages.append({"role": "assistant", "content": chat['answer']})
+    
+    # Build better user message
+    user_message = f"""Here is content from the documents:
 
+{context}
 
+Question: {question}
+
+Please answer based on the document content above."""
+    
+    messages.append({"role": "user", "content": user_message})
+    
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            max_tokens=2048,
+            temperature=0.1
+        )
+        
+        answer = response.choices[0].message.content
+        
+        # 5. Save to history
+        for file_id in file_ids:
+            save_chat_history(file_id, question, answer)
+
+        return JSONResponse(content={
+            "question": question,
+            "answer": answer,
+            "debug_info": {
+                "text_chunks_retrieved": len(text_chunks),
+                "image_descriptions_retrieved": len(image_descriptions),
+                "has_images": len(image_descriptions) > 0
+            }
+        })
+        
+    except Exception as e:
+        error_msg = f"Groq API error: {e}"
+        print(error_msg)
+        return JSONResponse(content={"error": error_msg}, status_code=500)
+    
 @app.get("/file-ids")
 def list_file_ids():
     try:
@@ -1024,20 +1186,19 @@ def clear_chat_history(data: dict):
 
 @app.post("/generate-flashcards")
 def generate_flashcards(data: dict):
+    """SAME ENDPOINT NAME - now with fill_gaps parameter"""
     file_ids = data.get("file_ids", [])
     num_flashcards = data.get("num_flashcards", 5)
-
+    fill_gaps = data.get("fill_gaps", False)  # NEW: Optional parameter
+    
+    # Get content from notes
     search_terms = [
         "key concepts",
-        "important information",
+        "important information", 
         "main topics",
-        "detailed explanations",
-        "examples and applications",
-        "definitions and principles",
-        "processes and methods",
-        "relationships and connections"
+        "detailed explanations"
     ]
-
+    
     random_term = random.choice(search_terms)
     context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=6)
     context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
@@ -1045,12 +1206,40 @@ def generate_flashcards(data: dict):
     if not context.strip():
         raise HTTPException(status_code=400, detail="No content found in selected files")
 
-    flashcards = generate_flashcards_with_groq(context, num_flashcards)
+    # Generate flashcards with gap-filling if requested
+    flashcards = generate_flashcards_with_groq(context, num_flashcards, fill_gaps)
 
     return {
         "flashcards": flashcards,
         "file_ids_used": file_ids,
-        "total_generated": len(flashcards)
+        "total_generated": len(flashcards),
+        "fill_gaps_used": fill_gaps  # Let frontend know if gaps were filled
+    }
+
+
+@app.post("/enhance-notes")
+def enhance_notes(data: dict):
+    """NEW ENDPOINT: Get additional notes to fill knowledge gaps"""
+    file_ids = data.get("file_ids", [])
+    
+    if not file_ids:
+        raise HTTPException(status_code=400, detail="file_ids are required")
+    
+    # Get comprehensive context
+    context_chunks, _ = retrieve_by_file_ids(file_ids, "comprehensive understanding", k=8)
+    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
+    
+    if not context.strip():
+        raise HTTPException(status_code=400, detail="No content found in selected files")
+    
+    # Generate missing notes
+    result = generate_missing_notes(context)
+    
+    return {
+        "enhanced_notes": result.get("missing_notes", []),
+        "study_advice": result.get("study_advice", ""),
+        "file_ids_used": file_ids,
+        "original_notes_summary": context[:500] + "..." if len(context) > 500 else context
     }
 
 @app.post("/generate-mcq")
