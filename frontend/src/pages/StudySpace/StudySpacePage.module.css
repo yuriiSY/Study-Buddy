@@ -17,10 +17,9 @@
 .studySpaceContainer {
   display: flex;
   width: 100%;
-  height: calc(100vh - 84px);
+  flex: 1;
   gap: 0;
   overflow: hidden;
-  flex: 1;
 }
 
 .pdfPane {
@@ -62,5 +61,38 @@
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 1024px) {
+  .pdfPane {
+    min-width: 350px;
+  }
+
+  .chatPane {
+    min-width: 350px;
+  }
+
+  .resizeHandle {
+    width: 6px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .studySpaceContainer {
+    flex-direction: column;
+  }
+
+  .pdfPane {
+    display: none;
+  }
+
+  .chatPane {
+    flex: 1;
+    min-width: auto;
+  }
+
+  .resizeHandle {
+    display: none;
   }
 }

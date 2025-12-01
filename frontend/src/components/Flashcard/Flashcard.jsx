@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { RiEyeLine, RiArrowLeftLine, RiArrowRightLine } from "react-icons/ri";
+import { RiEyeLine, RiArrowLeftLine, RiArrowRightLine, RiLightbulbFlashLine } from "react-icons/ri";
 import styles from "./Flashcard.module.css";
 
 const Flashcard = ({ cards = [], onFinish }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   const currentCard = cards[currentIndex];
 
@@ -35,10 +36,23 @@ const Flashcard = ({ cards = [], onFinish }) => {
                 <span className={styles.tag}>
                   Flashcard {currentIndex + 1} / {cards.length}
                 </span>
+                <button
+                  className={styles.hintBtn}
+                  onClick={() => setShowHint(!showHint)}
+                  title="Show hint"
+                >
+                  <RiLightbulbFlashLine className={styles.hintIcon} />
+                </button>
               </div>
 
               <div className={styles.content}>
                 <h2 className={styles.question}>{currentCard.question}</h2>
+                
+                {showHint && (
+                  <div className={styles.hint}>
+                    <strong>Hint:</strong> {currentCard.answer.substring(0, 100)}...
+                  </div>
+                )}
 
                 <button
                   className={styles.showBtn}

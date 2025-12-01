@@ -5,6 +5,7 @@ import LoaderOverlay from "../../components/LoaderOverlay/LoaderOverlay";
 import CustomPdfViewer from "../../components/CustomPdfViewer";
 import TutorTabs from "../../components/TutorTabs/TutorTabs";
 import Header from "../../components/Header/Header";
+import { FileText } from "lucide-react";
 
 import api from "../../api/axios";
 
@@ -14,6 +15,7 @@ export const StudySpacePage = () => {
   const [loading, setLoading] = useState(true);
   const [pdfFlex, setPdfFlex] = useState(1);
   const [isResizing, setIsResizing] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const containerRef = useRef(null);
 
   const [selectedFile, setSelectedFile] = useState(() => {
@@ -59,6 +61,12 @@ export const StudySpacePage = () => {
   useEffect(() => {
     fetchFiles();
   }, [fetchFiles]);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (prevModuleId.current !== moduleId) {
@@ -115,26 +123,37 @@ export const StudySpacePage = () => {
     );
   }
 
+  const isDesktop = windowWidth > 1024;
+
+  const pdfComponent = (
+    <CustomPdfViewer
+      fileId={selectedFile?.id}
+      fileName={`${selectedFile?.title}`}
+      height="100%"
+    />
+  );
+
   return (
     <div className={styles.wrapper}>
       <Header hideSearch={true} />
       <div className={styles.studySpaceContainer} ref={containerRef}>
-        <div className={styles.pdfPane} style={{ flex: pdfFlex }}>
-          <CustomPdfViewer
-            fileId={selectedFile?.id}
-            fileName={`${selectedFile?.title}`}
-            height="100%"
-          />
-        </div>
-        <div
-          className={styles.resizeHandle}
-          onMouseDown={handleMouseDown}
-          title="Drag to resize panels"
-        />
+        {isDesktop && (
+          <>
+            <div className={styles.pdfPane} style={{ flex: pdfFlex }}>
+              {pdfComponent}
+            </div>
+            <div
+              className={styles.resizeHandle}
+              onMouseDown={handleMouseDown}
+              title="Drag to resize panels"
+            />
+          </>
+        )}
         <div className={styles.chatPane} style={{ flex: 1 }}>
           <TutorTabs
             externalId={selectedFile?.externalId}
             fileid={selectedFile?.id}
+            pdfFile={!isDesktop ? pdfComponent : null}
           />
         </div>
       </div>

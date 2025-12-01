@@ -50,7 +50,6 @@ export const StatsOverview = () => {
 
   return (
     <div className={styles.statsOverview}>
-      <h2 className={styles.title}>Your Progress</h2>
       <div className={styles.statsGrid}>
         {stats.map((stat) => {
           const IconComponent = stat.icon;

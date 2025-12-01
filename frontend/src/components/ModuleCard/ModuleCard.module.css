@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 260px;
-  border-radius: 10px;
+  height: 320px;
+  border-radius: 12px;
   overflow: hidden;
   background-color: var(--bg-secondary);
   box-shadow: var(--shadow-sm);
@@ -14,11 +14,12 @@
 .card:hover {
   box-shadow: var(--shadow-lg);
   transform: translateY(-4px);
+  border-color: var(--color-primary);
 }
 
 .cardHeader {
   position: relative;
-  height: 160px;
+  flex: 1;
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: white;
   display: flex;
@@ -39,6 +40,17 @@
   background: rgba(0, 0, 0, 0.35);
 }
 
+.dateOnImage {
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: white;
+  backdrop-filter: blur(4px);
+  width: fit-content;
+}
+
 .headerOverlay {
   position: relative;
   z-index: 1;
@@ -55,32 +67,46 @@
   align-items: center;
 }
 
-.date {
-  font-size: 14px;
-  font-weight: 600;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 6px 12px;
-  border-radius: 8px;
-  color: white;
-  backdrop-filter: blur(4px);
+
+
+.cardFooter {
+  background: var(--bg-tertiary);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: auto;
+  border-top: 1px solid var(--border-color);
 }
 
-/* --- WHITE BOTTOM SECTION --- */
-/* .cardFooter {
-  background: white;
-  padding: 15px;
+.footerContent {
   display: flex;
-  justify-content: center;
   align-items: center;
-} */
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+
+.titleSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
 
 .title {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
   display: block;
-  text-align: center;
-  line-height: 1.3;
+  line-height: 1.2;
+  word-wrap: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
 }
 
 /* --- BUTTON --- */
@@ -102,79 +128,101 @@
 
 .actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
+
 .iconButton {
-  background: none;
-  border: none;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
+  padding: 6px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+  min-width: 30px;
+  min-height: 30px;
 }
+
 .iconButton:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background: var(--bg-primary);
+  border-color: var(--color-primary);
 }
 
-.archiveButton svg,
-.deleteButton svg,
-.manageButton svg {
-  color: #ffffff;
-}
 .archiveButton:hover svg {
-  color: #ec9a2b;
+  color: #ff9a00;
 }
+
 .deleteButton:hover svg {
-  color: #c9302c;
+  color: #ef4444;
 }
+
 .manageButton:hover svg {
-  color: #d1d1f0;
+  color: var(--color-primary);
 }
 
-.cardFooter {
-  background: var(--bg-tertiary);
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
+.leaveButton:hover svg {
+  color: #ef4444;
 }
 
-.playButton {
+.studyOverlay {
   position: absolute;
-  bottom: -30px;
-  left: 80%;
-  transform: translateX(-50%);
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-  color: white;
-  border: 3px solid white;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-xl);
-  cursor: pointer;
+  opacity: 0;
   transition: all 0.3s ease;
-  z-index: 3;
+  z-index: 2;
+  cursor: pointer;
+  border-radius: 10px 10px 0 0;
 }
 
-.playButton:hover {
-  transform: translateX(-50%) scale(1.12);
-  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.4);
+.card:hover .studyOverlay {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.overlayContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transform: scale(0.8);
+  transition: transform 0.3s ease;
+}
+
+.card:hover .overlayContent {
+  transform: scale(1);
+}
+
+.overlayIcon {
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.overlayText {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .collabLabel {
-  padding: 3px 8px;
-  background: rgba(255, 255, 255, 0.85);
+  padding: 6px 10px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
+  border: 1px solid var(--color-primary);
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-primary);
+  white-space: nowrap;
 }
 
 .leaveButton {

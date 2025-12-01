@@ -7,6 +7,12 @@
   padding: 1rem;
 }
 
+@media (prefers-color-scheme: dark) {
+  .pageWrapper {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  }
+}
+
 .card {
   background-color: white;
   border-radius: 16px;
@@ -15,6 +21,13 @@
   max-width: 440px;
   padding: 2.5rem;
   text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .card {
+    background-color: #1e293b;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  }
 }
 
 .header {

@@ -125,7 +125,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(91, 158, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -135,7 +135,7 @@
 
 .button:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 25px rgba(91, 158, 255, 0.4);
+  box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4);
 }
 
 .button:active {
@@ -146,4 +146,14 @@
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .button {
+    box-shadow: 0 4px 15px rgba(30, 58, 138, 0.5);
+  }
+
+  .button:hover {
+    box-shadow: 0 6px 25px rgba(30, 58, 138, 0.6);
+  }
 }

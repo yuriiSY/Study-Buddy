@@ -106,12 +106,176 @@
 .inlinePageInput:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(91, 158, 255, 0.1);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .inlinePageInput:focus {
+    box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.3);
+  }
+}
+
+@media (max-width: 1024px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .fileName {
+    flex-basis: 100%;
+    font-size: 0.95rem;
+  }
+
+  .zoomControls {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .zoomBtn,
+  .resetBtn {
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
+
+  .zoomLevel {
+    font-size: 0.85rem;
+    min-width: 40px;
+  }
+
+  .pdfContainer {
+    padding: 12px;
+  }
+
+  .footerContent {
+    font-size: 0.85rem;
+    gap: 4px;
+  }
+
+  .inlinePageInput {
+    width: 40px;
+    padding: 4px 3px;
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 768px) {
   .viewerWrapper {
-    height: 700px;
+    height: 70vh;
+  }
+
+  .header {
+    flex-direction: column;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .fileName {
+    flex-basis: auto;
+    font-size: 0.9rem;
+    word-break: break-word;
+  }
+
+  .zoomControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .zoomBtn,
+  .resetBtn {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+  }
+
+  .zoomLevel {
+    font-size: 0.8rem;
+  }
+
+  .pdfContainer {
+    padding: 8px;
+  }
+
+  .pdfPage {
+    margin-bottom: 15px;
+  }
+
+  .footer {
+    padding: 8px 12px;
+  }
+
+  .footerContent {
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    gap: 4px;
+  }
+
+  .inlinePageInput {
+    width: 35px;
+    padding: 4px 3px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .viewerWrapper {
+    height: 65vh;
+  }
+
+  .header {
+    flex-direction: column;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .fileName {
+    font-size: 0.8rem;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .zoomControls {
+    width: 100%;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .zoomBtn,
+  .resetBtn {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 0.7rem;
+  }
+
+  .zoomLevel {
+    font-size: 0.75rem;
+    min-width: 35px;
+  }
+
+  .pdfContainer {
+    padding: 6px;
+  }
+
+  .pdfPage {
+    margin-bottom: 12px;
+  }
+
+  .footer {
+    padding: 6px 10px;
+  }
+
+  .footerContent {
+    flex-wrap: wrap;
+    font-size: 0.7rem;
+    gap: 3px;
+  }
+
+  .inlinePageInput {
+    width: 30px;
+    padding: 3px 2px;
+    font-size: 0.7rem;
   }
 }
 

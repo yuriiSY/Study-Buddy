@@ -13,10 +13,12 @@ const Chat = ({
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
   useEffect(() => {
     if (!externalId) return;
 
+    setIsLoadingHistory(true);
     const fetchHistory = async () => {
       try {
         const res = await apiPY.get("/chat-history", {
@@ -38,6 +40,8 @@ const Chat = ({
         setMessages(parsedMessages);
       } catch (error) {
         console.error("Failed to load chat history:", error);
+      } finally {
+        setIsLoadingHistory(false);
       }
     };
 
@@ -82,23 +86,50 @@ const Chat = ({
         {/* <h2 className={styles.title}>AI Tutor</h2> */}
 
         <div className={styles.chatBox}>
-          {messages.map((msg, idx) => (
-            <div key={idx} className={styles.messageWrapper}>
-              <Message sender={msg.sender} text={msg.text} />
-
-              {msg.sender === "bot" && (
-                <button
-                  className={styles.addToNotesBtn}
-                  onClick={() => onAddNote(msg.text)}
-                  title="Add this response to notes"
-                >
-                  <BookMarked size={14} />
-                  Add to Notes
-                </button>
-              )}
+          {isLoadingHistory ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.loadingSkeleton}>
+                <div className={styles.skeletonLine}></div>
+                <div className={styles.skeletonLine} style={{ width: "90%" }}></div>
+              </div>
+              <div className={styles.loadingSkeleton} style={{ marginTop: "16px", alignSelf: "flex-end" }}>
+                <div className={styles.skeletonLine}></div>
+                <div className={styles.skeletonLine} style={{ width: "70%" }}></div>
+              </div>
+              <div className={styles.loadingSkeleton} style={{ marginTop: "16px" }}>
+                <div className={styles.skeletonLine}></div>
+                <div className={styles.skeletonLine} style={{ width: "85%" }}></div>
+              </div>
             </div>
-          ))}
-          {loading && <Message sender="bot" text="Thinking..." />}
+          ) : messages.length === 0 ? (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyContent}>
+                <Lightbulb size={48} />
+                <h3>No conversation yet</h3>
+                <p>Start by asking a question about your notes or the document.</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {messages.map((msg, idx) => (
+                <div key={idx} className={styles.messageWrapper}>
+                  <Message sender={msg.sender} text={msg.text} />
+
+                  {msg.sender === "bot" && (
+                    <button
+                      className={styles.addToNotesBtn}
+                      onClick={() => onAddNote(msg.text)}
+                      title="Add this response to notes"
+                    >
+                      <BookMarked size={14} />
+                      Add to Notes
+                    </button>
+                  )}
+                </div>
+              ))}
+              {loading && <Message sender="bot" text="Thinking..." />}
+            </>
+          )}
         </div>
 
         <form onSubmit={sendMessage} className={styles.inputArea}>

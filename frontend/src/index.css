@@ -42,6 +42,19 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --color-primary: #1e40af;
+    --color-primary-light: #3b82f6;
+    --color-primary-dark: #1338e6;
+    --color-primary-darker: #0c2a6b;
+    
+    --color-secondary: #0369a1;
+    --color-secondary-light: #0891b2;
+    --color-secondary-dark: #164e63;
+    
+    --color-accent: #92400e;
+    --color-accent-light: #b45309;
+    --color-accent-dark: #7c2d12;
+    
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
     --bg-tertiary: #334155;

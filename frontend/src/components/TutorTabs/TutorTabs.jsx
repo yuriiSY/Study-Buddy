@@ -9,11 +9,13 @@ import api from "../../api/axios";
 import apiPY from "../../api/axiosPython";
 import { useParams } from "react-router-dom";
 import LoaderOverlay from "../LoaderOverlay/LoaderOverlay";
+import { FileText } from "lucide-react";
 
 const TutorTabs = ({ 
   externalId, 
   userId, 
-  fileid
+  fileid,
+  pdfFile
 }) => {
   const { moduleId } = useParams();
   const [activeTab, setActiveTab] = useState("chat");
@@ -25,6 +27,13 @@ const TutorTabs = ({
   const [showFlashcardsTab, setShowFlashcardsTab] = useState(false);
   const [showQuizTab, setShowQuizTab] = useState(false);
   const [selectedTest, setSelectedTest] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (!externalId) return;
@@ -136,12 +145,13 @@ const TutorTabs = ({
   return (
     <div className={styles.wrapper}>
       <div className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${activeTab === "chat" ? styles.active : ""}`}
-          onClick={() => setActiveTab("chat")}
-        >
-          AI Chat
-        </button>
+        <div className={styles.tabButtons}>
+          <button
+            className={`${styles.tab} ${activeTab === "chat" ? styles.active : ""}`}
+            onClick={() => setActiveTab("chat")}
+          >
+            AI Chat
+          </button>
 
         <button
           className={`${styles.tab} ${activeTab === "notes" ? styles.active : ""}`}
@@ -168,6 +178,18 @@ const TutorTabs = ({
             Quiz
           </button>
         )}
+
+        {windowWidth <= 1024 && (
+          <button
+            className={`${styles.tab} ${activeTab === "pdf" ? styles.active : ""}`}
+            onClick={() => setActiveTab("pdf")}
+            title="View PDF"
+          >
+            <FileText size={16} />
+            <span>PDF</span>
+          </button>
+        )}
+        </div>
       </div>
 
       <div className={styles.content}>
@@ -209,8 +231,17 @@ const TutorTabs = ({
 
         {activeTab === "flashcards" && (
           <div className={styles.flashcardsPanel}>
-            {loadingFlashcards && <LoaderOverlay />}
-            {flashcardsError && (
+            {loadingFlashcards ? (
+              <div className={styles.generatingOverlay}>
+                <div className={styles.generatingContent}>
+                  <div className={styles.spinner}></div>
+                  <p>Generating flashcards...</p>
+                  <span className={styles.dot}>.</span>
+                  <span className={styles.dot} style={{animationDelay: '0.2s'}}>.</span>
+                  <span className={styles.dot} style={{animationDelay: '0.4s'}}>.</span>
+                </div>
+              </div>
+            ) : flashcardsError ? (
               <div style={{ padding: 20 }}>
                 <h2 style={{ color: "red" }}>Failed to load flashcards</h2>
                 <button
@@ -226,13 +257,10 @@ const TutorTabs = ({
                   Retry
                 </button>
               </div>
-            )}
-            {!loadingFlashcards && !flashcardsError && (
-              flashcards.length > 0 ? (
-                <Flashcard cards={flashcards} />
-              ) : (
-                <p style={{ padding: 20 }}>No flashcards available.</p>
-              )
+            ) : flashcards.length > 0 ? (
+              <Flashcard cards={flashcards} />
+            ) : (
+              <p style={{ padding: 20 }}>No flashcards available.</p>
             )}
           </div>
         )}
@@ -246,9 +274,22 @@ const TutorTabs = ({
                   style={{
                     padding: "8px 14px",
                     marginBottom: "10px",
-                    background: "#eee",
+                    background: `linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)`,
+                    color: "white",
+                    border: "none",
                     borderRadius: "6px",
                     cursor: "pointer",
+                    fontWeight: "500",
+                    boxShadow: "0 2px 8px rgba(59, 130, 246, 0.2)",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.3)";
+                    e.target.style.transform = "translateY(-1px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.boxShadow = "0 2px 8px rgba(59, 130, 246, 0.2)";
+                    e.target.style.transform = "translateY(0)";
                   }}
                 >
                   ← Back to Test List
@@ -265,6 +306,12 @@ const TutorTabs = ({
                 onSelectTest={handleSelectTest}
               />
             )}
+          </div>
+        )}
+
+        {activeTab === "pdf" && pdfFile && (
+          <div className={styles.pdfPanel}>
+            {pdfFile}
           </div>
         )}
       </div>
