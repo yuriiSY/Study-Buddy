@@ -28,7 +28,7 @@ const validationRegistrSchema = yup.object().shape({
       }
     )
     .matches(
-      /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+      /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
       'Invalid email format'
     ),
   password: yup
@@ -61,7 +61,7 @@ const validationLoginSchema = yup.object().shape({
       }
     )
     .matches(
-      /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+      /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
       'Invalid email format'
     ),
   password: yup
@@ -102,7 +102,7 @@ const validationEditUSerSchema = yup.object().shape({
       }
     )
     .matches(
-      /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+      /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
       'Invalid email format'
     ),
   password: yup

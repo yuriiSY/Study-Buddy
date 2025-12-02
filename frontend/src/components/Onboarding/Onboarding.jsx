@@ -1,37 +1,58 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styles from "./Onboarding.module.css";
+import { Plus, Upload, Zap } from "lucide-react";
 
 const Onboarding = ({ onClick }) => {
+  const [activeStep, setActiveStep] = useState(-1);
+
+  const steps = [
+    {
+      number: 1,
+      title: "Create Module",
+      description: "Give your study module a name",
+      icon: Plus,
+    },
+    {
+      number: 2,
+      title: "Upload Files",
+      description: "Add your notes, slides, and resources",
+      icon: Upload,
+    },
+    {
+      number: 3,
+      title: "Start Learning",
+      description: "Organize and study your materials",
+      icon: Zap,
+    },
+  ];
+
   return (
     <div className={styles.container}>
-      <div className={styles.icon}>📖</div>
-
-      <h1 className={styles.title}>
-        Welcome to Study Buddy! <span>👋</span>
-      </h1>
-
-      <p className={styles.subtitle}>
-        Get started by creating your first study module. You can add notes,
-        videos, slides, or text later to build your personalized learning space.
-      </p>
-
-      <div className={styles.card}>
-        <h3>How to get started:</h3>
-        <ul>
-          <li>
-            <span>1</span> Create a Study Module
-          </li>
-          <li>
-            <span>2</span> Add notes, slides, or resources
-          </li>
-          <li>
-            <span>3</span> Start Learning!
-          </li>
-        </ul>
+      <div className={styles.stepsWrapper}>
+        {steps.map((step, index) => {
+          const Icon = step.icon;
+          return (
+            <div
+              key={index}
+              className={`${styles.stepCard} ${
+                activeStep === index ? styles.active : ""
+              }`}
+              onClick={() => setActiveStep(index)}
+            >
+              <div className={styles.stepNumber}>{step.number}</div>
+              <div className={styles.stepContent}>
+                <Icon size={24} className={styles.stepIcon} />
+                <h3>{step.title}</h3>
+                <p>{step.description}</p>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <button className={styles.actionBtn} onClick={onClick}>
-        + Create Your First Module
+        <Plus size={20} />
+        Create Your First Module
       </button>
     </div>
   );

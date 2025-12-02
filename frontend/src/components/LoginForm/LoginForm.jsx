@@ -11,7 +11,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import styles from "./LoginForm.module.css";
 import { ClipLoader } from "react-spinners";
 
-const LoginForm = ({ onSubmit, loading }) => {
+const LoginForm = ({ onSubmit, loading, error }) => {
   const {
     register,
     handleSubmit,
@@ -77,7 +77,9 @@ const LoginForm = ({ onSubmit, loading }) => {
         </a>
       </div>
 
-      <button className={styles.button} type="submit">
+      {error && <p className={styles.error}>{error}</p>}
+
+      <button className={styles.button} type="submit" disabled={loading}>
         {loading ? <ClipLoader size={20} color="#fff" /> : "Sign in"}
       </button>
     </form>

@@ -1,10 +1,11 @@
 .wrapper {
   display: flex;
   border-radius: 16px;
-  border: 1px solid #eee;
+  border: 1px solid var(--border-color-light);
   gap: 20px;
-  background: #080e4b;
+  background: var(--bg-secondary);
   max-width: 980px;
+  box-shadow: var(--shadow-md);
 }
 
 .weekRow {
@@ -19,7 +20,7 @@
 }
 
 .dayLabel {
-  color: #656596;
+  color: var(--text-secondary);
   font-weight: 600;
   margin-bottom: 6px;
   display: block;
@@ -30,32 +31,41 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: #d3d3d3;
-  transition: background 0.25s ease;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  transition: all 0.3s ease;
 }
 
 .circleActive {
-  background: #4caf50;
+  background: var(--color-success);
+  border-color: var(--color-success);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
 }
 
 .description {
-  font-size: 15px;
+  font-size: 14px;
   margin-bottom: 20px;
-  color: #555;
-  line-height: 1.4;
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .button {
-  background: #656596;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: #fff;
   padding: 12px 18px;
-  border-radius: 999px;
+  border-radius: 10px;
   font-weight: 600;
-  border: 2px solid #24243b;
+  border: none;
   margin-bottom: 32px;
   width: 100%;
-  font-size: 16px;
-  transition: opacity 0.2s ease;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.button:hover:not(.buttonDisabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .buttonDisabled {
@@ -65,46 +75,48 @@
 
 .streakBox {
   text-align: center;
-  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #080e4b;
+  background-color: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
   padding-right: 24px;
+  padding-left: 24px;
 }
 
 .streakNumber {
   font-size: 64px;
   margin: 0;
-  color: #fff;
+  color: var(--color-accent);
   font-weight: 700;
 }
 
 .streakLabel {
-  font-size: 18px;
-  color: #fff;
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
 .trackerBox {
-  border-right: #eee 2px solid;
-  border-left: #eee 2px solid;
-  background-color: #080e4b;
+  border-right: 1px solid var(--border-color-light);
+  border-left: 1px solid var(--border-color-light);
+  background-color: var(--bg-primary);
   padding: 24px;
+  flex: 1;
 }
 
 .motivationBox {
   margin-top: 16px;
   padding: 14px 18px;
-  background: #f5f7ff;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
   border-radius: 10px;
-  border: 1px solid #e2e6ff;
+  border: 1px solid var(--border-color-light);
 }
 
 .motivationText {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  color: #656596;
+  color: var(--text-secondary);
   text-align: center;
-  line-height: 1.4;
+  line-height: 1.5;
 }

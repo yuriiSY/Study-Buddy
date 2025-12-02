@@ -70,70 +70,73 @@ const ModuleCard = ({
         }
       >
         <div className={styles.headerOverlay}>
-          <div className={styles.cardHeaderTop}>
-            <p className={styles.date}>{date}</p>
-            <div className={styles.actions}>
-              {isOwner ? (
-                <>
-                  {/* Owner buttons */}
-                  <button
-                    className={`${styles.iconButton} ${styles.deleteButton}`}
-                    onClick={handleDelete}
-                    title="Delete"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+          <p className={styles.dateOnImage}>{date}</p>
 
-                  <button
-                    className={`${styles.iconButton} ${styles.archiveButton}`}
-                    onClick={handleArchive}
-                    title={archived ? "Unarchive" : "Archive"}
-                  >
-                    {archived ? (
-                      <ArchiveRestore size={18} />
-                    ) : (
-                      <Archive size={18} />
-                    )}
-                  </button>
-
-                  <button
-                    className={`${styles.iconButton} ${styles.manageButton}`}
-                    onClick={handleManage}
-                    title="Manage"
-                  >
-                    <Settings size={18} />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <span className={styles.collabLabel}>Collaborator</span>
-
-                  {/* NEW: Leave module button */}
-                  <button
-                    className={`${styles.iconButton} ${styles.leaveButton}`}
-                    onClick={handleLeave}
-                    title="Leave Module"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </>
-              )}
+          {/* Study Overlay on Hover */}
+          <div className={styles.studyOverlay} onClick={handleClick}>
+            <div className={styles.overlayContent}>
+              <Play size={28} className={styles.overlayIcon} />
+              <span className={styles.overlayText}>Continue Studying</span>
             </div>
           </div>
-
-          {/* <p className={styles.title}>{title}</p> */}
-
-          {/* ✅ Floating play button on image */}
-          <button className={styles.playButton} onClick={handleClick}>
-            <Play size={32} />
-          </button>
         </div>
       </div>
 
-      {/* ✅ White footer */}
+      {/* ✅ Enhanced footer with title and actions */}
       <div className={styles.cardFooter}>
-        {" "}
-        <p className={styles.title}>{title}</p>
+        <div className={styles.footerContent}>
+          <div className={styles.titleSection}>
+            <p className={styles.title}>{title}</p>
+          </div>
+          
+          <div className={styles.actions}>
+            {isOwner ? (
+              <>
+                {/* Owner buttons */}
+                <button
+                  className={`${styles.iconButton} ${styles.manageButton}`}
+                  onClick={handleManage}
+                  title="Manage"
+                >
+                  <Settings size={16} />
+                </button>
+
+                <button
+                  className={`${styles.iconButton} ${styles.archiveButton}`}
+                  onClick={handleArchive}
+                  title={archived ? "Unarchive" : "Archive"}
+                >
+                  {archived ? (
+                    <ArchiveRestore size={16} />
+                  ) : (
+                    <Archive size={16} />
+                  )}
+                </button>
+
+                <button
+                  className={`${styles.iconButton} ${styles.deleteButton}`}
+                  onClick={handleDelete}
+                  title="Delete"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </>
+            ) : (
+              <>
+                <span className={styles.collabLabel}>Collaborator</span>
+
+                {/* Leave module button */}
+                <button
+                  className={`${styles.iconButton} ${styles.leaveButton}`}
+                  onClick={handleLeave}
+                  title="Leave Module"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

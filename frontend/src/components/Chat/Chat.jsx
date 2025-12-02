@@ -2,15 +2,23 @@ import React, { useState, useEffect } from "react";
 import styles from "./Chat.module.css";
 import Message from "../Message/Message";
 import apiPY from "../../api/axiosPython";
+import { Send, BookMarked, Lightbulb } from "lucide-react";
 
-const Chat = ({ externalId, onAddNote }) => {
+const Chat = ({ 
+  externalId, 
+  onAddNote,
+  onGenerateFlashcards,
+  onGenerateQuiz 
+}) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
   useEffect(() => {
     if (!externalId) return;
 
+    setIsLoadingHistory(true);
     const fetchHistory = async () => {
       try {
         const res = await apiPY.get("/chat-history", {
@@ -32,6 +40,8 @@ const Chat = ({ externalId, onAddNote }) => {
         setMessages(parsedMessages);
       } catch (error) {
         console.error("Failed to load chat history:", error);
+      } finally {
+        setIsLoadingHistory(false);
       }
     };
 
@@ -76,28 +86,56 @@ const Chat = ({ externalId, onAddNote }) => {
         {/* <h2 className={styles.title}>AI Tutor</h2> */}
 
         <div className={styles.chatBox}>
-          {messages.map((msg, idx) => (
-            <div key={idx} className={styles.messageWrapper}>
-              <Message sender={msg.sender} text={msg.text} />
-
-              {/* Show button only for AI messages */}
-              {msg.sender === "bot" && (
-                <button
-                  className={styles.addToNotesBtn}
-                  onClick={() => onAddNote(msg.text)}
-                >
-                  ➕ Add to Notes
-                </button>
-              )}
+          {isLoadingHistory ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.loadingSkeleton}>
+                <div className={styles.skeletonLine}></div>
+                <div className={styles.skeletonLine} style={{ width: "90%" }}></div>
+              </div>
+              <div className={styles.loadingSkeleton} style={{ marginTop: "16px", alignSelf: "flex-end" }}>
+                <div className={styles.skeletonLine}></div>
+                <div className={styles.skeletonLine} style={{ width: "70%" }}></div>
+              </div>
+              <div className={styles.loadingSkeleton} style={{ marginTop: "16px" }}>
+                <div className={styles.skeletonLine}></div>
+                <div className={styles.skeletonLine} style={{ width: "85%" }}></div>
+              </div>
             </div>
-          ))}
-          {loading && <Message sender="bot" text="Thinking..." />}
+          ) : messages.length === 0 ? (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyContent}>
+                <Lightbulb size={48} />
+                <h3>No conversation yet</h3>
+                <p>Start by asking a question about your notes or the document.</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {messages.map((msg, idx) => (
+                <div key={idx} className={styles.messageWrapper}>
+                  <Message sender={msg.sender} text={msg.text} />
+
+                  {msg.sender === "bot" && (
+                    <button
+                      className={styles.addToNotesBtn}
+                      onClick={() => onAddNote(msg.text)}
+                      title="Add this response to notes"
+                    >
+                      <BookMarked size={14} />
+                      Add to Notes
+                    </button>
+                  )}
+                </div>
+              ))}
+              {loading && <Message sender="bot" text="Thinking..." />}
+            </>
+          )}
         </div>
 
         <form onSubmit={sendMessage} className={styles.inputArea}>
           <input
             type="text"
-            placeholder="Ask about your uploaded notes..."
+            placeholder="Ask a question about your notes..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className={styles.input}
@@ -109,9 +147,30 @@ const Chat = ({ externalId, onAddNote }) => {
             disabled={loading || !externalId}
             title={!externalId ? "Select a file first" : "Send message"}
           >
-            ➤
+            <Send size={18} />
           </button>
         </form>
+
+        <div className={styles.actionButtons}>
+          <button
+            className={styles.actionBtn}
+            onClick={onGenerateFlashcards}
+            disabled={!externalId}
+            title={!externalId ? "Select a file first" : "Generate flashcards"}
+          >
+            <BookMarked size={16} />
+            Generate Flashcards
+          </button>
+          <button
+            className={styles.actionBtn}
+            onClick={onGenerateQuiz}
+            disabled={!externalId}
+            title={!externalId ? "Select a file first" : "Generate quiz"}
+          >
+            <Lightbulb size={16} />
+            Generate Quiz
+          </button>
+        </div>
       </div>
     </div>
   );

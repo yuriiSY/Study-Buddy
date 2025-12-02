@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import styles from "./ModuleModal.module.css";
 import api from "../../api/axios";
 import apiPY from "../../api/axiosPython";
+import { Info } from "lucide-react";
+import LoadingAnimation from "./LoadingAnimation";
 
 const imageOptions = ["card-bg1.jpg", "card-bg2.jpg", "card-bg3.jpg"];
 const ModuleModal = ({
@@ -14,6 +16,7 @@ const ModuleModal = ({
   const [moduleName, setModuleName] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState("uploading");
   const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
@@ -41,6 +44,7 @@ const ModuleModal = ({
     }
 
     setLoading(true);
+    setLoadingStage("uploading");
     try {
       const pyFormData = new FormData();
       if (mode === "upload") {
@@ -53,6 +57,7 @@ const ModuleModal = ({
       });
 
       console.log("Python Upload successful:", respy.data);
+      setLoadingStage("processing");
 
       // Check for Python errors
       if (respy.data.errors && respy.data.errors.length > 0) {
@@ -70,6 +75,7 @@ const ModuleModal = ({
       }
 
       // ---------- 2️⃣ SEND METADATA TO NODE.JS (Database) ----------
+      setLoadingStage("creating");
       let createdModule = null;
 
       // Process each file that Python successfully handled
@@ -125,15 +131,21 @@ const ModuleModal = ({
       setModuleName("");
       setUploadedFiles([]);
       setSelectedImage(null);
+      setLoadingStage("uploading");
       onClose();
     } catch (err) {
       console.error("Upload failed:", err);
       console.error("Error details:", err.response?.data);
       alert("Upload failed: " + (err.response?.data?.error || err.message));
+      setLoadingStage("uploading");
     } finally {
       setLoading(false);
     }
   };
+  if (loading) {
+    return <LoadingAnimation stage={loadingStage} />;
+  }
+
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
@@ -194,9 +206,24 @@ const ModuleModal = ({
             onChange={handleFileUpload}
             disabled={loading}
           />
-          <label htmlFor="fileInput" className={styles.uploadButton}>
-            📤 Upload Files
-          </label>
+          <div className={styles.uploadButtonContainer}>
+            <label htmlFor="fileInput" className={styles.uploadButton}>
+              📤 Upload Files
+            </label>
+            <div className={styles.infoTooltip}>
+              <span className={styles.supportedText}>Supported file types</span>
+              <Info size={16} />
+              <div className={styles.tooltipContent}>
+                <p className={styles.tooltipTitle}>Supported Formats</p>
+                <div className={styles.formatsList}>
+                  <div>DOCX, DOC, PPTX, PPT, XLSX, XLS</div>
+                  <div>PDF</div>
+                  <div>PNG, JPG, JPEG, BMP, GIF</div>
+                  <div>TXT</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {uploadedFiles.length > 0 && (
             <ul className={styles.uploadList}>

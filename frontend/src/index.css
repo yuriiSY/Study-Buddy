@@ -1,5 +1,189 @@
 @import "modern-normalize/modern-normalize.css";
 
+/* Global design tokens & themes (light / dark / sepia) */
+:root {
+  color-scheme: light dark;
+
+  --color-primary: #5B9EFF;
+  --color-primary-light: #80B4FF;
+  --color-primary-dark: #3B7FE5;
+  --color-primary-darker: #2760C8;
+  
+  --color-secondary: #5BC0DE;
+  --color-secondary-light: #85D4E8;
+  --color-secondary-dark: #2BA1C4;
+  
+  --color-accent: #FFB84D;
+  --color-accent-light: #FFD580;
+  --color-accent-dark: #FF9E1B;
+  
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #5B9EFF;
+  
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F7F9FC;
+  --bg-tertiary: #EEF2F7;
+  --bg-hover: #E5EAEF;
+  
+  --text-primary: #1A202C;
+  --text-secondary: #4A5568;
+  --text-tertiary: #718096;
+  --text-light: #A0AEC0;
+  
+  --border-color: #E2E8F0;
+  --border-color-light: #EDF2F7;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Explicit Light theme */
+:root[data-theme='light'] {
+  --color-primary: #5B9EFF;
+  --color-primary-light: #80B4FF;
+  --color-primary-dark: #3B7FE5;
+  --color-primary-darker: #2760C8;
+  
+  --color-secondary: #5BC0DE;
+  --color-secondary-light: #85D4E8;
+  --color-secondary-dark: #2BA1C4;
+  
+  --color-accent: #FFB84D;
+  --color-accent-light: #FFD580;
+  --color-accent-dark: #FF9E1B;
+  
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #5B9EFF;
+  
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F7F9FC;
+  --bg-tertiary: #EEF2F7;
+  --bg-hover: #E5EAEF;
+  
+  --text-primary: #1A202C;
+  --text-secondary: #4A5568;
+  --text-tertiary: #718096;
+  --text-light: #A0AEC0;
+  
+  --border-color: #E2E8F0;
+  --border-color-light: #EDF2F7;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Explicit Dark theme */
+:root[data-theme='dark'] {
+  --color-primary: #1e40af;
+  --color-primary-light: #3b82f6;
+  --color-primary-dark: #1338e6;
+  --color-primary-darker: #0c2a6b;
+  
+  --color-secondary: #0369a1;
+  --color-secondary-light: #0891b2;
+  --color-secondary-dark: #164e63;
+  
+  --color-accent: #92400e;
+  --color-accent-light: #b45309;
+  --color-accent-dark: #7c2d12;
+  
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-hover: #475569;
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-light: #64748b;
+  
+  --border-color: #475569;
+  --border-color-light: #334155;
+  
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* Explicit Sepia theme */
+:root[data-theme='sepia'] {
+  --color-primary: #b58900;
+  --color-primary-light: #d9a400;
+  --color-primary-dark: #8b6800;
+  --color-primary-darker: #654b00;
+  
+  --color-secondary: #c47f2a;
+  --color-secondary-light: #e0a366;
+  --color-secondary-dark: #8b5a1b;
+  
+  --color-accent: #cb4b16;
+  --color-accent-light: #e36f3a;
+  --color-accent-dark: #a53a10;
+  
+  --bg-primary: #fdf6e3;
+  --bg-secondary: #f6ebd5;
+  --bg-tertiary: #f0e1c2;
+  --bg-hover: #e6d4b0;
+  
+  --text-primary: #3b3228;
+  --text-secondary: #5f4b32;
+  --text-tertiary: #8f7d65;
+  --text-light: #b0a18a;
+  
+  --border-color: #e2c9a3;
+  --border-color-light: #f1e0c4;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.16);
+}
+
+/* Default to system dark if user hasn't chosen a theme */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-primary: #1e40af;
+    --color-primary-light: #3b82f6;
+    --color-primary-dark: #1338e6;
+    --color-primary-darker: #0c2a6b;
+    
+    --color-secondary: #0369a1;
+    --color-secondary-light: #0891b2;
+    --color-secondary-dark: #164e63;
+    
+    --color-accent: #92400e;
+    --color-accent-light: #b45309;
+    --color-accent-dark: #7c2d12;
+    
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-hover: #475569;
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    --text-light: #64748b;
+    
+    --border-color: #475569;
+    --border-color-light: #334155;
+    
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.6);
+  }
+}
+
 html {
   box-sizing: border-box;
   scroll-behavior: smooth;
@@ -19,7 +203,9 @@ body {
   font-size: 14px;
   letter-spacing: -0.02em;
   line-height: 1.5;
-  background: #1a205e;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1,
@@ -32,6 +218,7 @@ p {
   margin: 0;
   font-family: "Poppins", Arial, sans-serif;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 ol,
@@ -44,10 +231,13 @@ ul {
 a {
   text-decoration: none;
   background-color: transparent;
+  color: var(--color-primary);
+  transition: color 0.2s ease;
+}
 
-  &:hover {
-    text-decoration: none;
-  }
+a:hover {
+  text-decoration: none;
+  color: var(--color-primary-dark);
 }
 
 img {
@@ -62,10 +252,14 @@ button {
   width: auto;
   overflow: visible;
   background: transparent;
+  cursor: pointer;
+  font-family: "Poppins", Arial, sans-serif;
+  transition: all 0.2s ease;
+}
 
-  &:focus {
-    outline: none;
-  }
+button:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 input,
@@ -73,6 +267,24 @@ button,
 textarea,
 select {
   font: inherit;
+  color: var(--text-primary);
+}
+
+input,
+textarea {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background-color: var(--bg-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 [hidden] {
@@ -88,8 +300,8 @@ select {
   width: 300px;
   height: 200px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
   display: block;
   margin: 1rem auto;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }

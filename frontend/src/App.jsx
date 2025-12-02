@@ -7,6 +7,7 @@ import { WelcomePage } from "./pages/WelcomePage/WelcomePage";
 import { ToastContainer } from "react-toastify";
 import TestPage from "./pages/TestPage";
 import "react-toastify/dist/ReactToastify.css";
+import "./App.css";
 
 import PrivateRoute from "./routes/PrivateRoute";
 import PublicRoute from "./routes/PublicRoute";
