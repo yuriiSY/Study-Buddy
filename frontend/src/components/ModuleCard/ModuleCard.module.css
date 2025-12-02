@@ -232,3 +232,115 @@
 .leaveButton:hover {
   color: #d33;
 }
+
+@media (max-width: 1024px) {
+  .card {
+    height: 300px;
+  }
+
+  .title {
+    font-size: 12px;
+  }
+
+  .learnButton {
+    height: 40px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    height: 280px;
+  }
+
+  .cardFooter {
+    padding: 10px 12px;
+  }
+
+  .footerContent {
+    gap: 8px;
+  }
+
+  .title {
+    font-size: 11px;
+  }
+
+  .learnButton {
+    height: 38px;
+    font-size: 14px;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+
+  .iconButton {
+    padding: 5px;
+    min-width: 28px;
+    min-height: 28px;
+  }
+
+  .collabLabel {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    height: 260px;
+  }
+
+  .cardHeader {
+    padding: 0;
+  }
+
+  .headerOverlay {
+    padding: 12px;
+  }
+
+  .cardFooter {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .footerContent {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .title {
+    font-size: 10px;
+  }
+
+  .fileMeta {
+    font-size: 0.7rem;
+  }
+
+  .learnButton {
+    height: 36px;
+    font-size: 12px;
+    width: 100%;
+  }
+
+  .actions {
+    gap: 4px;
+  }
+
+  .iconButton {
+    padding: 4px;
+    min-width: 24px;
+    min-height: 24px;
+    font-size: 0.8rem;
+  }
+
+  .collabLabel {
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+
+  .dateOnImage {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}

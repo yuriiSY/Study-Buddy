@@ -24,6 +24,13 @@
   gap: 0;
 }
 
+.timerWrapper {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding-left: 16px;
+}
+
 .tab {
   padding: 10px 20px;
   font-size: 14px;
@@ -60,6 +67,37 @@
   overflow: hidden;
   flex: 1;
   gap: 12px;
+}
+
+.emptyNotes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.emptyNotes h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.emptyNotes p {
+  margin: 0;
+  font-size: 0.95rem;
+  max-width: 300px;
+  line-height: 1.5;
 }
 
 .notesDisplay {
@@ -304,13 +342,82 @@
     flex: 1;
     min-width: 80px;
   }
+
+  .timerWrapper {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .notesPanel {
+    padding: 16px;
+    gap: 10px;
+  }
+
+  .notesDisplay {
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+
+  .textArea {
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+
+  .editBtn,
+  .saveBtn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .emptyNotes {
+    padding: 30px 16px;
+  }
+
+  .emptyNotes h3 {
+    font-size: 1.1rem;
+  }
+
+  .emptyNotes p {
+    font-size: 0.9rem;
+  }
+
+  .flashcardsPanel,
+  .quizPanel,
+  .pdfPanel {
+    padding: 16px;
+  }
 }
 
 @media (max-width: 480px) {
+  .wrapper {
+    width: 100%;
+  }
+
+  .tabs {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 12px;
+    gap: 4px;
+  }
+
+  .tabButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+  }
+
   .tab {
     padding: 6px 10px;
     font-size: 11px;
-    min-width: 60px;
+    min-width: 50px;
+    flex: 1 1 auto;
   }
 
   .tab span {
@@ -319,5 +426,67 @@
 
   .tab svg {
     margin: 0;
+  }
+
+  .timerWrapper {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    margin-left: 0;
+    padding-left: 0;
+    margin-top: 8px;
+  }
+
+  .notesPanel {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .notesDisplay {
+    padding: 10px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+
+  .textArea {
+    padding: 10px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+
+  .editBtn,
+  .saveBtn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    width: 100%;
+  }
+
+  .emptyNotes {
+    padding: 20px 12px;
+    gap: 12px;
+  }
+
+  .emptyIcon {
+    font-size: 40px;
+  }
+
+  .emptyNotes h3 {
+    font-size: 1rem;
+  }
+
+  .emptyNotes p {
+    font-size: 0.85rem;
+    max-width: 100%;
+  }
+
+  .flashcardsPanel,
+  .quizPanel,
+  .pdfPanel {
+    padding: 12px;
+  }
+
+  .pdfToggle {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
