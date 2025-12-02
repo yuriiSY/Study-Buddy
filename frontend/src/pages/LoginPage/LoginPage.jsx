@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser, registerUser } from "../../store/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 import styles from "./LoginPage.module.css";
-import { RiBookOpenLine } from "react-icons/ri";
 import { toast } from "react-toastify";
+import logoImg from "../../assets/logo2.png";
 
 import LoginForm from "../../components/LoginForm/LoginForm";
 import RegistrationForm from "../../components/RegistrationForm/RegistrationForm";
@@ -15,23 +15,27 @@ export const LoginPage = () => {
   const { isLoggedIn, loading } = useSelector((state) => state.auth);
 
   const [isLogin, setIsLogin] = useState(true);
+  const [loginError, setLoginError] = useState("");
+  const [registerError, setRegisterError] = useState("");
 
   const handleLogin = async (data) => {
-    await dispatch(loginUser(data));
+    setLoginError("");
     try {
-      dispatch(loginUser(data)).unwrap();
-      toast.success("🎉 Login successful!");
+      await dispatch(loginUser(data)).unwrap();
+      toast.success("✓ Login successful!");
     } catch (error) {
-      toast.error(error || "❌ Login failed. Please try again.");
+      setLoginError(error || "Login failed. Please try again.");
     }
   };
 
   const handleRegister = async (formData) => {
+    setRegisterError("");
     try {
       await dispatch(registerUser(formData)).unwrap();
-      toast.success("🎉 Registration successful!");
+      toast.success("✓ Registration successful! Redirecting to login...");
+      setTimeout(() => setIsLogin(true), 1500);
     } catch (error) {
-      toast.error(error || "❌ Registration failed. Please try again.");
+      setRegisterError(error || "Registration failed. Please try again.");
     }
   };
 
@@ -45,9 +49,11 @@ export const LoginPage = () => {
     <div className={styles.pageWrapper}>
       <div className={styles.card}>
         <div className={styles.header}>
-          <div className={styles.iconCircle}>
-            <RiBookOpenLine className={styles.icon} />
-          </div>
+          <img
+            src={logoImg}
+            alt="Study Buddy Logo"
+            className={styles.logo}
+          />
           <h2 className={styles.title}>
             {isLogin ? "Welcome Back" : "Create Account"}
           </h2>
@@ -60,9 +66,17 @@ export const LoginPage = () => {
 
         <div className={styles.formContainer}>
           {isLogin ? (
-            <LoginForm onSubmit={handleLogin} loading={loading} />
+            <LoginForm 
+              onSubmit={handleLogin} 
+              loading={loading}
+              error={loginError}
+            />
           ) : (
-            <RegistrationForm onSubmit={handleRegister} loading={loading} />
+            <RegistrationForm 
+              onSubmit={handleRegister} 
+              loading={loading}
+              error={registerError}
+            />
           )}
         </div>
 

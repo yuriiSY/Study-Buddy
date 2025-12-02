@@ -10,8 +10,9 @@ import AddCard from "../components/AddCard/AddCard";
 import StatsCards from "../components/StatsCards/StatsCards";
 import ManageModuleModal from "../components/ManageModuleModal/ManageModuleModal";
 import LoaderOverlay from "../components/LoaderOverlay/LoaderOverlay";
-import StreakTracker from "../components/StreakTracker/StreakTracker";
-import { FolderOpen, Archive } from "lucide-react";
+import TopDiscussions from "../components/TopDiscussions/TopDiscussions";
+import StatsOverview from "../components/StatsOverview/StatsOverview";
+import { FolderOpen, Archive, ChevronDown, ChevronUp } from "lucide-react";
 
 export const HomePage = () => {
   const [modules, setModules] = useState([]);
@@ -22,10 +23,11 @@ export const HomePage = () => {
     moduleId: null,
     title: "",
   });
-  const [showAllActive, setShowAllActive] = useState(false);
-  const [showAllArchived, setShowAllArchived] = useState(false);
   const [viewMode, setViewMode] = useState("active");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isProgressCollapsed, setIsProgressCollapsed] = useState(() => {
+    return window.innerWidth <= 768;
+  });
 
   // Fetch modules
   useEffect(() => {
@@ -105,136 +107,154 @@ export const HomePage = () => {
 
   const activeModules = modules.filter((m) => !m.archived);
   const archivedModules = modules.filter((m) => m.archived);
-  const filteredActive = activeModules.filter((m) =>
+  
+  const sortByLastOpened = (mods) => {
+    return [...mods].sort((a, b) => {
+      const aTime = new Date(a.lastAccessedAt || a.createdAt).getTime();
+      const bTime = new Date(b.lastAccessedAt || b.createdAt).getTime();
+      return bTime - aTime;
+    });
+  };
+  
+  const sortedActiveModules = sortByLastOpened(activeModules);
+  const sortedArchivedModules = sortByLastOpened(archivedModules);
+  
+  const filteredActive = sortedActiveModules.filter((m) =>
     m.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredArchived = archivedModules.filter((m) =>
+  const filteredArchived = sortedArchivedModules.filter((m) =>
     m.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <>
-      <Header />
+      <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
       <Layout>
-        <div className={styles.homePage}>
+        <div className={`${styles.homePage} ${isProgressCollapsed ? styles.progressCollapsed : ""}`}>
           {modules.length === 0 ? (
             <Onboarding onClick={handleOpenModal} />
           ) : (
             <div className={styles.content}>
-              <div className={styles.modulesSection}>
-                {/* Header Controls */}
-                <div className={styles.headerSection}>
-                  <h2>Your Study Modules</h2>
-                  {(viewMode === "active" && showAllActive) ||
-                  (viewMode === "archived" && showAllArchived) ? (
-                    <input
-                      type="text"
-                      placeholder="Search modules..."
-                      className={styles.searchInput}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  ) : null}
+              <div className={`${styles.progressSection} ${isProgressCollapsed ? styles.collapsed : ""}`}>
+                <div className={styles.progressHeader}>
+                  <h3>Your Progress</h3>
+                  <button 
+                    className={styles.collapseBtn}
+                    onClick={() => setIsProgressCollapsed(!isProgressCollapsed)}
+                    title={isProgressCollapsed ? "Show progress" : "Hide progress"}
+                  >
+                    {isProgressCollapsed ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                  </button>
+                </div>
+                {!isProgressCollapsed && <StatsOverview />}
+              </div>
+              <div className={styles.mainContent}>
+                <div className={styles.modulesSection}>
+                  {/* Header Controls */}
+                  <div className={styles.headerSection}>
+                    <h2>Modules</h2>
+                    {viewMode === "active" && activeModules.length > 3 && (
+                      <button
+                        className={styles.viewAllBtn}
+                        onClick={handleOpenModal}
+                      >
+                        Add more modules
+                      </button>
+                    )}
+                  </div>
+                  <div className={styles.toggleButtons}>
+                    <button
+                      className={
+                        viewMode === "active"
+                          ? styles.activeBtn
+                          : styles.inactiveBtn
+                      }
+                      onClick={() => setViewMode("active")}
+                    >
+                      <FolderOpen size={18} />
+                      <span>Current</span>
+                    </button>
 
-                  {viewMode === "active" && (
-                    <div>
-                      {activeModules.length > 3 && (
+                    <button
+                      className={
+                        viewMode === "archived"
+                          ? styles.activeBtn
+                          : styles.inactiveBtn
+                      }
+                      onClick={() => setViewMode("archived")}
+                    >
+                      <Archive size={18} />
+                      <span>Archive</span>
+                    </button>
+                  </div>
+                  {/* Active or Archived Modules - Always show all with scrolling */}
+                  {viewMode === "active" && filteredActive.length === 0 ? (
+                    <div className={styles.emptyState}>
+                      <FolderOpen size={48} />
+                      <h3>{searchQuery ? "No modules found" : "No Active Modules"}</h3>
+                      <p>{searchQuery ? "Try a different search term" : "Create your first module to get started"}</p>
+                      {!searchQuery && (
                         <button
-                          className={styles.viewAllBtn}
+                          className={styles.emptyStateBtn}
                           onClick={handleOpenModal}
                         >
-                          Add more modules
-                        </button>
-                      )}
-                      {activeModules.length > 4 && (
-                        <button
-                          className={styles.viewAllBtn}
-                          onClick={() => setShowAllActive((prev) => !prev)}
-                        >
-                          {showAllActive ? "View less" : "View all"}
+                          Create Module
                         </button>
                       )}
                     </div>
+                  ) : (
+                    <div className={styles.modulesGrid}>
+                      {viewMode === "active" &&
+                        filteredActive.map((mod) => (
+                          <ModuleCard
+                            key={mod.id}
+                            id={mod.id}
+                            title={mod.title}
+                            date={new Date(mod.createdAt).toLocaleDateString()}
+                            archived={mod.archived}
+                            onArchive={handleArchive}
+                            onDelete={handleDelete}
+                            onManage={handleManage}
+                            coverImage={mod.coverImage}
+                            isOwner={mod.isOwner}
+                          />
+                        ))}
+
+                      {viewMode === "archived" &&
+                        filteredArchived.map((mod) => (
+                          <ModuleCard
+                            key={mod.id}
+                            id={mod.id}
+                            title={mod.title}
+                            date={new Date(mod.createdAt).toLocaleDateString()}
+                            archived={mod.archived}
+                            onArchive={handleArchive}
+                            onDelete={handleDelete}
+                            onManage={handleManage}
+                            coverImage={mod.coverImage}
+                            isOwner={mod.isOwner}
+                          />
+                        ))}
+
+                      {viewMode === "active" && activeModules.length <= 3 && (
+                        <AddCard onClick={handleOpenModal} />
+                      )}
+                    </div>
                   )}
-                </div>
-                <div className={styles.toggleButtons}>
-                  <button
-                    className={
-                      viewMode === "active"
-                        ? styles.activeBtn
-                        : styles.inactiveBtn
-                    }
-                    onClick={() => setViewMode("active")}
-                  >
-                    <FolderOpen size={18} />
-                    <span>Current</span>
-                  </button>
 
-                  <button
-                    className={
-                      viewMode === "archived"
-                        ? styles.activeBtn
-                        : styles.inactiveBtn
-                    }
-                    onClick={() => setViewMode("archived")}
-                  >
-                    <Archive size={18} />
-                    <span>Archive</span>
-                  </button>
-                </div>
-                {/* Active or Archived Modules */}
-                <div className={styles.modulesGrid}>
-                  {viewMode === "active" &&
-                    (showAllActive
-                      ? filteredActive
-                      : filteredActive.slice(0, 4)
-                    ).map((mod) => (
-                      <ModuleCard
-                        key={mod.id}
-                        id={mod.id}
-                        title={mod.title}
-                        date={new Date(mod.createdAt).toLocaleDateString()}
-                        archived={mod.archived}
-                        onArchive={handleArchive}
-                        onDelete={handleDelete}
-                        onManage={handleManage}
-                        coverImage={mod.coverImage}
-                        isOwner={mod.isOwner}
-                      />
-                    ))}
-
-                  {viewMode === "archived" &&
-                    (showAllArchived
-                      ? filteredArchived
-                      : filteredArchived.slice(0, 4)
-                    ).map((mod) => (
-                      <ModuleCard
-                        key={mod.id}
-                        id={mod.id}
-                        title={mod.title}
-                        date={new Date(mod.createdAt).toLocaleDateString()}
-                        archived={mod.archived}
-                        onArchive={handleArchive}
-                        onDelete={handleDelete}
-                        onManage={handleManage}
-                        coverImage={mod.coverImage}
-                        isOwner={mod.isOwner}
-                      />
-                    ))}
-
-                  {viewMode === "active" && activeModules.length <= 3 && (
-                    <AddCard onClick={handleOpenModal} />
+                  {viewMode === "archived" && filteredArchived.length === 0 && (
+                    <div className={styles.emptyState}>
+                      <Archive size={48} />
+                      <h3>{searchQuery ? "No modules found" : "No Archived Modules"}</h3>
+                      <p>{searchQuery ? "Try a different search term" : "Archive modules to organize your workspace"}</p>
+                    </div>
                   )}
                 </div>
               </div>
-              {/* <StatsCards /> */}
-              {!(showAllArchived || showAllActive) && (
-                <div>
-                  <h2 className={styles.progressText}>Progress</h2>
-                  <StreakTracker />
-                </div>
-              )}
+              {/* <div className={styles.sidebar}>
+                <TopDiscussions />
+              </div> */}
             </div>
           )}
         </div>

@@ -1,24 +1,30 @@
 import { useState, useRef, useEffect } from "react";
 import styles from "./Header.module.css";
-import avatarImg from "../../assets/avatar.png";
-import logoImg from "../../assets/logo.png";
+import logoImg from "../../assets/logo2.png";
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import ProfileModal from "../ProfileModal/ProfileModal";
+import { Home, MessageSquare, User, LogOut, Menu, X, Search, XCircle } from "lucide-react";
 
-const Header = ({ onMenuClick, hasSidebar = false }) => {
-  const [open, setOpen] = useState(false);
+const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchChange = () => {}, hideSearch = false }) => {
   const [openProfile, setOpenProfile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const menuRef = useRef();
+  const searchRef = useRef();
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const { isLoggedIn } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setOpen(false);
+        setMobileMenuOpen(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setMobileSearchOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -27,7 +33,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
 
   const handleLogout = () => {
     dispatch(logoutUser());
-    setOpen(false);
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -55,55 +61,105 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
             </div>
           </div>
 
-          {/* {isLoggedIn && (
-        <ul className={styles.stats}>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🏅</span> 1,245
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>📈</span> Rank #42
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🔥</span> Streak Master
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🎯</span> Quick Learner
-            </a>
-          </li>
-        </ul>
-      )} */}
+          {isLoggedIn && (
+            <>
+              {!hideSearch && (
+                <>
+                  <div className={styles.searchContainer}>
+                    <input
+                      type="text"
+                      placeholder="Search modules..."
+                      className={styles.searchBar}
+                      value={searchQuery}
+                      onChange={(e) => onSearchChange(e.target.value)}
+                    />
+                    {searchQuery && (
+                      <button
+                        className={styles.clearSearchBtn}
+                        onClick={() => onSearchChange("")}
+                        title="Clear search"
+                        aria-label="Clear search"
+                      >
+                        <XCircle size={18} />
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    className={styles.mobileSearchBtn}
+                    onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                    title="Search"
+                  >
+                    <Search size={20} />
+                  </button>
+                </>
+              )}
+              <nav className={styles.navbar}>
+                <Link to="/" className={`${styles.navItem} ${location.pathname === "/" ? styles.active : ""}`}>
+                  <Home size={18} />
+                  <span>Dashboard</span>
+                </Link>
+                {/* <Link to="/discussions" className={`${styles.navItem} ${location.pathname === "/discussions" ? styles.active : ""}`}>
+                  <MessageSquare size={18} />
+                  <span>Discussions</span>
+                </Link> */}
+                <button
+                  className={styles.navItem}
+                  onClick={() => setOpenProfile(true)}
+                >
+                  <User size={18} />
+                  <span>My Account</span>
+                </button>
+                <button className={styles.navItem} onClick={handleLogout}>
+                  <LogOut size={18} />
+                  <span>Logout</span>
+                </button>
+              </nav>
+            </>
+          )}
 
-          <div className={styles.userSection} ref={menuRef}>
+          <div className={styles.mobileMenu} ref={menuRef}>
             {isLoggedIn ? (
               <>
-                <div
-                  className={styles.userMenu}
-                  onClick={() => setOpen((prev) => !prev)}
+                <button
+                  className={styles.mobileMenuBtn}
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 >
-                  <img
-                    src={avatarImg}
-                    alt="User Avatar"
-                    className={styles.avatar}
-                  />
-                </div>
+                  {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
 
-                {open && (
-                  <div className={styles.dropdown}>
-                    <button
-                      className={styles.menuItem}
-                      onClick={() => setOpenProfile(true)}
+                {mobileMenuOpen && (
+                  <div className={styles.mobileDropdown}>
+                    <Link
+                      to="/"
+                      className={styles.mobileNavItem}
+                      onClick={() => setMobileMenuOpen(false)}
                     >
+                      <Home size={18} />
+                      Dashboard
+                    </Link>
+                    {/* <Link
+                      to="/discussions"
+                      className={styles.mobileNavItem}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <MessageSquare size={18} />
+                      Discussions
+                    </Link> */}
+                    <button
+                      className={styles.mobileNavItem}
+                      onClick={() => {
+                        setOpenProfile(true);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <User size={18} />
                       My Account
                     </button>
-                    <hr className={styles.divider} />
-                    <button onClick={handleLogout} className={styles.logout}>
+                    <button
+                      className={styles.mobileNavItem}
+                      onClick={handleLogout}
+                    >
+                      <LogOut size={18} />
                       Logout
                     </button>
                   </div>
@@ -119,6 +175,32 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
           </div>
         </div>
       </header>
+      
+      {mobileSearchOpen && (
+        <div className={styles.mobileSearchOverlay} ref={searchRef}>
+          <div className={styles.mobileSearchContainer}>
+            <input
+              type="text"
+              placeholder="Search modules..."
+              className={styles.mobileSearchInput}
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              autoFocus
+            />
+            {searchQuery && (
+              <button
+                className={styles.clearSearchBtn}
+                onClick={() => onSearchChange("")}
+                title="Clear search"
+                aria-label="Clear search"
+              >
+                <XCircle size={18} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {openProfile && <ProfileModal onClose={() => setOpenProfile(false)} />}
     </>
   );

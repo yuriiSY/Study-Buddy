@@ -1,8 +1,28 @@
 .footer {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
-    background-color: #000;
-    color: #fefefe;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, var(--color-primary-darker) 0%, var(--color-primary) 100%);
+    color: #fff;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 2rem;
+}
+
+.footer p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #fff;
+}
+
+.footer a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.footer a:hover {
+    color: var(--color-secondary-light);
 }

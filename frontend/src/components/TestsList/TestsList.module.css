@@ -1,6 +1,6 @@
 .container {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
   width: 100%;
@@ -18,28 +18,41 @@
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .createBtn {
-  background: #4f46e5;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: white;
   border: none;
   padding: 8px 14px;
   font-size: 14px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 
 .createBtn:hover {
-  background: #1a205e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  .createBtn {
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.4);
+  }
+
+  .createBtn:hover {
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.5);
+  }
 }
 
 .empty {
   padding: 18px;
   text-align: center;
-  color: #6b7280;
+  color: var(--text-tertiary);
   font-size: 14px;
 }
 
@@ -52,50 +65,73 @@
 .testCard {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 14px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .testCard:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+  background: var(--bg-hover);
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
 }
 
 .testInfo {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .testName {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .testDesc {
   margin: 4px 0 0;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--text-tertiary);
 }
 
 .loading {
   text-align: center;
   padding: 20px;
-  color: #6b7280;
+  color: var(--text-tertiary);
   font-size: 14px;
 }
 
 .takeTestBtn {
-  background: #4f46e5;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: white;
   border: none;
   padding: 8px 14px;
   font-size: 14px;
   border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.takeTestBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  .takeTestBtn {
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.4);
+  }
+
+  .takeTestBtn:hover {
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.5);
+  }
 }

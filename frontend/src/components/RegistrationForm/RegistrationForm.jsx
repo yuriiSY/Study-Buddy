@@ -12,7 +12,7 @@ import schema from "../../schemas/validationRegistrSchemas";
 import styles from "./RegistrationForm.module.css";
 import { ClipLoader } from "react-spinners";
 
-const RegistrationForm = ({ onSubmit, loading }) => {
+const RegistrationForm = ({ onSubmit, loading, error }) => {
   const {
     register,
     handleSubmit,
@@ -95,7 +95,9 @@ const RegistrationForm = ({ onSubmit, loading }) => {
         )}
       </div>
 
-      <button className={styles.button} type="submit">
+      {error && <p className={styles.error}>{error}</p>}
+
+      <button className={styles.button} type="submit" disabled={loading}>
         {loading ? <ClipLoader size={20} color="#fff" /> : "Register"}
       </button>
     </form>
