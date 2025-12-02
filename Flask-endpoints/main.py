@@ -407,7 +407,8 @@ def convert_image_or_text_to_pdf(file_stream, filename):
         except Exception as e:
             return None, f"Text → PDF failed: {e}"
 
-    return None, "Unsupported file type for conversion to PDF"def process_file_content(file, filename):
+    return None, "Unsupported file type for conversion to PDF"
+def process_file_content(file, filename):
     """
     Process uploaded file and return:
     - text content
