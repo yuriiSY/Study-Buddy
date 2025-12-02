@@ -6,11 +6,12 @@ import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
 import { Link } from "react-router-dom";
 import ProfileModal from "../ProfileModal/ProfileModal";
+import ThemeToggle from "../ThemeToggle";
 
 const Header = ({ onMenuClick, hasSidebar = false }) => {
   const [open, setOpen] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-  const menuRef = useRef();
+  const menuRef = useRef(null);
   const dispatch = useDispatch();
 
   const { isLoggedIn } = useSelector((state) => state.auth);
@@ -21,6 +22,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
         setOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -40,50 +42,34 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
                 ☰
               </button>
             )}
+
             <div className={styles.logoSection}>
               <Link to="/" className={styles.logoLink}>
-                <img
-                  src={logoImg}
-                  alt="Study Buddy Logo"
-                  className={styles.logo}
-                />
+                <div className={styles.logoTile}>
+                  <img
+                    src={logoImg}
+                    alt="Study Buddy Logo"
+                    className={styles.logo}
+                  />
+                </div>
                 <div>
                   <h1 className={styles.title}>Study Buddy</h1>
-                  <p className={styles.subtitle}>Your smart learning partner</p>
+                  <p className={styles.subtitle}>
+                    Your smart learning partner
+                  </p>
                 </div>
               </Link>
             </div>
           </div>
 
-          {/* {isLoggedIn && (
-        <ul className={styles.stats}>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🏅</span> 1,245
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>📈</span> Rank #42
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🔥</span> Streak Master
-            </a>
-          </li>
-          <li>
-            <a className={styles.statLink} href="#">
-              <span>🎯</span> Quick Learner
-            </a>
-          </li>
-        </ul>
-      )} */}
-
           <div className={styles.userSection} ref={menuRef}>
+            {/* Theme toggle beside the account button */}
+            <ThemeToggle />
+
             {isLoggedIn ? (
               <>
-                <div
+                <button
+                  type="button"
                   className={styles.userMenu}
                   onClick={() => setOpen((prev) => !prev)}
                 >
@@ -92,13 +78,17 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
                     alt="User Avatar"
                     className={styles.avatar}
                   />
-                </div>
+                  <span className={styles.userMenuLabel}>Account</span>
+                </button>
 
                 {open && (
                   <div className={styles.dropdown}>
                     <button
                       className={styles.menuItem}
-                      onClick={() => setOpenProfile(true)}
+                      onClick={() => {
+                        setOpen(false);
+                        setOpenProfile(true);
+                      }}
                     >
                       My Account
                     </button>
@@ -119,6 +109,7 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
           </div>
         </div>
       </header>
+
       {openProfile && <ProfileModal onClose={() => setOpenProfile(false)} />}
     </>
   );

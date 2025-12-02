@@ -41,7 +41,7 @@
   height: 38px;
   border-radius: 50%;
   background: #1f2937;
-  color: #fff;
+  color: var(--sb-color-text);
   font-weight: bold;
   display: flex;
   align-items: center;

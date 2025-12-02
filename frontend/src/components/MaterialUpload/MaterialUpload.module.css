@@ -38,7 +38,7 @@
 .uploadBtn {
   background: #28324e;
   width: 100%;
-  color: white;
+  color: var(--sb-color-text);
   padding: 10px 16px;
   border: none;
   border-radius: 6px;

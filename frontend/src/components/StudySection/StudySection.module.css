@@ -45,7 +45,7 @@
 
 .button {
   background-color: #4a56e2;
-  color: white;
+  color: var(--sb-color-text);
   font-weight: 600;
   border: none;
   border-radius: 25px;

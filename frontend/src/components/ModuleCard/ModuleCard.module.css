@@ -5,7 +5,8 @@
   min-height: 280px;
   border-radius: 8px;
   overflow: hidden;
-  background-color: #fff;
+  background-color: var(--sb-color-bg-soft);
+  box-shadow: var(--sb-shadow-soft);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -13,7 +14,7 @@
   position: relative;
   height: 200px;
   background-color: #656596;
-  color: white;
+  color: var(--sb-color-text);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -54,29 +55,25 @@
   background: rgba(0, 0, 0, 0.5);
   padding: 3px 8px;
   border-radius: 6px;
-  color: white;
+  color: var(--sb-color-text);
 }
 
-/* --- WHITE BOTTOM SECTION --- */
-/* .cardFooter {
-  background: white;
-  padding: 15px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-} */
+.cardFooter {
+  background: linear-gradient(135deg, var(--sb-color-primary), #4f46e5);
+  color: var(--sb-color-text);  
+}
 
 .title {
   font-size: 28px;
   font-weight: 700;
-  color: #fff;
+  color: var(--sb-color-text);
   display: block;
 }
 
 /* --- BUTTON --- */
 .learnButton {
   background-color: #505078;
-  color: #ffffff;
+  color: var(--sb-color-text);
   width: 100%;
   border: none;
   border-radius: 12px;
@@ -112,7 +109,7 @@
 .archiveButton svg,
 .deleteButton svg,
 .manageButton svg {
-  color: #ffffff;
+  color: var(--sb-color-text);
 }
 .archiveButton:hover svg {
   color: #ec9a2b;
@@ -124,11 +121,6 @@
   color: #d1d1f0;
 }
 
-.cardFooter {
-  background: #080e4b;
-  padding: 25px;
-}
-
 .playButton {
   position: absolute;
   bottom: -30px;
@@ -137,13 +129,13 @@
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background-color: #080e4b;
-  color: white;
+  background: var(--sb-color-primary);
+  color: var(--sb-color-text);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--sb-shadow-strong);
   cursor: pointer;
   transition: all 0.25s ease;
   z-index: 3;
@@ -165,7 +157,7 @@
 }
 
 .leaveButton {
-  color: white;
+  color: var(--sb-color-text);
 }
 
 .leaveButton:hover {

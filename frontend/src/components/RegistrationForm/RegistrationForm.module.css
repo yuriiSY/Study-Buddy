@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  background-color: #ffffff;
+  background-color: var(--sb-color-text);
   border-radius: 1rem;
 }
 
@@ -32,14 +32,14 @@
   font-size: 0.95rem;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
-  background-color: #f9fafb;
+  background-color: var(--sb-color-text);
   transition: all 0.2s ease;
 }
 
 .input:focus {
   outline: none;
   border-color: #4f46e5;
-  background-color: #ffffff;
+  background-color: var(--sb-color-text);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
@@ -78,7 +78,7 @@
 
 .button {
   background-color: #1f2937;
-  color: #fff;
+  color: var(--sb-color-text);
   padding: 0.75rem;
   border: none;
   border-radius: 0.5rem;

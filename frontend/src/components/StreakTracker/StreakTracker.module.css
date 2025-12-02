@@ -1,11 +1,14 @@
 .wrapper {
   display: flex;
   border-radius: 16px;
-  border: 1px solid #eee;
   gap: 20px;
-  background: #080e4b;
+  background: var(--sb-color-bg-soft);
+  border: 1px solid var(--sb-color-border-subtle);
+  box-shadow: var(--sb-shadow-soft);
   max-width: 980px;
 }
+
+/* Week row + days */
 
 .weekRow {
   display: flex;
@@ -19,7 +22,7 @@
 }
 
 .dayLabel {
-  color: #656596;
+  color: var(--sb-color-text-soft);
   font-weight: 600;
   margin-bottom: 6px;
   display: block;
@@ -30,81 +33,102 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: #d3d3d3;
-  transition: background 0.25s ease;
+  background: var(--sb-color-bg);
+  border: 2px solid var(--sb-color-border-subtle);
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease;
 }
 
 .circleActive {
-  background: #4caf50;
+  background: var(--sb-color-accent);
+  border-color: var(--sb-color-accent);
 }
+
+/* Text + CTA button */
 
 .description {
   font-size: 15px;
   margin-bottom: 20px;
-  color: #555;
+  color: var(--sb-color-text-soft);
   line-height: 1.4;
 }
 
 .button {
-  background: #656596;
-  color: #fff;
+  background: var(--sb-color-primary);
+  color: var(--sb-color-text);
   padding: 12px 18px;
   border-radius: 999px;
   font-weight: 600;
-  border: 2px solid #24243b;
+  border: 2px solid var(--sb-color-primary);
   margin-bottom: 32px;
   width: 100%;
   font-size: 16px;
-  transition: opacity 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform var(--sb-transition-med),
+    box-shadow var(--sb-transition-med);
+  box-shadow: var(--sb-shadow-soft);
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--sb-shadow-strong);
 }
 
 .buttonDisabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
+/* Left streak box */
+
 .streakBox {
-  text-align: center;
-  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #080e4b;
   padding-right: 24px;
+  background-color: var(--sb-color-bg-soft);
 }
 
 .streakNumber {
   font-size: 64px;
   margin: 0;
-  color: #fff;
+  color: var(--sb-color-text);
   font-weight: 700;
 }
 
 .streakLabel {
   font-size: 18px;
-  color: #fff;
+  color: var(--sb-color-text-muted);
 }
 
+/* Middle tracker area */
+
 .trackerBox {
-  border-right: #eee 2px solid;
-  border-left: #eee 2px solid;
-  background-color: #080e4b;
+  border-right: 2px solid var(--sb-color-border-subtle);
+  border-left: 2px solid var(--sb-color-border-subtle);
+  background-color: var(--sb-color-bg-soft);
   padding: 24px;
 }
+
+/* Motivation message */
 
 .motivationBox {
   margin-top: 16px;
   padding: 14px 18px;
-  background: #f5f7ff;
+  background: var(--sb-color-primary-soft);
   border-radius: 10px;
-  border: 1px solid #e2e6ff;
+  border: 1px solid var(--sb-color-primary);
 }
 
 .motivationText {
   font-size: 1rem;
   font-weight: 500;
-  color: #656596;
+  color: var(--sb-color-primary);
   text-align: center;
   line-height: 1.4;
 }

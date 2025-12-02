@@ -1,6 +1,6 @@
 .container {
   max-width: 420px;
-  background-color: #ffffff;
+  background-color: var(--sb-color-text);
   border-radius: 16px;
   padding: 24px;
   margin: 0 auto;
@@ -91,7 +91,7 @@
 }
 
 .grayTag {
-  background-color: #f9fafb;
+  background-color: var(--sb-color-text);
   color: #4b5563;
   border-color: #e5e7eb;
 }
@@ -99,7 +99,7 @@
 .joinBtn {
   width: 100%;
   background-color: #314158;
-  color: #ffffff;
+  color: var(--sb-color-text);
   font-weight: 500;
   font-size: 15px;
   border: none;

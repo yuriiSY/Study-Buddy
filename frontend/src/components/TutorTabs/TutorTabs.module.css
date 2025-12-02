@@ -70,7 +70,7 @@
   border-radius: 8px;
   cursor: pointer;
   background: #4f46e5;
-  color: white;
+  color: var(--sb-color-text);
 }
 
 .editBtn:hover,

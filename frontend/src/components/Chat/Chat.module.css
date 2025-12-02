@@ -86,7 +86,7 @@
   margin-left: 8px;
   padding: 10px 16px;
   background: #4b5cff;
-  color: white;
+  color: var(--sb-color-text);
   border: none;
   border-radius: 10px;
   cursor: pointer;

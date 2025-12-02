@@ -15,13 +15,13 @@
 .headerSection h2 {
   font-size: 1.4rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--sb-color-text);
   margin: 0;
 }
 
 .viewAllBtn {
   background: none;
-  color: #fff;
+  color: var(--sb-color-text);
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
@@ -61,41 +61,63 @@
   }
 }
 
+/* Tabs container under "Your Study Modules" */
 .toggleButtons {
-  display: flex;
-  gap: 10px;
+  display: inline-flex;
+  border-bottom: 1px solid var(--sb-color-border-subtle);
+  margin-top: 1.5rem;
+  gap: 0;
 }
 
-.toggleButtons button {
-  padding: 8px 16px;
-  border: 1px solid #080e4b;
-  background: #f4f4f4;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-
-.toggleButtons button:hover {
-  background: #e9e9e9;
-}
-
-.activeBtn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border-color: #656596;
-  background: transparent !important;
-  border: 2px solid #fff !important;
-  color: #fff;
-}
-
+/* Base tab styles (both Current + Archive) */
+.activeBtn,
 .inactiveBtn {
-  display: flex;
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0.75rem 1.5rem;
+
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: transparent !important;
-  border: 2px solid #080e4b !important;
-  color: #080e4b;
+  gap: 0.5rem;
+
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  border-bottom: 3px solid transparent;
+  color: var(--sb-color-text-soft);
+
+  transition:
+    color var(--sb-transition-fast),
+    background-color var(--sb-transition-fast),
+    border-color var(--sb-transition-fast),
+    transform var(--sb-transition-fast);
+}
+
+/* Icons inside the tabs */
+.activeBtn svg,
+.inactiveBtn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Hover state for inactive tab */
+.inactiveBtn:hover {
+  color: var(--sb-color-text);
+  background-color: var(--sb-color-primary-soft);
+}
+
+/* Active tab – coloured underline + accent text */
+.activeBtn {
+  color: var(--sb-color-primary);
+  border-bottom-color: var(--sb-color-primary);
+  background-color: var(--sb-color-bg-soft);
+}
+
+/* Small lift on hover for active tab (nice micro-interaction) */
+.activeBtn:hover {
+  transform: translateY(-1px);
 }
 
 .searchInput {
@@ -110,5 +132,5 @@
 
 .progressText {
   text-align: left;
-  color: #fff;
+  color: var(--sb-color-text);
 }

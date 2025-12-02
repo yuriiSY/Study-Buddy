@@ -47,7 +47,7 @@ export const StudySpacePage = () => {
     }
   }, [selectedFeature, selectedFile]);
 
-  const fetchFiles = async () => {
+  const fetchFiles = React.useCallback(async () => {
     try {
       const res = await api.get(`/files/modules/${moduleId}/files`);
       const backendFiles = res.data.files || [];
@@ -84,11 +84,11 @@ export const StudySpacePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [moduleId]);
 
   useEffect(() => {
     fetchFiles();
-  }, [moduleId]);
+  }, [moduleId, fetchFiles]);
 
   useEffect(() => {
     if (prevModuleId.current !== moduleId) {

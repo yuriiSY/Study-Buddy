@@ -3,7 +3,7 @@
   bottom: 0;
   top: auto !important;
   width: 100%;
-  background-color: white;
+  background-color: var(--sb-color-text);
   border-top: 1px solid #ddd;
   z-index: 10;
 }

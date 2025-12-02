@@ -23,7 +23,7 @@
 
 .createBtn {
   background: #4f46e5;
-  color: white;
+  color: var(--sb-color-text);
   border: none;
   padding: 8px 14px;
   font-size: 14px;
@@ -92,7 +92,7 @@
 
 .takeTestBtn {
   background: #4f46e5;
-  color: white;
+  color: var(--sb-color-text);
   border: none;
   padding: 8px 14px;
   font-size: 14px;

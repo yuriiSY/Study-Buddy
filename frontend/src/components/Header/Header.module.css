@@ -1,204 +1,338 @@
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #080e4b;
-  color: #fff;
-  padding: 1rem 2rem;
-  height: 96px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  z-index: 999;
-  border-bottom: 1px solid #fff;
-}
+/* =========================================================
+   HEADER LAYOUT
+   ========================================================= */
 
-.container {
-  display: flex;
-  justify-content: space-between;
-  max-width: 1791px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-.left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.menuBtn {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.8rem;
-  color: #fff;
-  cursor: pointer;
-  padding: 0 1rem 0 0;
-}
-
-.logoSection {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logoLink {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: inherit;
-}
-
-.logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background-color: #1a1a1a;
-  padding: 0.5rem;
-}
-
-.title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.subtitle {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #ddd;
-}
-
-.stats {
-  display: flex;
-  gap: 1rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.stats li {
-  background-color: #fff;
-  color: #333;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.statLink {
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-}
-
-.userSection {
-  position: relative;
-}
-
-.userMenu {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  gap: 6px;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid white;
-}
-
-.dropdown {
-  position: absolute;
-  top: 55px;
-  right: 0;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  width: 180px;
-  padding: 10px 0;
-  z-index: 10;
-  animation: fadeIn 0.2s ease;
-}
-
-.menuItem {
-  width: 100%;
-  background: none;
-  border: none;
-  color: #333;
-  font-weight: 600;
-  text-align: left;
-  padding: 10px 16px;
-  cursor: pointer;
-}
-
-.menuItem:hover {
-  background: #f3f4f6;
-}
-
-.divider {
-  margin: 8px 0;
-  border: none;
-  border-top: 1px solid #eee;
-}
-
-.logout {
-  width: 100%;
-  background: none;
-  border: none;
-  color: #e53e3e;
-  font-weight: 600;
-  text-align: left;
-  padding: 10px 16px;
-  cursor: pointer;
-}
-
-.logout:hover {
-  background: #ffecec;
-}
-
-.authLinks {
-  display: flex;
-  gap: 8px;
-}
-
-.loginLink {
-  text-decoration: none;
-  color: #fff;
-  background-color: #4a4a8c;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
+   .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--sb-color-bg-soft);
+    color: var(--sb-color-text);
+    padding: 1rem 2rem;
+    height: 96px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.18);
+    z-index: 999;
+    border-bottom: 1px solid var(--sb-color-border-subtle);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  /* Inner container to center content and constrain width */
+  .container {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1791px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
   }
-}
-
-@media (max-width: 1023px) {
-  .stats {
-    display: none;
+  
+  /* Left-hand side: menu button + logo */
+  .left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
-
+  
+  /* Mobile sidebar menu button (hidden on desktop) */
   .menuBtn {
-    display: block;
-  }
-
-  .logoSection {
     display: none;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: inherit;
+    cursor: pointer;
+    padding: 0 1rem 0 0;
   }
-}
+  
+  /* =========================================================
+     LOGO AREA
+     ========================================================= */
+  
+  .logoSection {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  /* Link wrapping the logo + product name */
+  .logoLink {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  /* Tile behind the logo image (size, radius, base styles) */
+  .logoTile {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    padding: 8px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    /* Sensible dark default if no data-theme attribute is present */
+    background-color: #0b1120;
+    border: 1px solid rgba(148, 163, 184, 0.6);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.7);
+  
+    transition:
+      background-color var(--sb-transition-med),
+      border-color var(--sb-transition-med),
+      box-shadow var(--sb-transition-med);
+  }
+  
+  /* The logo image itself */
+  .logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: filter var(--sb-transition-med);
+  }
+  
+  /* ---------------- DARK THEME ---------------- */
+  /* Dark tile, light logo lines */
+  [data-theme="dark"] .logoTile {
+    background-color: #020617; /* dark slate/navy tile */
+    border-color: rgba(148, 163, 184, 0.6);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.9);
+  }
+  
+  [data-theme="dark"] .logo {
+    /* Invert the black line art so it becomes light on dark */
+    filter: invert(1) brightness(1.05) contrast(1.05);
+  }
+  
+  /* ---------------- LIGHT THEME ---------------- */
+  /* Soft indigo tile, normal logo */
+  [data-theme="light"] .logoTile {
+    background-color: #eef2ff;
+    border-color: rgba(148, 163, 184, 0.4);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
+  }
+  
+  [data-theme="light"] .logo {
+    filter: none;
+  }
+  
+  /* ---------------- SEPIA THEME ---------------- */
+  /* Warm paper tile to match sepia palette */
+  [data-theme="sepia"] .logoTile {
+    background-color: #f3e4c9;
+    border-color: rgba(133, 100, 71, 0.5);
+    box-shadow: 0 10px 24px rgba(87, 65, 40, 0.45);
+  }
+  
+  [data-theme="sepia"] .logo {
+    filter: none;
+  }
+  
+  /* =========================================================
+     LOGO TEXT
+     ========================================================= */
+  
+  .title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  
+  .subtitle {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--sb-color-text-soft);
+  }
+  
+  /* =========================================================
+     (OPTIONAL) HEADER STATS ROW
+     ========================================================= */
+  
+  .stats {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .stats li {
+    background-color: var(--sb-color-bg);
+    color: var(--sb-color-text);
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.18);
+  }
+  
+  .statLink {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+  
+  /* =========================================================
+     USER SECTION (THEME TOGGLE + ACCOUNT)
+     ========================================================= */
+  
+  .userSection {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  /* Account pill button */
+  .userMenu {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background: var(--sb-color-primary-soft);
+    border: 1px solid var(--sb-color-primary);
+    cursor: pointer;
+    transition:
+      background-color var(--sb-transition-fast),
+      border-color var(--sb-transition-fast),
+      box-shadow var(--sb-transition-fast),
+      transform var(--sb-transition-fast);
+  }
+  
+  .userMenu:hover {
+    background: var(--sb-color-primary);
+    border-color: var(--sb-color-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.35);
+  }
+  
+  .userMenu:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+  
+  /* "Account" label text inside the pill */
+  .userMenuLabel {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--sb-color-text);
+  }
+  
+  /* Avatar image inside the pill */
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #f9fafb;
+  }
+  
+  /* =========================================================
+     USER DROPDOWN
+     ========================================================= */
+  
+  .dropdown {
+    position: absolute;
+    top: 55px;
+    right: 0;
+    background: var(--sb-color-bg-soft);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+    width: 180px;
+    padding: 10px 0;
+    z-index: 10;
+    border: 1px solid var(--sb-color-border-subtle);
+    animation: fadeIn 0.2s ease;
+  }
+  
+  .menuItem {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--sb-color-text);
+    font-weight: 500;
+    text-align: left;
+    padding: 10px 16px;
+    cursor: pointer;
+  }
+  
+  .menuItem:hover {
+    background: var(--sb-color-primary-soft);
+  }
+  
+  .divider {
+    margin: 8px 0;
+    border: none;
+    border-top: 1px solid var(--sb-color-border-subtle);
+  }
+  
+  .logout {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 16px;
+    cursor: pointer;
+  }
+  
+  .logout:hover {
+    background: #fee2e2;
+  }
+  
+  /* =========================================================
+     AUTH LINKS (WHEN LOGGED OUT)
+     ========================================================= */
+  
+  .authLinks {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .loginLink {
+    text-decoration: none;
+    color: var(--sb-color-text);
+    background-color: var(--sb-color-primary);
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.18);
+  }
+  
+  .loginLink:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
+  }
+  
+  /* =========================================================
+     ANIMATIONS & RESPONSIVE
+     ========================================================= */
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @media (max-width: 1023px) {
+    .stats {
+      display: none;
+    }
+  
+    .menuBtn {
+      display: block;
+    }
+  
+    .logoSection {
+      display: none;
+    }
+  }  

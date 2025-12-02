@@ -3,12 +3,12 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f9fafb;
+  background-color: var(--sb-color-text);
   padding: 1rem;
 }
 
 .card {
-  background-color: #fff;
+  background-color: var(--sb-color-text);
   border-radius: 1rem;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   width: 100%;
@@ -34,7 +34,7 @@
 
 .icon {
   font-size: 1.8rem;
-  color: #ffffff;
+  color: var(--sb-color-text);
 }
 
 .title {

@@ -23,7 +23,7 @@ export const HomePage = () => {
     title: "",
   });
   const [showAllActive, setShowAllActive] = useState(false);
-  const [showAllArchived, setShowAllArchived] = useState(false);
+  const [showAllArchived] = useState(false);
   const [viewMode, setViewMode] = useState("active");
   const [searchQuery, setSearchQuery] = useState("");
 

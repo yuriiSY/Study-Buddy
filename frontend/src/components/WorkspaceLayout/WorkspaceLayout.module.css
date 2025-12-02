@@ -89,7 +89,7 @@
     background: #1a205e;
     transition: transform 0.3s ease;
     z-index: 30;
-    color: #fff;
+    color: var(--sb-color-text);
     box-shadow: none;
   }
 
