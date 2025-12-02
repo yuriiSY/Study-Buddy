@@ -8,7 +8,8 @@ const Chat = ({
   externalId, 
   onAddNote,
   onGenerateFlashcards,
-  onGenerateQuiz 
+  onGenerateQuiz,
+  testsExist
 }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -161,15 +162,17 @@ const Chat = ({
             <BookMarked size={16} />
             Generate Flashcards
           </button>
-          <button
-            className={styles.actionBtn}
-            onClick={onGenerateQuiz}
-            disabled={!externalId}
-            title={!externalId ? "Select a file first" : "Generate quiz"}
-          >
-            <Lightbulb size={16} />
-            Generate Quiz
-          </button>
+          {!testsExist && (
+            <button
+              className={styles.actionBtn}
+              onClick={onGenerateQuiz}
+              disabled={!externalId}
+              title={!externalId ? "Select a file first" : "Generate quiz"}
+            >
+              <Lightbulb size={16} />
+              Generate Quiz
+            </button>
+          )}
         </div>
       </div>
     </div>
