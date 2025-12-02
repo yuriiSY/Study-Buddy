@@ -534,6 +534,7 @@ def convert_image_or_text_to_pdf(file_stream, filename):
     print(f"    ⚠️ Unsupported file type for conversion: {ext}")
     return None, f"Unsupported file type for conversion to PDF: {ext}"
 
+
 def process_file_content(file, filename):
     """
     Process uploaded file and return:

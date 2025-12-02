@@ -18,3 +18,18 @@
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
 }
+
+@media (max-width: 768px) {
+  .addCard {
+    min-height: 240px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .addCard {
+    min-height: 200px;
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+}

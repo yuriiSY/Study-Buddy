@@ -76,3 +76,86 @@
   position: relative;
   z-index: 1;
 }
+
+@media (max-width: 1024px) {
+  .container {
+    gap: 1.25rem;
+  }
+
+  .card {
+    padding: 1.75rem 1.25rem;
+    min-height: 180px;
+  }
+
+  .value {
+    font-size: 2rem;
+  }
+
+  .label {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .card {
+    min-width: calc(50% - 0.5rem);
+    padding: 1.5rem 1rem;
+    min-height: 160px;
+  }
+
+  .icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .value {
+    font-size: 1.75rem;
+  }
+
+  .label {
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+  }
+
+  .subtext {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    gap: 0.75rem;
+    flex-direction: column;
+  }
+
+  .card {
+    width: 100%;
+    min-width: auto;
+    padding: 1.25rem 1rem;
+    min-height: 140px;
+  }
+
+  .icon {
+    font-size: 1.75rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .value {
+    font-size: 1.5rem;
+  }
+
+  .label {
+    font-size: 0.85rem;
+    margin-top: 0.15rem;
+  }
+
+  .subtext {
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+  }
+}

@@ -221,23 +221,50 @@
 }
 
 @media (max-width: 480px) {
+  .timerContainer {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
   .timerToggle {
     padding: 6px 10px;
     font-size: 0.8rem;
+    margin-top: 8px;
   }
 
   .timerPanel {
-    width: 240px;
+    position: fixed;
+    width: calc(100% - 32px);
+    max-width: 100%;
     padding: 12px;
-    right: 0;
+    right: 16px;
+    left: 16px;
+    top: auto;
+    bottom: auto;
+    max-height: 60vh;
+    overflow-y: auto;
+    z-index: 1001;
   }
 
   .timerDisplay {
     font-size: 1.8rem;
   }
 
+  .timerCircle {
+    padding: 16px;
+  }
+
   .btn {
     padding: 8px 10px;
+    font-size: 0.8rem;
+    width: 100%;
+  }
+
+  .timerHeader h3 {
+    font-size: 1rem;
+  }
+
+  .stats p {
     font-size: 0.8rem;
   }
 }

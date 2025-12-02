@@ -169,3 +169,96 @@ h2 {
     transform: translateY(0);
   }
 }
+
+@media (max-width: 768px) {
+  .modal {
+    width: 90%;
+    max-width: 450px;
+    padding: 2rem 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .form {
+    gap: 1rem;
+  }
+
+  .form label {
+    font-size: 13px;
+  }
+
+  .modal input,
+  .modal select {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.95rem;
+    border-radius: 8px;
+  }
+
+  .cancel,
+  .save {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    width: 95%;
+    max-width: 100%;
+    padding: 1.5rem 1.25rem;
+    border-radius: 12px;
+  }
+
+  h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+  }
+
+  .form {
+    gap: 0.9rem;
+  }
+
+  .form label {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .modal input,
+  .modal select {
+    padding: 0.7rem 0.8rem;
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+
+  .modal input::placeholder,
+  .modal select::placeholder {
+    font-size: 0.85rem;
+  }
+
+  .actions {
+    gap: 6px;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    flex-direction: column;
+  }
+
+  .cancel,
+  .save {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .closeIcon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+  }
+}
