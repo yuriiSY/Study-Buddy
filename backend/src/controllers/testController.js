@@ -76,12 +76,13 @@ export const deleteExistingTest = async (req, res) => {
 export const getTestsForFile = async (req, res) => {
   try {
     const { fileId } = req.params;
+    const userId = req.user?.id;
 
     if (!fileId) {
       return res.status(400).json({ message: "fileId is required" });
     }
 
-    const tests = await getTestsByFileId(fileId);
+    const tests = await getTestsByFileId(fileId, userId);
     return res.json(tests);
   } catch (error) {
     console.error("Error loading tests for file:", error);

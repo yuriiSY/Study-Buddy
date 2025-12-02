@@ -27,6 +27,7 @@ const TutorTabs = ({
   const [flashcardsError, setFlashcardsError] = useState(null);
   const [showFlashcardsTab, setShowFlashcardsTab] = useState(false);
   const [showQuizTab, setShowQuizTab] = useState(false);
+  const [testsExist, setTestsExist] = useState(false);
   const [selectedTest, setSelectedTest] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -53,6 +54,24 @@ const TutorTabs = ({
 
     loadNotes();
   }, [externalId, userId, fileid]);
+
+  useEffect(() => {
+    if (!externalId) return;
+
+    const loadTests = async () => {
+      try {
+        const res = await api.get(`/test/file/${externalId}`);
+        const tests = res.data || [];
+        setTestsExist(tests.length > 0);
+        setShowQuizTab(tests.length > 0);
+      } catch (err) {
+        console.error("Failed to load tests:", err);
+        setTestsExist(false);
+      }
+    };
+
+    loadTests();
+  }, [externalId]);
 
   const handleSaveNotes = async () => {
     console.log("Saving notes for fileId:", fileid, "notes:", notes);
@@ -204,6 +223,7 @@ const TutorTabs = ({
             onAddNote={handleAddNote}
             onGenerateFlashcards={loadFlashcards}
             onGenerateQuiz={handleGenerateQuiz}
+            testsExist={testsExist}
           />
         )}
 

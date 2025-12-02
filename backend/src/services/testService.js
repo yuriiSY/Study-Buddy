@@ -58,8 +58,8 @@ export const deleteTest = async (testId) => {
   });
 };
 
-export const getTestsByFileId = async (fileId) => {
-  return prisma.tests.findMany({
+export const getTestsByFileId = async (fileId, userId) => {
+  const tests = await prisma.tests.findMany({
     where: {
       file_ids: {
         has: fileId,
@@ -67,6 +67,26 @@ export const getTestsByFileId = async (fileId) => {
     },
     orderBy: { created_at: "desc" },
   });
+
+  if (!userId) return tests;
+
+  const scoresMap = await prisma.testScore.findMany({
+    where: {
+      userId,
+      testId: {
+        in: tests.map((t) => t.id),
+      },
+    },
+  });
+
+  const scoresById = Object.fromEntries(
+    scoresMap.map((s) => [s.testId, s.score])
+  );
+
+  return tests.map((test) => ({
+    ...test,
+    userScore: scoresById[test.id] || null,
+  }));
 };
 
 export const createTestFromMCQs = async ({
