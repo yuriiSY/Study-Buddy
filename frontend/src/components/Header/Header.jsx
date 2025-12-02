@@ -5,12 +5,44 @@ import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
 import { Link, useLocation } from "react-router-dom";
 import ProfileModal from "../ProfileModal/ProfileModal";
-import { Home, MessageSquare, User, LogOut, Menu, X, Search, XCircle } from "lucide-react";
+import {
+  Home,
+  // MessageSquare,
+  User,
+  LogOut,
+  Menu,
+  X,
+  Search,
+  XCircle,
+} from "lucide-react";
 
-const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchChange = () => {}, hideSearch = false }) => {
+const Header = ({
+  onMenuClick,
+  hasSidebar = false,
+  searchQuery = "",
+  onSearchChange = () => {},
+  hideSearch = false,
+}) => {
   const [openProfile, setOpenProfile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  // --- THEME STATE: "light" | "dark" | "sepia" ---
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") return "light";
+
+    const stored = window.localStorage.getItem("sb-theme");
+    if (stored === "light" || stored === "dark" || stored === "sepia") {
+      return stored;
+    }
+
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    return prefersDark ? "dark" : "light";
+  });
+
   const menuRef = useRef();
   const searchRef = useRef();
   const dispatch = useDispatch();
@@ -18,6 +50,14 @@ const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchCha
 
   const { isLoggedIn } = useSelector((state) => state.auth);
 
+  // Apply theme to <html data-theme="..."> and persist preference
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("sb-theme", theme);
+  }, [theme]);
+
+  // Close mobile menus/search when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -27,6 +67,7 @@ const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchCha
         setMobileSearchOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -46,6 +87,49 @@ const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchCha
                 ☰
               </button>
             )}
+
+            {/* === THEME TOGGLER (LEFT OF LOGO) ====================== */}
+            <div
+              className={styles.themeToggle}
+              role="group"
+              aria-label="Theme toggle"
+            >
+              <button
+                type="button"
+                className={`${styles.themeToggleButton} ${
+                  theme === "light" ? styles.themeToggleButtonActive : ""
+                }`}
+                onClick={() => setTheme("light")}
+                aria-pressed={theme === "light"}
+                title="Light mode"
+              >
+                ☀️
+              </button>
+              <button
+                type="button"
+                className={`${styles.themeToggleButton} ${
+                  theme === "sepia" ? styles.themeToggleButtonActive : ""
+                }`}
+                onClick={() => setTheme("sepia")}
+                aria-pressed={theme === "sepia"}
+                title="Sepia mode"
+              >
+                📖
+              </button>
+              <button
+                type="button"
+                className={`${styles.themeToggleButton} ${
+                  theme === "dark" ? styles.themeToggleButtonActive : ""
+                }`}
+                onClick={() => setTheme("dark")}
+                aria-pressed={theme === "dark"}
+                title="Dark mode"
+              >
+                🌙
+              </button>
+            </div>
+            {/* ======================================================= */}
+
             <div className={styles.logoSection}>
               <Link to="/" className={styles.logoLink}>
                 <img
@@ -94,11 +178,21 @@ const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchCha
                 </>
               )}
               <nav className={styles.navbar}>
-                <Link to="/" className={`${styles.navItem} ${location.pathname === "/" ? styles.active : ""}`}>
+                <Link
+                  to="/"
+                  className={`${styles.navItem} ${
+                    location.pathname === "/" ? styles.active : ""
+                  }`}
+                >
                   <Home size={18} />
                   <span>Dashboard</span>
                 </Link>
-                {/* <Link to="/discussions" className={`${styles.navItem} ${location.pathname === "/discussions" ? styles.active : ""}`}>
+                {/* <Link
+                  to="/discussions"
+                  className={`${styles.navItem} ${
+                    location.pathname === "/discussions" ? styles.active : ""
+                  }`}
+                >
                   <MessageSquare size={18} />
                   <span>Discussions</span>
                 </Link> */}
@@ -175,7 +269,7 @@ const Header = ({ onMenuClick, hasSidebar = false, searchQuery = "", onSearchCha
           </div>
         </div>
       </header>
-      
+
       {mobileSearchOpen && (
         <div className={styles.mobileSearchOverlay} ref={searchRef}>
           <div className={styles.mobileSearchContainer}>

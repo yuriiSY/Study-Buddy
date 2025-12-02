@@ -491,3 +491,62 @@
     font-size: 0.85rem;
   }
 }
+
+/* === THEME TOGGLE PILL (LEFT OF LOGO) ========================= */
+
+.themeToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 999px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  gap: 2px;
+}
+
+.themeToggleButton {
+  border: none;
+  background: transparent;
+  padding: 4px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.themeToggleButtonActive {
+  background-color: rgba(91, 158, 255, 0.12);
+  color: var(--color-primary);
+}
+
+.themeToggleButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+@media (max-width: 768px) {
+  .themeToggle {
+    padding: 1px;
+  }
+
+  .themeToggleButton {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .themeToggle {
+    padding: 1px;
+  }
+
+  .themeToggleButton {
+    padding: 2px 5px;
+    font-size: 0.7rem;
+  }
+}
