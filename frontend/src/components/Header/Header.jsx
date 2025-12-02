@@ -88,48 +88,6 @@ const Header = ({
               </button>
             )}
 
-            {/* === THEME TOGGLER (LEFT OF LOGO) ====================== */}
-            <div
-              className={styles.themeToggle}
-              role="group"
-              aria-label="Theme toggle"
-            >
-              <button
-                type="button"
-                className={`${styles.themeToggleButton} ${
-                  theme === "light" ? styles.themeToggleButtonActive : ""
-                }`}
-                onClick={() => setTheme("light")}
-                aria-pressed={theme === "light"}
-                title="Light mode"
-              >
-                ☀️
-              </button>
-              <button
-                type="button"
-                className={`${styles.themeToggleButton} ${
-                  theme === "sepia" ? styles.themeToggleButtonActive : ""
-                }`}
-                onClick={() => setTheme("sepia")}
-                aria-pressed={theme === "sepia"}
-                title="Sepia mode"
-              >
-                📖
-              </button>
-              <button
-                type="button"
-                className={`${styles.themeToggleButton} ${
-                  theme === "dark" ? styles.themeToggleButtonActive : ""
-                }`}
-                onClick={() => setTheme("dark")}
-                aria-pressed={theme === "dark"}
-                title="Dark mode"
-              >
-                🌙
-              </button>
-            </div>
-            {/* ======================================================= */}
-
             <div className={styles.logoSection}>
               <Link to="/" className={styles.logoLink}>
                 <img
@@ -210,6 +168,48 @@ const Header = ({
               </nav>
             </>
           )}
+
+          {/* === THEME TOGGLER (FAR RIGHT) ====================== */}
+          <div
+            className={styles.themeToggle}
+            role="group"
+            aria-label="Theme toggle"
+          >
+            <button
+              type="button"
+              className={`${styles.themeToggleButton} ${
+                theme === "light" ? styles.themeToggleButtonActive : ""
+              }`}
+              onClick={() => setTheme("light")}
+              aria-pressed={theme === "light"}
+              title="Light mode"
+            >
+              ☀️
+            </button>
+            <button
+              type="button"
+              className={`${styles.themeToggleButton} ${
+                theme === "sepia" ? styles.themeToggleButtonActive : ""
+              }`}
+              onClick={() => setTheme("sepia")}
+              aria-pressed={theme === "sepia"}
+              title="Sepia mode"
+            >
+              📖
+            </button>
+            <button
+              type="button"
+              className={`${styles.themeToggleButton} ${
+                theme === "dark" ? styles.themeToggleButtonActive : ""
+              }`}
+              onClick={() => setTheme("dark")}
+              aria-pressed={theme === "dark"}
+              title="Dark mode"
+            >
+              🌙
+            </button>
+          </div>
+          {/* ======================================================= */}
 
           <div className={styles.mobileMenu} ref={menuRef}>
             {isLoggedIn ? (

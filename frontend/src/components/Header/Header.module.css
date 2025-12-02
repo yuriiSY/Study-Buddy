@@ -492,9 +492,11 @@
   }
 }
 
-/* === THEME TOGGLE PILL (LEFT OF LOGO) ========================= */
+/* === THEME TOGGLE PILL (FAR RIGHT) ========================= */
 
 .themeToggle {
+  position: absolute;
+  right: 2rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -503,6 +505,7 @@
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   gap: 2px;
+  flex-shrink: 0;
 }
 
 .themeToggleButton {

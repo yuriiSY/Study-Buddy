@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./ModuleModal.module.css";
 import api from "../../api/axios";
 import apiPY from "../../api/axiosPython";
@@ -13,6 +14,7 @@ const ModuleModal = ({
   moduleId,
   mode = "create",
 }) => {
+  const navigate = useNavigate();
   const [moduleName, setModuleName] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -133,6 +135,13 @@ const ModuleModal = ({
       setSelectedImage(null);
       setLoadingStage("uploading");
       onClose();
+
+      // Navigate to the newly created module if in create mode
+      if (mode === "create" && createdModule) {
+        setTimeout(() => {
+          navigate(`/modules/${createdModule.id}`);
+        }, 500);
+      }
     } catch (err) {
       console.error("Upload failed:", err);
       console.error("Error details:", err.response?.data);

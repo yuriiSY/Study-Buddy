@@ -365,10 +365,23 @@ def convert_image_or_text_to_pdf(file_stream, filename):
     # IMAGE → PDF
     if ext in ["png", "jpg", "jpeg", "bmp", "gif"]:
         try:
+            file_stream.seek(0)  # Reset stream position
             image = Image.open(file_stream)
-            rgb_image = image.convert("RGB")
+            
+            # Convert to RGB if needed (GIF, PNG with transparency)
+            if image.mode in ('RGBA', 'LA', 'P'):
+                # Create white background
+                background = Image.new('RGB', image.size, (255, 255, 255))
+                if image.mode == 'RGBA':
+                    background.paste(image, mask=image.split()[-1])  # Use alpha channel as mask
+                else:
+                    background.paste(image)
+                image = background
+            elif image.mode != 'RGB':
+                image = image.convert("RGB")
+            
             pdf_out = io.BytesIO()
-            rgb_image.save(pdf_out, format="PDF")
+            image.save(pdf_out, format="PDF", quality=95)
             return pdf_out.getvalue(), None
         except Exception as e:
             return None, f"Image → PDF failed: {e}"
@@ -376,13 +389,14 @@ def convert_image_or_text_to_pdf(file_stream, filename):
     # TEXT → PDF
     if ext == "txt":
         try:
+            file_stream.seek(0)
             text = file_stream.read().decode("utf-8", errors="ignore")
             pdf_out = io.BytesIO()
             c = canvas.Canvas(pdf_out, pagesize=letter)
 
             y = 750
             for line in text.split("\n"):
-                c.drawString(30, y, line)
+                c.drawString(30, y, line[:100])  # Limit line length
                 y -= 15
                 if y < 40:
                     c.showPage()
@@ -393,9 +407,7 @@ def convert_image_or_text_to_pdf(file_stream, filename):
         except Exception as e:
             return None, f"Text → PDF failed: {e}"
 
-    return None, "Unsupported file type for conversion to PDF"
-
-def process_file_content(file, filename):
+    return None, "Unsupported file type for conversion to PDF"def process_file_content(file, filename):
     """
     Process uploaded file and return:
     - text content
@@ -406,6 +418,8 @@ def process_file_content(file, filename):
     file_extension = filename.lower().split('.')[-1] if '.' in filename else ''
     file_bytes = file.read()
     file_stream = io.BytesIO(file_bytes)
+    
+    print(f"PROCESSING FILE: {filename}, Type: {file_extension}")
     
     # ---------- Office files (convert to PDF first) ----------
     office_types = ['docx', 'pptx', 'xlsx', 'doc', 'ppt', 'xls']
@@ -418,21 +432,26 @@ def process_file_content(file, filename):
             try:
                 file_stream.seek(0)
                 if file_extension == 'docx' and DOCX_SUPPORT:
-                    return extract_text_from_docx(file_stream), f"Fallback text only. {error}", [], None
+                    text = extract_text_from_docx(file_stream)
+                    return text, f"Fallback text only. {error}", [], None
                 elif file_extension == 'pptx' and PPTX_SUPPORT:
-                    return extract_text_from_pptx(file_stream), f"Fallback text only. {error}", [], None
+                    text = extract_text_from_pptx(file_stream)
+                    return text, f"Fallback text only. {error}", [], None
                 elif file_extension == 'xlsx' and XLSX_SUPPORT:
-                    return extract_text_from_xlsx(file_stream), f"Fallback text only. {error}", [], None
+                    text = extract_text_from_xlsx(file_stream)
+                    return text, f"Fallback text only. {error}", [], None
                 else:
                     return None, f"No extraction fallback available. {error}", [], None
             except Exception as e:
                 return None, f"Fallback extraction failed: {e}", [], None
 
         # Success: extract text and images from PDF
+        print(f"Successfully converted to PDF, extracting text and images...")
         pdf_stream = io.BytesIO(pdf_data)
-        text = extract_text_from_pdf(io.BytesIO(pdf_data))
+        text = extract_text_from_pdf(pdf_stream)
         pdf_stream.seek(0)
-        images = extract_images_from_pdf(io.BytesIO(pdf_data))
+        images = extract_images_from_pdf(pdf_stream)
+        print(f"Extracted {len(text)} chars of text and {len(images)} images from {file_extension}")
         return text, None, images, pdf_data
 
     # ---------- PDF files ----------
@@ -440,30 +459,63 @@ def process_file_content(file, filename):
         if not PDF_SUPPORT:
             return None, "PDF support not available. Install pdfplumber.", [], None
         
+        print(f"Processing PDF file directly...")
         pdf_bytes = file_bytes
-        text = extract_text_from_pdf(io.BytesIO(pdf_bytes))
-        images = extract_images_from_pdf(io.BytesIO(pdf_bytes))
+        pdf_stream = io.BytesIO(pdf_bytes)
+        text = extract_text_from_pdf(pdf_stream)
+        pdf_stream.seek(0)
+        images = extract_images_from_pdf(pdf_stream)
+        print(f"Extracted {len(text)} chars of text and {len(images)} images from PDF")
         return text, None, images, pdf_bytes
 
-    # ---------- Image or text files → PDF ----------
-    elif file_extension in ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'txt']:
-        pdf_data, error = convert_image_or_text_to_pdf(io.BytesIO(file_bytes), filename)
-        if error:
-            return None, error, [], None
-        
-        # For images, we usually don’t extract again
-        text = extract_text_from_pdf(io.BytesIO(pdf_data)) if file_extension == 'txt' else ""
-        images = []  # images are embedded in PDF
-        return text, None, images, pdf_data
+    # ---------- IMAGE files (JPG, PNG, GIF, etc.) ----------
+    elif file_extension in ['png', 'jpg', 'jpeg', 'bmp', 'gif']:
+        print(f"Processing image file: {filename}")
+        try:
+            # Open the image
+            file_stream.seek(0)
+            image = Image.open(file_stream)
+            images = [image]
+            
+            # Convert to PDF for storage
+            file_stream.seek(0)
+            pdf_data, error = convert_image_or_text_to_pdf(file_stream, filename)
+            if error:
+                return None, error, images, None
+            
+            print(f"Successfully processed image, generated PDF")
+            return "", None, images, pdf_data
+            
+        except Exception as e:
+            print(f"Error processing image file {filename}: {e}")
+            return None, f"Image processing failed: {e}", [], None
+
+    # ---------- TEXT files ----------
+    elif file_extension == 'txt':
+        print(f"Processing text file: {filename}")
+        try:
+            text = file_stream.read().decode("utf-8", errors="ignore")
+            # Convert to PDF for storage
+            file_stream.seek(0)
+            pdf_data, error = convert_image_or_text_to_pdf(file_stream, filename)
+            if error:
+                return text, error, [], None
+            
+            return text, None, [], pdf_data
+        except Exception as e:
+            print(f"Error processing text file {filename}: {e}")
+            return None, f"Text processing failed: {e}", [], None
 
     # ---------- Plain text fallback ----------
     else:
         try:
-            return file_bytes.decode("utf-8", errors="ignore"), None, [], None
+            text = file_bytes.decode("utf-8", errors="ignore")
+            print(f"Processed as plain text: {len(text)} chars")
+            return text, None, [], None
         except Exception as e:
+            print(f"Unsupported file type: {file_extension}. {e}")
             return None, f"Unsupported file type: {file_extension}. {e}", [], None
-
-
+        
 # ---------- LLM (Groq API call) ----------
 
 def groq_chat(context: str, question: str, images: list = None) -> str:
@@ -1186,7 +1238,7 @@ def clear_chat_history(data: dict):
 
 @app.post("/generate-flashcards")
 def generate_flashcards(data: dict):
-    """SAME ENDPOINT NAME - now with fill_gaps parameter"""
+
     file_ids = data.get("file_ids", [])
     num_flashcards = data.get("num_flashcards", 5)
     fill_gaps = data.get("fill_gaps", False)  # NEW: Optional parameter
@@ -1269,6 +1321,48 @@ def generate_mcq(data: dict):
         "file_ids_used": file_ids,
         "total_questions": len(mcqs)
     }
+
+
+@app.post("/delete-file-embeddings")
+def delete_file_embeddings(data: dict):
+    """Delete all embeddings and chat history for given file IDs"""
+    file_ids = data.get("file_ids", [])
+    
+    if not file_ids:
+        return JSONResponse(content={"error": "file_ids are required"}, status_code=400)
+    
+    try:
+        cur = conn.cursor()
+        
+        placeholders = ','.join(['%s'] * len(file_ids))
+        
+        deleted_embeddings = 0
+        deleted_clip_embeddings = 0
+        deleted_chat_history = 0
+        
+        cur.execute(f"DELETE FROM {TABLE_NAME} WHERE cmetadata->>'file_id' IN ({placeholders})", file_ids)
+        deleted_embeddings = cur.rowcount
+        
+        cur.execute(f"DELETE FROM {TABLE_NAME}_clip WHERE cmetadata->>'file_id' IN ({placeholders})", file_ids)
+        deleted_clip_embeddings = cur.rowcount
+        
+        cur.execute(f"DELETE FROM chat_history WHERE file_id IN ({placeholders})", file_ids)
+        deleted_chat_history = cur.rowcount
+        
+        conn.commit()
+        cur.close()
+        
+        return {
+            "message": "File embeddings and chat history deleted successfully",
+            "deleted_embeddings": deleted_embeddings,
+            "deleted_clip_embeddings": deleted_clip_embeddings,
+            "deleted_chat_history": deleted_chat_history,
+            "file_ids": file_ids
+        }
+    except Exception as e:
+        conn.rollback()
+        print(f"Error deleting embeddings: {e}")
+        return JSONResponse(content={"error": f"Failed to delete embeddings: {str(e)}"}, status_code=500)
 
 
 # ---------------- RUN ----------------

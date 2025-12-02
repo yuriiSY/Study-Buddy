@@ -255,6 +255,42 @@ export const deleteModule = async (req, res) => {
       return res.status(404).json({ error: "Module not found" });
     }
 
+    const fileIds = module.files.map(f => String(f.id));
+
+    if (fileIds.length > 0) {
+      try {
+        const flaskUrl = process.env.FLASK_API_URL || "http://localhost:3000";
+        const response = await fetch(`${flaskUrl}/delete-file-embeddings`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ file_ids: fileIds }),
+        });
+        
+        if (!response.ok) {
+          console.warn(`Flask delete embeddings failed with status ${response.status}`);
+        } else {
+          const result = await response.json();
+          console.log("Flask deletion result:", result);
+        }
+      } catch (err) {
+        console.warn("Failed to call Flask delete endpoint:", err.message);
+      }
+
+      try {
+        await prisma.note.deleteMany({
+          where: {
+            fileId: {
+              in: module.files.map(f => f.id),
+            },
+          },
+        });
+      } catch (err) {
+        console.warn("Failed to delete notes:", err);
+      }
+    }
+
     for (const file of module.files) {
       try {
         await s3.send(
@@ -268,10 +304,11 @@ export const deleteModule = async (req, res) => {
       }
     }
 
+    await prisma.collaboration.deleteMany({ where: { moduleId: module.id } });
     await prisma.file.deleteMany({ where: { moduleId: module.id } });
     await prisma.module.delete({ where: { id: module.id } });
 
-    res.json({ message: "Module and its files deleted successfully" });
+    res.json({ message: "Module and all related data deleted successfully" });
   } catch (error) {
     console.error("Error deleting module:", error);
     res.status(500).json({ error: "Failed to delete module" });

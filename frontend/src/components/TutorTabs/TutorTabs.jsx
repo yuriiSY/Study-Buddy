@@ -4,6 +4,7 @@ import Flashcard from "../Flashcard/Flashcard";
 import TestsList from "../TestsList/TestsList";
 import MCQTest from "../MCQTest/MCQTest";
 import TestLeaderboard from "../TestLeaderboard/TestLeaderboard";
+import PomodoroTimer from "../PomodoroTimer/PomodoroTimer";
 import styles from "./TutorTabs.module.css";
 import api from "../../api/axios";
 import apiPY from "../../api/axiosPython";
@@ -190,6 +191,10 @@ const TutorTabs = ({
           </button>
         )}
         </div>
+        
+        <div className={styles.timerWrapper}>
+          <PomodoroTimer />
+        </div>
       </div>
 
       <div className={styles.content}>
@@ -206,13 +211,29 @@ const TutorTabs = ({
           <div className={styles.notesPanel}>
             {!editing ? (
               <>
-                <div className={styles.notesDisplay}>{notes}</div>
-                <button
-                  className={styles.editBtn}
-                  onClick={() => setEditing(true)}
-                >
-                  Edit
-                </button>
+                {notes ? (
+                  <>
+                    <div className={styles.notesDisplay}>{notes}</div>
+                    <button
+                      className={styles.editBtn}
+                      onClick={() => setEditing(true)}
+                    >
+                      Edit
+                    </button>
+                  </>
+                ) : (
+                  <div className={styles.emptyNotes}>
+                    <p className={styles.emptyIcon}>📝</p>
+                    <h3>No notes yet</h3>
+                    <p>Add notes from the AI chat or write your own here.</p>
+                    <button
+                      className={styles.editBtn}
+                      onClick={() => setEditing(true)}
+                    >
+                      Write Notes
+                    </button>
+                  </div>
+                )}
               </>
             ) : (
               <>
@@ -220,6 +241,7 @@ const TutorTabs = ({
                   className={styles.textArea}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Write or paste your notes here..."
                 />
                 <button className={styles.saveBtn} onClick={handleSaveNotes}>
                   Save
