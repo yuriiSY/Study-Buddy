@@ -1,91 +1,302 @@
 # AI Study Buddy
-
-AI Study Buddy is a simple app to help students study better. It combines tools like uploading notes (text, PDFs, images, audio, videos), making quizzes, using a Pomodoro timer, earning rewards, finding weak spots, chatting with an AI tutor, connecting with study partners, and discussing topics in a community forum (like StackOverflow). The app is built to be fast, grow with more users, and easy to update.
-
-
-## What It Does
-
-- **Upload Notes**: Add text, PDFs or images(like lecture slides or handwritten notes). The app reads them with AI.
-- **Audio/Video Support**: Upload lecture audio or videos to get transcripts, summaries, or quizzes.
-- **Quizzes**: Creates practice quizzes from your notes to help you learn.
-- **Pomodoro Timer**: Helps you focus with timed study and break sessions.
-- **Rewards**: Earn points, badges, and climb the leaderboard for studying.
-- **Find Weak Spots**: Shows what you need to study more based on your notes.
-- **AI Tutor**: Ask questions and get clear answers, like a personal tutor.
-- **Study Partners**: Connects you with students studying similar topics.
-- **Community Forum**: Discuss topics, ask questions, and share tips.
-
+AI Study Buddy is a web app that helps students study more effectively. It combines:
+- Uploading notes (text, PDFs, images, audio, videos)
+- Auto-generated quizzes and practice questions
+- A Pomodoro timer
+- Rewards, badges, and leaderboards
+- Weak-spot analysis based on your notes and performance
+- An AI tutor chat
+- Study partner matching
+- A community Q&A/forum (StackOverflow-style)
+The app is built to be fast, scalable, and easy to deploy on cloud infrastructure.
+---
+## Features
+- **Upload Notes**
+  - Text, PDFs, and images (lecture slides, handwritten notes).
+  - The app extracts and processes content using AI.
+- **Audio/Video Support**
+  - Upload lecture audio and video.
+  - Get transcripts, summaries, or quizzes from the media.
+- **Quizzes**
+  - Automatically generate practice questions from uploaded material.
+  - Helps with spaced repetition and active recall.
+- **Pomodoro Timer**
+  - Focus timer with work/break cycles.
+  - Integrates with rewards/points system.
+- **Rewards & Gamification**
+  - Points, badges, and leaderboards.
+  - Encourages consistent study behaviour.
+- **Weak Spot Detection**
+  - Tracks performance and note coverage.
+  - Highlights topics you need to revisit.
+- **AI Tutor**
+  - Ask questions directly about your modules or notes.
+  - Get explanations, summaries and practice prompts.
+- **Study Partners**
+  - Find other students studying similar modules/topics.
+- **Community Forum**
+  - Ask and answer questions.
+  - Share resources and tips with other users.
+---
 ## Team
-Team of 4 members:
-- [**Anika Siddiqui**](https://github.com/anikasiddiquimayesha) - Frontend Developer
-- [**Yuri Sykal**](https://github.com/yuriiSY) - Backend Developer
-- [**Rumaysa Babulkhair**](https://github.com/rumaysaa) (D24125711) - Backend Developer
-- [**Lorenzo Palleschi**](https://github.com/LorenzoP83) - Frontend Developer
+- **Anika Siddiqui Mayesha** – Frontend Developer, AI Engineer  
+- **Yurii Sykal** – Backend Developer  
+- **Rumaysa Qayyum Babulkhair** – Backend Developer, AI Engineer  
+- **Lorenzo Palleschi** – Frontend Developer, Design  
+Legacy documentation is also available in the **Documentation** branch of the original project repo.
+---
+## Tech Stack & Architecture
+### Core Technologies
+- **Frontend**
+  - React SPA built with **Vite**.
+  - Uses official React plugin for Vite (Babel / SWC) and ESLint for linting.
+- **Backend**
+  - Node.js / Express API:
+    - Authentication
+    - Core business logic
+    - Persistence (PostgreSQL via Prisma)
+- **AI Service**
+  - Python FastAPI/Flask service (`Flask-endpoints`) running in Docker.
+  - Handles:
+    - File ingestion & processing
+    - LLM calls (e.g. GROQ)
+    - Quiz generation, text summarisation, etc.
+- **Database**
+  - PostgreSQL (local via Docker for dev, managed instance in production).
+- **Infrastructure**
+  - Docker & Docker Compose
+  - Nginx (reverse proxy + static file hosting)
+  - AWS EC2 (main production deployment)
+  - DuckDNS + Let’s Encrypt (HTTPS)
+  - Optional: backend on Render + Python API on EC2 (alternative architecture)
 
+### Repository Layout
+For the `Study-Buddy` repo, the high-level layout is:
 
-📖 Further documentation can be found in the [Documentation branch](https://github.com/yuriiSY/FinalTeamProject/tree/Documentation).
-
-## Prerequisites
-
-Make sure you have the following installed on your machine:
-
-- [Node.js](https://nodejs.org/)
-- [npm](https://www.npmjs.com/) (Comes with Node.js)
-- [Docker](https://www.docker.com/products/docker-desktop/) 
-
-## Getting Started
-
-Follow these steps to set up the project locally:
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/yuriiSY/FinalTeamProject.git
+```text
+Study-Buddy/
+  backend/          # Node/Express backend (API + auth + DB)
+  frontend/         # Vite React SPA (built and served in prod by Nginx)
+  Flask-endpoints/  # Python FastAPI "AI Buddy" service (Docker)
+  docker-compose.yml (and other infra files as needed)
 ```
+In production on EC2, this typically lives under:
+```text
+/home/ubuntu/Study-Buddy
+```
+---
 
-### 3. Run containers
-
+## Local Development
+### Prerequisites
+Install:
+- Node.js
+- npm
+- Docker
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yuriiSY/Study-Buddy.git
+cd Study-Buddy
+```
+### 2. Start Shared Services (Docker)
+From the project root (where `docker-compose.yml` is located):
 ```bash
 docker compose up -d
-cd FinalTeamProject
-cd backend
 ```
-
-### 3. Install Dependencies
-Navigate to the project directory and install the necessary dependencies:
-
+### 3. Backend – Node/Express
 ```bash
-cd FinalTeamProject
 cd backend
 npm install
 ```
-
-### 4. Set Up Environment Variables
-Create a .env file in the root directory and add the required environment variables.
-
-```bash
-DB_HOST = 
-PORT=
+Create an `.env` file. For local dev, you’ll at minimum need something like:
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=<your_local_db_name>
+DB_USER=<your_local_db_user>
+DB_PASSWORD=<your_local_db_password>
+PORT=5000
 ```
-
-### 5. Start the Server
-To start the development server, run the following command:
-
+Run the API in dev mode:
 ```bash
 npm run dev
 ```
-This will start the server using nodemon which automatically restarts the server when changes are detected.
-
-Alternatively, to run the server without nodemon:
-
+Optional Prisma commands:
 ```bash
-npm start
+npx prisma generate
+npx prisma migrate dev
 ```
-### 6. Redo-ing Docker files
-cd backend
-docker compose down --volumes --remove-orphans --rmi local
-docker compose up --build -d
+### 4. AI Service – Python FastAPI / Flask (`Flask-endpoints`)
+```bash
+cd ../Flask-endpoints
+```
+Create a `.env` file in this directory:
+```env
+DB_HOST=...
+DB_PORT=5432
+DB_NAME=...
+DB_USER=...
+DB_PASSWORD=...
 
-cd Flask-endpoints
-docker compose down --volumes --remove-orphans --rmi local
-docker compose up --build -d
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_REGION=eu-west-1
+S3_BUCKET_NAME=...
+
+GROQ_API_KEY=...
+GROQ_MODEL=...
+```
+Run via Docker Compose:
+```bash
+docker compose up -d --build
+```
+### 5. Frontend – React + Vite
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+---
+
+## Production Deployment – All-in-One AWS EC2 (EC2 + Nginx + Node + FastAPI + Docker)
+This section describes the main production deployment where frontend, backend, and Python AI service all run on a single AWS EC2 instance behind Nginx.
+### 1. Example Production Setup
+- **Host**
+  - AWS EC2, Ubuntu 24.04
+- **Security Group**
+  - 80/TCP – HTTP from `0.0.0.0/0`
+  - 443/TCP – HTTPS from `0.0.0.0/0`
+  - 22/TCP – SSH from your IP only
+- **Domain (DuckDNS)**
+  - `studybuddyai.duckdns.org` → EC2 public IP
+Code layout:
+```text
+/home/ubuntu/Study-Buddy
+  backend/
+  frontend/
+  Flask-endpoints/
+```
+Services & Ports:
+- **Nginx**
+  - Serves React build from `/var/www/study-buddy`.
+  - Proxies:
+    - `/api/` → Node backend `http://127.0.0.1:5000/`
+    - `/pypi/` → Python AI Buddy `http://127.0.0.1:3000/`
+- **Node Backend**
+  - Port: `5000`
+  - Managed by `systemd` (`study-buddy-backend`)
+- **Python AI Buddy**
+  - Docker container `flask-api`
+  - Host port `3000`
+### 2. Day-to-Day Operations
+#### SSH into the Server
+```bash
+ssh -i ./mayesha.pem ubuntu@studybuddyai.duckdns.org
+```
+#### Node Backend
+```bash
+sudo systemctl status study-buddy-backend
+sudo systemctl restart study-buddy-backend
+journalctl -u study-buddy-backend -f
+curl -v http://localhost:5000/health
+curl -v http://localhost/api/health
+```
+#### Python AI Buddy (Docker)
+```bash
+cd ~/Study-Buddy/Flask-endpoints
+docker-compose ps
+docker-compose restart
+docker-compose down
+docker-compose up -d --build
+docker-compose logs -f
+curl -v http://localhost:3000/health
+curl -v http://localhost/pypi/health
+```
+#### Frontend + Nginx
+Rebuild frontend:
+```bash
+cd ~/Study-Buddy/frontend
+npm install
+npm run build
+sudo rm -rf /var/www/study-buddy/*
+sudo cp -r dist/* /var/www/study-buddy/
+```
+Example Nginx site config (`/etc/nginx/sites-available/study-buddy`):
+```nginx
+server {
+    listen 80;
+    server_name 108.130.178.225 studybuddyai.duckdns.org;
+    root /var/www/study-buddy;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    location /api/ {
+        proxy_pass http://127.0.0.1:5000/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+    location /pypi/ {
+        proxy_pass http://127.0.0.1:3000/;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+After editing Nginx:
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+```
+---
+## Updating a Live EC2 Deployment (Git Pull & Redeploy)
+### 1. SSH and Pull Latest Code
+```bash
+ssh -i /path/to/key.pem ubuntu@studybuddy.duckdns.org
+cd ~/Study-Buddy
+git status
+git fetch origin
+git checkout aws-demo
+git pull origin aws-demo
+```
+If there are local changes blocking the pull, either stash or discard:
+```bash
+git stash push -m "server changes before pulling aws-demo"
+# or
+git restore backend/src/app.js
+```
+### 2. Redeploy Backend
+```bash
+cd ~/Study-Buddy/backend
+npm install
+npx prisma generate
+npx prisma migrate deploy
+sudo systemctl restart study-buddy-backend
+sudo systemctl status study-buddy-backend
+curl -v http://localhost:5000/health
+```
+### 3. Redeploy Python AI Service
+```bash
+cd ~/Study-Buddy/Flask-endpoints
+docker-compose down
+docker-compose up -d --build
+docker-compose ps
+curl -v http://localhost:3000/health
+```
+### 4. Rebuild Frontend
+```bash
+cd ~/Study-Buddy/frontend
+npm install
+npm run build
+sudo rm -rf /var/www/study-buddy/*
+sudo cp -r dist/* /var/www/study-buddy/
+sudo nginx -t
+sudo systemctl reload nginx
