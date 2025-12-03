@@ -42,6 +42,8 @@ export const getDashboardStats = async (userId) => {
     include: { test: true },
   });
 
+  console.log("Scores:", scores);
+
   let totalScore = 0;
   let totalPossible = 0;
 
