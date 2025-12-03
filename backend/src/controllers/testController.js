@@ -92,7 +92,7 @@ export const getTestsForFile = async (req, res) => {
 };
 
 export const createFromMCQs = async (req, res) => {
-  console.logs("Create from MCQs request body:", req.body);
+  console.log("Create from MCQs request body:", req.body);
   try {
     const { file_id, title, description, mcqs, totalQuestions } = req.body;
 
