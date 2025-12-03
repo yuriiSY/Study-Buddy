@@ -145,3 +145,12 @@ export const getModuleCompletionStats = async (userId) => {
     percentageCompleted,
   };
 };
+
+export const uncompleteModule = async (userId, moduleId) => {
+  return prisma.moduleCompletion.deleteMany({
+    where: {
+      userId: Number(userId),
+      moduleId: Number(moduleId),
+    },
+  });
+};

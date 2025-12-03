@@ -19,6 +19,7 @@ import {
   checkCompleted,
   listCompletedModules,
   getModuleCompletionSummary,
+  unmarkModuleCompleted,
 } from "../controllers/uploadController.js";
 
 const router = express.Router();
@@ -45,6 +46,7 @@ router.delete(
 );
 
 router.post("/modules/:moduleId/complete", markModuleCompleted);
+router.delete("/modules/:moduleId/complete", unmarkModuleCompleted);
 router.get("/modules/:moduleId/iscompleted", checkCompleted);
 router.get("/modules/completed", listCompletedModules);
 router.get("modules/completed/info", getModuleCompletionSummary);

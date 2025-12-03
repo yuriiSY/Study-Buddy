@@ -525,6 +525,11 @@ export const markModuleCompleted = async (req, res) => {
 
     const completed = await uploadService.completeModule(userId, moduleId);
 
+    await prisma.module.update({
+      where: { id: moduleId },
+      data: { archived: true },
+    });
+
     return res.json({
       message: "Module marked as completed",
       completed,
@@ -532,6 +537,31 @@ export const markModuleCompleted = async (req, res) => {
   } catch (err) {
     console.error("Error marking module completed:", err);
     res.status(500).json({ message: "Failed to mark module completed" });
+  }
+};
+
+export const unmarkModuleCompleted = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { moduleId } = req.params;
+
+    if (!moduleId) {
+      return res.status(400).json({ message: "moduleId is required" });
+    }
+
+    await uploadService.uncompleteModule(userId, moduleId);
+
+    await prisma.module.update({
+      where: { id: moduleId },
+      data: { archived: false },
+    });
+
+    return res.json({
+      message: "Module marked as NOT completed",
+    });
+  } catch (err) {
+    console.error("Error unmarking module completed:", err);
+    res.status(500).json({ message: "Failed to unmark module completion" });
   }
 };
 
