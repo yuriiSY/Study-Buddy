@@ -190,7 +190,7 @@ Services & Ports:
 ### 2. Day-to-Day Operations
 #### SSH into the Server
 ```bash
-ssh -i ./mayesha.pem ubuntu@studybuddyai.duckdns.org
+ssh -i ./study-buddy-key.pem ubuntu@studybuddyai.duckdns.org
 ```
 #### Node Backend
 ```bash

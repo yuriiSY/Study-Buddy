@@ -1,13 +1,4 @@
 services:
-  # ollama:
-  #   image: ollama/ollama:latest
-  #   container_name: ollama
-  #   ports:
-  #     - "11434:11434"
-  #   volumes:
-  #     - ollama_data:/root/.ollama
-  #   restart: unless-stopped
-
   flask-api:
     build: .
     container_name: flask-api
@@ -16,15 +7,19 @@ services:
     environment:
       # OLLAMA_BASE_URL: "http://ollama:11434"
       # OLLAMA_MODEL: "llava:latest"
-      GROQ_API_KEY: ""
+      GROQ_API_KEY: "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"
       GROQ_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct"
-      DB_HOST: ""
+      # For local development, use the following lines
+      #DB_HOST: "host.docker.internal"
+      #DB_NAME: "admin"
+      #DB_USER: "secret"
+      #DB_PASSWORD: "mydb"
+      # For deployment, uncomment the following lines and comment out the local development lines above
+      DB_HOST: "study-buddy-ai-db.c386y6e46m5v.eu-west-1.rds.amazonaws.com"
+      DB_NAME: "studybuddyaidb"
+      DB_USER: "mayesha"
+      DB_PASSWORD: "9Puot94adXeCmeeYf9co2FF6h4Bv5nrJ"
       DB_PORT: 5432
-      DB_NAME: "mydb_atf9"
-      DB_USER: "admin"
-      DB_PASSWORD: ""
-      AWS_ACCESS_KEY_ID: ""
-      AWS_SECRET_ACCESS_KEY: ""
       AWS_REGION: "eu-west-1"
       S3_BUCKET_NAME: "study-buddy-demo"
     command: >
