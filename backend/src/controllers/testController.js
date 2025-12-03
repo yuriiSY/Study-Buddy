@@ -93,13 +93,14 @@ export const getTestsForFile = async (req, res) => {
 
 export const createFromMCQs = async (req, res) => {
   try {
-    const { file_id, title, description, mcqs } = req.body;
+    const { file_id, title, description, mcqs, totalQuestions } = req.body;
 
     const test = await createTestFromMCQs({
       file_id,
       title,
       description,
       mcqs,
+      total_questions: totalQuestions,
     });
 
     res.json(test);
