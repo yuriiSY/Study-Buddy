@@ -8,6 +8,7 @@ import streakRouter from "./routes/streakRouter.js";
 import notesRouter from "./routes/notesRouter.js";
 import testRouter from "./routes/testRoutes.js";
 import flashcardsRouter from "./routes/flashcardsRouter.js";
+import dashboardRouter from "./routes/dashboardRouter.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use("/api/streak", authenticateToken, streakRouter);
 app.use("/api/notes", authenticateToken, notesRouter);
 app.use("/api/test", authenticateToken, testRouter);
 app.use("/api/flashcards", authenticateToken, flashcardsRouter);
+app.use("/api/dashboard", authenticateToken, dashboardRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRoutes);
 
