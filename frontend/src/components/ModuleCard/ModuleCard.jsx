@@ -2,6 +2,7 @@ import styles from "./ModuleCard.module.css";
 import { useNavigate } from "react-router-dom";
 import { Archive, ArchiveRestore, Trash2, Settings, Play } from "lucide-react";
 import api from "../../api/axios";
+import { useState, useEffect, useRef } from "react";
 
 const ModuleCard = ({
   id,
@@ -15,6 +16,27 @@ const ModuleCard = ({
   isOwner,
 }) => {
   const navigate = useNavigate();
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [showImage, setShowImage] = useState(false);
+  const imageRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShowImage(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { rootMargin: "50px" }
+    );
+
+    if (imageRef.current) {
+      observer.observe(imageRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleClick = async () => {
     try {
@@ -38,7 +60,7 @@ const ModuleCard = ({
   };
   const handleManage = (e) => {
     e.stopPropagation();
-    onManage(id, title);
+    onManage(id, title, coverImage);
   };
 
   const handleLeave = async (e) => {
@@ -56,11 +78,14 @@ const ModuleCard = ({
 
   return (
     <div className={styles.card}>
-      {/* ✅ Image section */}
+      {/* ✅ Image section with lazy loading */}
       <div
-        className={`${styles.cardHeader} ${coverImage ? styles.withImage : ""}`}
+        ref={imageRef}
+        className={`${styles.cardHeader} ${coverImage ? styles.withImage : ""} ${
+          imageLoaded ? styles.imageLoaded : styles.imagePlaceholder
+        }`}
         style={
-          coverImage
+          coverImage && showImage
             ? {
                 backgroundImage: `url(${coverImage})`,
                 backgroundSize: "cover",
@@ -69,6 +94,15 @@ const ModuleCard = ({
             : {}
         }
       >
+        {coverImage && showImage && !imageLoaded && (
+          <div className={styles.imageSkeleton}></div>
+        )}
+        <img
+          src={coverImage && showImage ? coverImage : ""}
+          alt="module-cover"
+          style={{ display: "none" }}
+          onLoad={() => setImageLoaded(true)}
+        />
         <div className={styles.headerOverlay}>
           <p className={styles.dateOnImage}>{date}</p>
 

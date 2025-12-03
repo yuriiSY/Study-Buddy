@@ -1,6 +1,12 @@
 import React, { useState, useRef } from "react";
 import styles from "./MaterialUpload.module.css";
 import api from "../../api/axios";
+import { toast } from "react-toastify";
+
+const SUPPORTED_EXTENSIONS = [
+  "docx", "doc", "pptx", "ppt", "xlsx", "xls",
+  "pdf", "png", "jpg", "jpeg", "bmp", "gif", "webp", "tiff", "txt"
+];
 
 export default function MaterialUpload({ onUploadSuccess }) {
   const [ocr, setOcr] = useState(true);
@@ -8,10 +14,27 @@ export default function MaterialUpload({ onUploadSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const fileRef = useRef();
 
+  const getFileExtension = (filename) => {
+    if (!filename) return "";
+    return filename.toLowerCase().split(".").pop();
+  };
+
+  const isFileSupported = (filename) => {
+    const extension = getFileExtension(filename);
+    return SUPPORTED_EXTENSIONS.includes(extension);
+  };
+
   const handleSelectFile = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (!isFileSupported(file.name)) {
+        toast.error(
+          ` Unsupported file format: ${getFileExtension(file.name)}. Supported: ${SUPPORTED_EXTENSIONS.join(", ")}`
+        );
+        return;
+      }
       setSelectedFile(file);
+      toast.success(` ${file.name} selected`);
     }
   };
 
@@ -20,7 +43,10 @@ export default function MaterialUpload({ onUploadSuccess }) {
   };
 
   const upload = async () => {
-    if (!selectedFile) return alert("Choose a file first");
+    if (!selectedFile) {
+      toast.warning("Please select a file first");
+      return;
+    }
 
     const form = new FormData();
 
@@ -31,11 +57,13 @@ export default function MaterialUpload({ onUploadSuccess }) {
       });
       setLoading(false);
       setSelectedFile(null);
+      toast.success("File uploaded successfully");
       if (onUploadSuccess) onUploadSuccess();
     } catch (err) {
       setLoading(false);
       console.error(err);
-      alert("Upload failed");
+      const errorMsg = err.response?.data?.error || "Upload failed";
+      toast.error(` ${errorMsg}`);
     }
   };
 
@@ -58,7 +86,7 @@ export default function MaterialUpload({ onUploadSuccess }) {
         type="file"
         ref={fileRef}
         style={{ display: "none" }}
-        accept=".doc,.docx,.pdf"
+        accept={SUPPORTED_EXTENSIONS.map(ext => `.${ext}`).join(",")}
         onChange={handleSelectFile}
       />
 

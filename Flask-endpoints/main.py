@@ -349,22 +349,73 @@ def extract_text_from_docx(file_stream):
         return ""
 
 def extract_text_from_pptx(file_stream):
-    """Extract text from PowerPoint presentations"""
+    """Extract text from PowerPoint presentations including speaker notes"""
     try:
         prs = Presentation(file_stream)
-        text = ""
+        text_parts = []
         
         for slide_num, slide in enumerate(prs.slides):
-            text += f"--- Slide {slide_num + 1} ---\n"
+            slide_content = []
+            slide_notes = []
+            
+            # Extract text from slide shapes
             for shape in slide.shapes:
                 if hasattr(shape, "text") and shape.text.strip():
-                    text += shape.text + "\n"
+                    slide_content.append(shape.text.strip())
+            
+            # Extract text from notes (speaker notes)
+            if slide.has_notes_slide:
+                notes_slide = slide.notes_slide
+                if notes_slide.notes_text_frame:
+                    notes_text = notes_slide.notes_text_frame.text.strip()
+                    if notes_text:
+                        slide_notes.append(notes_text)
+            
+            # Extract text from tables
+            for shape in slide.shapes:
+                if shape.has_table:
+                    table = shape.table
+                    table_rows = []
+                    for row in table.rows:
+                        row_texts = []
+                        for cell in row.cells:
+                            if cell.text:
+                                row_texts.append(cell.text.strip())
+                        if row_texts:
+                            table_rows.append(" | ".join(row_texts))
+                    if table_rows:
+                        slide_content.append(f"Table: {'; '.join(table_rows)}")
+            
+            # Build slide text
+            if slide_content or slide_notes:
+                slide_text = f"=== SLIDE {slide_num + 1} ===\n"
+                if slide_content:
+                    slide_text += "Content:\n" + "\n".join(f"- {item}" for item in slide_content) + "\n"
+                if slide_notes:
+                    slide_text += "Notes:\n" + "\n".join(f"- {note}" for note in slide_notes) + "\n"
+                text_parts.append(slide_text)
         
-        return text.strip()
+        return "\n".join(text_parts)
     except Exception as e:
         print(f"Error extracting PPTX text: {e}")
-        return ""
-
+        # Try a simpler approach as fallback
+        try:
+            prs = Presentation(file_stream)
+            text = ""
+            for slide_num, slide in enumerate(prs.slides):
+                text += f"--- Slide {slide_num + 1} ---\n"
+                for shape in slide.shapes:
+                    if hasattr(shape, "text") and shape.text.strip():
+                        text += shape.text + "\n"
+                # Try direct notes access
+                try:
+                    if slide.notes_slide:
+                        text += "NOTES: " + slide.notes_slide.notes_text_frame.text + "\n"
+                except:
+                    pass
+            return text.strip()
+        except:
+            return ""
 def extract_text_from_xlsx(file_stream):
     """Extract text from Excel files"""
     try:
@@ -1181,6 +1232,22 @@ def health():
         )
 
 
+SUPPORTED_EXTENSIONS = {
+    'docx', 'doc', 'pptx', 'ppt', 'xlsx', 'xls',
+    'pdf', 'png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp', 'tiff', 'txt'
+}
+
+def get_file_extension(filename: str) -> str:
+    """Extract file extension from filename."""
+    if not filename or '.' not in filename:
+        return ''
+    return filename.lower().split('.')[-1]
+
+def is_file_supported(filename: str) -> bool:
+    """Check if file extension is supported."""
+    extension = get_file_extension(filename)
+    return extension in SUPPORTED_EXTENSIONS
+
 @app.post("/upload-files")
 async def upload_files(
     files: list[UploadFile] = File(...),
@@ -1189,12 +1256,30 @@ async def upload_files(
     results = []
     errors = []
 
+    # Validate all files first
+    for file in files:
+        if not is_file_supported(file.filename):
+            errors.append({
+                "file_name": file.filename,
+                "error": f"Unsupported file type: {get_file_extension(file.filename)}. Supported formats: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
+            })
+
+    if len(errors) == len(files):
+        return JSONResponse(
+            status_code=400,
+            content={"error": "No supported files provided", "errors": errors}
+        )
+
     # Get vector stores
     store = get_vector_store()
     clip_store = get_clip_vector_store()
 
     for file in files:
         filename = file.filename
+        
+        if not is_file_supported(filename):
+            continue
+            
         content = await file.read()
         file_stream = io.BytesIO(content)
         

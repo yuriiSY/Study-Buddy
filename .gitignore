@@ -1,6 +1,8 @@
-.env
-venv
+backend/.env
+frontend/.env
 __pycache__
+study-buddy-key.pem
+
 Flask-endpoints/docker-compose.yml
-Flask-endpoints/mayesha.pem
-Flask-endpoints/docker-compose.yml
+backend/docker-compose.yml
+frontend/docker-compose.yml

@@ -1,15 +1,15 @@
 .card {
-  background: #fff;
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 1.5rem;
   width: 100%;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   margin-top: 20px;
 }
 
 .heading {
   font-size: 1.25rem;
-  color: #4a58d8;
+  color: var(--color-primary);
   margin-bottom: 1rem;
 }
 
@@ -19,7 +19,7 @@
   line-height: 133%;
   letter-spacing: 0em;
   text-align: center;
-  color: #0a0a0a;
+  color: var(--text-primary);
 }
 
 .infoText {
@@ -28,7 +28,7 @@
   line-height: 150%;
   letter-spacing: -0.02em;
   text-align: center;
-  color: #4a5565;
+  color: var(--text-secondary);
 }
 
 .upload {
@@ -37,7 +37,7 @@
   height: 80px;
   box-shadow: 0 4px 6px -4px rgba(0, 0, 0, 0.1),
     0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  background: #314158;
+  background: var(--bg-tertiary);
 }
 
 .uploadInfoSection {

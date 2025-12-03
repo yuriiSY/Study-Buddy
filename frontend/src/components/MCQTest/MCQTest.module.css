@@ -102,8 +102,24 @@
 }
 
 .option input {
-  accent-color: auto;
+  accent-color: #000;
   cursor: pointer;
+  color-scheme: light;
+}
+
+:root[data-theme='sepia'] .option input {
+  accent-color: #000;
+  color-scheme: light;
+}
+
+:root[data-theme='light'] .option input {
+  accent-color: #000;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] .option input {
+  accent-color: #fff;
+  color-scheme: dark;
 }
 
 .selected {

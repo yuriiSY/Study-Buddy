@@ -22,6 +22,7 @@ export const HomePage = () => {
     open: false,
     moduleId: null,
     title: "",
+    coverImage: null,
   });
   const [viewMode, setViewMode] = useState("active");
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,8 +85,8 @@ export const HomePage = () => {
     }
   };
 
-  const handleManage = (id, title) => {
-    setManageModal({ open: true, moduleId: id, title });
+  const handleManage = (id, title, coverImage) => {
+    setManageModal({ open: true, moduleId: id, title, coverImage });
   };
 
   const handleUpdateModule = (updatedModule) => {
@@ -304,10 +305,11 @@ export const HomePage = () => {
           <ManageModuleModal
             isOpen={manageModal.open}
             onClose={() =>
-              setManageModal({ open: false, moduleId: null, title: "" })
+              setManageModal({ open: false, moduleId: null, title: "", coverImage: null })
             }
             moduleId={manageModal.moduleId}
             moduleTitle={manageModal.title}
+            moduleCoverImage={manageModal.coverImage}
             onUpdate={handleUpdateModule}
             onRefresh={fetchModules}
             onStatsRefresh={() => setStatsRefresh((prev) => prev + 1)}

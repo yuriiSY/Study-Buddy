@@ -1,10 +1,10 @@
 .uploadBox {
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color);
   padding-top: 1rem;
 }
 
 .heading {
-  color: #4a58d8;
+  color: var(--color-primary);
   margin-bottom: 0.5rem;
 }
 
@@ -12,42 +12,49 @@
   display: flex;
   gap: 1rem;
   margin-bottom: 0.75rem;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .dropArea {
-  border: 2px dashed #cfd6f0;
+  border: 2px dashed var(--border-color-light);
   border-radius: 8px;
   padding: 1.5rem;
   text-align: center;
-  color: #888;
+  color: var(--text-tertiary);
 }
 
 .uploadBox {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 16px;
-  background: #fff;
+  background: var(--bg-secondary);
   width: 100%;
 }
 
 .dropArea:hover {
-  background: #f0f8ff;
+  background: var(--bg-tertiary);
 }
 
 .uploadBtn {
-  background: #28324e;
+  background: var(--bg-tertiary);
   width: 100%;
-  color: white;
+  color: var(--text-primary);
   padding: 10px 16px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
   margin-top: 1rem;
+  transition: all 0.2s ease;
+}
+
+.uploadBtn:hover {
+  background: var(--bg-hover);
+  color: var(--color-primary);
 }
 
 .uploadBtn:disabled {
-  background: #28324eaa;
+  background: var(--bg-tertiary);
+  opacity: 0.5;
   cursor: not-allowed;
 }

@@ -5,7 +5,7 @@ import LoaderOverlay from "../../components/LoaderOverlay/LoaderOverlay";
 import CustomPdfViewer from "../../components/CustomPdfViewer";
 import TutorTabs from "../../components/TutorTabs/TutorTabs";
 import Header from "../../components/Header/Header";
-import { FileText } from "lucide-react";
+import ModuleModal from "../../components/ModuleModal/ModuleModal";
 
 import api from "../../api/axios";
 
@@ -17,6 +17,8 @@ export const StudySpacePage = () => {
   const [isResizing, setIsResizing] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const containerRef = useRef(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [allFiles, setAllFiles] = useState([]);
 
   const [selectedFile, setSelectedFile] = useState(() => {
     const saved = localStorage.getItem("selectedFile");
@@ -31,10 +33,13 @@ export const StudySpacePage = () => {
       const backendFiles = res.data.files || [];
 
       const formattedModules = backendFiles.map((file, index) => ({
-        title: `File ${index + 1}. ${file.filename}`,
+        title: `${file.filename}`,
+        displayTitle: `${index + 1}. ${file.filename}`,
         id: file.id,
         externalId: file.externalId,
       }));
+
+      setAllFiles(formattedModules);
 
       if (formattedModules.length === 0) return;
 
@@ -75,6 +80,16 @@ export const StudySpacePage = () => {
       prevModuleId.current = moduleId;
     }
   }, [moduleId]);
+
+  const handleFileSelect = (file) => {
+    setSelectedFile(file);
+    localStorage.setItem("selectedFile", JSON.stringify(file));
+  };
+
+  const handleUploadSuccess = () => {
+    setUploadModalOpen(false);
+    fetchFiles();
+  };
 
   const handleMouseDown = () => {
     setIsResizing(true);
@@ -130,12 +145,17 @@ export const StudySpacePage = () => {
       fileId={selectedFile?.id}
       fileName={`${selectedFile?.title}`}
       height="100%"
+      allFiles={allFiles}
+      selectedFileId={selectedFile?.id}
+      onFileSelect={handleFileSelect}
+      onUploadMore={() => setUploadModalOpen(true)}
     />
   );
 
   return (
     <div className={styles.wrapper}>
       <Header hideSearch={true} />
+
       <div className={styles.studySpaceContainer} ref={containerRef}>
         {isDesktop && (
           <>
@@ -157,6 +177,15 @@ export const StudySpacePage = () => {
           />
         </div>
       </div>
+
+      <ModuleModal
+        isOpen={uploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+        onCreate={handleUploadSuccess}
+        onUploadSuccess={handleUploadSuccess}
+        moduleId={moduleId}
+        mode="upload"
+      />
     </div>
   );
 };

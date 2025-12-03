@@ -1,3 +1,4 @@
+#./backend/docker-compose.yml
 services:
   postgres:
     image: ankane/pgvector:latest
@@ -39,16 +40,6 @@ services:
       - .env
     depends_on:
       - postgres
-
-  frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
-    container_name: frontend_app
-    ports:
-      - "5173:5173"
-    depends_on:
-      - backend
 
 volumes:
   pgdata:

@@ -1,23 +1,23 @@
 .container {
   text-align: center;
   padding: 60px 20px;
-  background-color: #f5f7fb;
+  background-color: var(--bg-primary);
 }
 
 .title {
   font-size: 2.2rem;
   font-weight: 700;
-  color: #000;
+  color: var(--text-primary);
 }
 
 .subtitle {
-  color: #333;
+  color: var(--text-secondary);
   max-width: 600px;
   margin: 10px auto 30px;
 }
 
 .button {
-  background-color: #4a56e2;
+  background-color: var(--color-primary);
   color: white;
   font-weight: bold;
   border: none;
@@ -28,12 +28,13 @@
 }
 
 .button:hover {
-  background-color: #3d47bf;
+  background-color: var(--color-primary-dark);
+  opacity: 0.9;
 }
 
 .link {
   display: block;
-  color: #4a56e2;
+  color: var(--color-primary);
   margin-top: 10px;
   text-decoration: none;
 }

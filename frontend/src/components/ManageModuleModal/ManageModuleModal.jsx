@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import styles from "./ManageModuleModal.module.css";
 import api from "../../api/axios";
-import { X, Users, Share2, FileText } from "lucide-react";
+import { X, Users, Share2, FileText, Image } from "lucide-react";
+import { toast } from "react-toastify";
+
+const imageOptions = Array.from({ length: 10 }, (_, i) => `c${i + 1}.jpg`);
 
 const ManageModuleModal = ({
   isOpen,
@@ -11,12 +14,14 @@ const ManageModuleModal = ({
   onUpdate,
   onRefresh,
   onStatsRefresh,
+  moduleCoverImage,
 }) => {
   const [title, setTitle] = useState(moduleTitle || "");
   const [isCompleted, setIsCompleted] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("editor");
   const [collaborators, setCollaborators] = useState([]);
+  const [selectedCoverImage, setSelectedCoverImage] = useState(moduleCoverImage || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -126,6 +131,29 @@ const ManageModuleModal = ({
     }
   };
 
+  const handleUpdateCoverImage = async () => {
+    if (!selectedCoverImage) {
+      setError("Please select a cover image");
+      return;
+    }
+    try {
+      setLoading(true);
+      setError("");
+      const res = await api.put(`/files/modules/${moduleId}/cover-image`, {
+        coverImage: selectedCoverImage,
+      });
+      onUpdate(res.data.module);
+      toast.success("✅ Cover image updated successfully");
+      onClose();
+    } catch (err) {
+      console.error("Failed to update cover image:", err);
+      setError(err.response?.data?.error || "Failed to update cover image");
+      toast.error("❌ Failed to update cover image");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -175,21 +203,54 @@ const ManageModuleModal = ({
           <div className={styles.divider} />
 
           <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <h3>Completion Status</h3>
-            </div>
+           
+              <div className={styles.sectionHeader}>
+                <h3>Completion Status</h3>
+              </div>
 
-            <label className={styles.switchRow}>
-              <span>Mark as Completed</span>
-              <label className={styles.switch}>
-                <input
-                  type="checkbox"
-                  checked={isCompleted}
-                  onChange={handleToggleCompletion}
-                />
-                <span className={styles.slider}></span>
+              <label className={styles.switchRow}>
+                <span>Mark as Completed</span>
+                <label className={styles.switch}>
+                  <input
+                    type="checkbox"
+                    checked={isCompleted}
+                    onChange={handleToggleCompletion}
+                  />
+                  <span className={styles.slider}></span>
+                </label>
               </label>
-            </label>
+
+              <div className={styles.divider} />
+
+              <div className={styles.sectionHeader}>
+                <Image size={20} className={styles.sectionIcon} />
+                <h3>Module Cover Image</h3>
+              </div>
+
+              <div className={styles.imagePickerSection}>
+                <div className={styles.imageGrid}>
+                  {imageOptions.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className={`${styles.imageItem} ${
+                        selectedCoverImage === img ? styles.selectedImage : ""
+                      }`}
+                      onClick={() => setSelectedCoverImage(img)}
+                    >
+                      <img src={img} alt={`cover-${idx + 1}`} />
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  className={styles.primaryBtn}
+                  onClick={handleUpdateCoverImage}
+                  disabled={loading || !selectedCoverImage}
+                >
+                  {loading ? "Saving..." : "Update Cover Image"}
+                </button>
+              </div>
+
           </div>
 
           <div className={styles.divider} />

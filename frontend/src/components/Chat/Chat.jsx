@@ -1,20 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./Chat.module.css";
 import Message from "../Message/Message";
 import apiPY from "../../api/axiosPython";
-import { Send, BookMarked, Lightbulb } from "lucide-react";
+import { Send, BookMarked, Lightbulb, FileText, Brain, Target, Check } from "lucide-react";
 
 const Chat = ({ 
   externalId, 
   onAddNote,
   onGenerateFlashcards,
   onGenerateQuiz,
-  testsExist
+  testsExist,
+  flashcardsExist
 }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [addedNotes, setAddedNotes] = useState(new Set());
+  const chatBoxRef = useRef(null);
 
   useEffect(() => {
     if (!externalId) return;
@@ -49,6 +52,12 @@ const Chat = ({
     fetchHistory();
   }, [externalId]);
 
+  useEffect(() => {
+    if (chatBoxRef.current) {
+      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -81,12 +90,40 @@ const Chat = ({
     }
   };
 
+  const sendPresetPrompt = async (displayText, prompt) => {
+    const userMessage = { sender: "user", text: displayText };
+    setMessages((prev) => [...prev, userMessage]);
+    setLoading(true);
+
+    try {
+      const res = await apiPY.post("/ask", {
+        question: prompt,
+        file_ids: [externalId],
+      });
+
+      const botMessage = {
+        sender: "bot",
+        text: res.data?.answer || "No answer returned.",
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Preset prompt request failed:", error);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "⚠️ Sorry, something went wrong." },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.chatContainer}>
         {/* <h2 className={styles.title}>AI Tutor</h2> */}
 
-        <div className={styles.chatBox}>
+        <div className={styles.chatBox} ref={chatBoxRef}>
           {isLoadingHistory ? (
             <div className={styles.loadingContainer}>
               <div className={styles.loadingSkeleton}>
@@ -118,12 +155,27 @@ const Chat = ({
 
                   {msg.sender === "bot" && (
                     <button
-                      className={styles.addToNotesBtn}
-                      onClick={() => onAddNote(msg.text)}
-                      title="Add this response to notes"
+                      className={`${styles.addToNotesBtn} ${addedNotes.has(idx) ? styles.addedToNotes : ''}`}
+                      onClick={async () => {
+                        if (!addedNotes.has(idx)) {
+                          await onAddNote(msg.text);
+                          setAddedNotes(prev => new Set(prev).add(idx));
+                        }
+                      }}
+                      disabled={addedNotes.has(idx)}
+                      title={addedNotes.has(idx) ? "Added to notes" : "Add this response to notes"}
                     >
-                      <BookMarked size={14} />
-                      Add to Notes
+                      {addedNotes.has(idx) ? (
+                        <>
+                          <Check size={14} />
+                          Added to Notes
+                        </>
+                      ) : (
+                        <>
+                          <BookMarked size={14} />
+                          Add to Notes
+                        </>
+                      )}
                     </button>
                   )}
                 </div>
@@ -155,13 +207,42 @@ const Chat = ({
         <div className={styles.actionButtons}>
           <button
             className={styles.actionBtn}
-            onClick={onGenerateFlashcards}
-            disabled={!externalId}
-            title={!externalId ? "Select a file first" : "Generate flashcards"}
+            onClick={() => sendPresetPrompt("Summarise", "Summarise the document")}
+            disabled={!externalId || loading}
+            title={!externalId ? "Select a file first" : "Generate summary"}
           >
-            <BookMarked size={16} />
-            Generate Flashcards
+            <FileText size={16} />
+            Summarise
           </button>
+          <button
+            className={styles.actionBtn}
+            onClick={() => sendPresetPrompt("Generate Analogy", "generate analogy for this document in a very simple and easy way to understand")}
+            disabled={!externalId || loading}
+            title={!externalId ? "Select a file first" : "Generate analogy"}
+          >
+            <Brain size={16} />
+            Generate Analogy
+          </button>
+          <button
+            className={styles.actionBtn}
+            onClick={() => sendPresetPrompt("Detect Knowledge Gap", "Analyze these study notes and identify their biggest knowledge gaps. For each gap, generate additional notes that provide the missing depth, context, and practical applications needed for true mastery.")}
+            disabled={!externalId || loading}
+            title={!externalId ? "Select a file first" : "Detect knowledge gaps"}
+          >
+            <Target size={16} />
+            Detect Knowledge Gap
+          </button>
+          {!flashcardsExist && (
+            <button
+              className={styles.actionBtn}
+              onClick={onGenerateFlashcards}
+              disabled={!externalId}
+              title={!externalId ? "Select a file first" : "Generate flashcards"}
+            >
+              <BookMarked size={16} />
+              Generate Flashcards
+            </button>
+          )}
           {!testsExist && (
             <button
               className={styles.actionBtn}

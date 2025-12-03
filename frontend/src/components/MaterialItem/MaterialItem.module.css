@@ -1,19 +1,21 @@
 .item {
-  border: 1px solid #e1e5ee;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 1rem;
   cursor: pointer;
   transition: all 0.2s;
+  background: var(--bg-secondary);
 }
 
 .item:hover {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  border-color: #4a58d8;
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-primary);
+  background: var(--bg-tertiary);
 }
 
 .selected {
-  border-color: #4a58d8;
-  background-color: #f4f6ff;
+  border-color: var(--color-primary);
+  background-color: rgba(91, 158, 255, 0.08);
 }
 
 .header {
@@ -21,6 +23,7 @@
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .meta {
@@ -29,19 +32,15 @@
   align-items: center;
   gap: 0.75rem;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-tertiary);
 }
 
 .badge {
-  background-color: #e0e4ff;
-  color: #4a58d8;
+  background-color: rgba(91, 158, 255, 0.12);
+  color: var(--color-primary);
   padding: 2px 8px;
   border-radius: 6px;
   font-size: 0.8rem;
-}
-
-.selected {
-  background-color: #e6f0ff;
 }
 
 .generateButton {

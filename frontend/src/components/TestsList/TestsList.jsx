@@ -80,12 +80,17 @@ const TestsList = ({ fileId, onSelectTest }) => {
             percentage >= 70 ? "good" : percentage >= 50 ? "average" : "poor";
 
           return (
-            <div key={test.id} className={styles.testCard}>
-              <div className={styles.testInfo}>
-                <h3 className={styles.testName}>
-                  {test.title || `Test ${getTestNumberLabel(index)}`}
-                </h3>
-                <p className={styles.testDesc}>{test.description}</p>
+            <div key={test.id} className={`${styles.testCard} ${hasScore ? styles.completed : styles.unattempted}`}>
+              <div className={styles.testHeader}>
+                <div className={styles.testInfo}>
+                  <h3 className={styles.testName}>{test.title || `Test ${getTestNumberLabel(index)}`}</h3>
+                  <p className={styles.testDesc}>{test.description}</p>
+                  {hasScore && (
+                    <div className={styles.scoreText}>
+                      Score: {test.userScore}/{test.questions.length} ({percentage}%)
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className={styles.cardRight}>
@@ -102,7 +107,7 @@ const TestsList = ({ fileId, onSelectTest }) => {
                   className={styles.takeTestBtn}
                   onClick={() => onSelectTest(test.id)}
                 >
-                  {hasScore ? "Retake" : "Take Test"}
+                  {hasScore ? "Retake Test" : "Take Test"}
                 </button>
               </div>
             </div>

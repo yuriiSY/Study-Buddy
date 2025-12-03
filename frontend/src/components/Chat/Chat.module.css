@@ -235,7 +235,7 @@
   transition: all 0.2s ease;
 }
 
-.addToNotesBtn:hover {
+.addToNotesBtn:hover:not(:disabled) {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   color: white;
   border-color: var(--color-primary);
@@ -243,19 +243,35 @@
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
-@media (prefers-color-scheme: dark) {
-  .addToNotesBtn {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
-    color: #60a5fa;
-    border: 1px solid #3b82f6;
-  }
+.addToNotesBtn:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+}
 
-  .addToNotesBtn:hover {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: white;
-    border-color: var(--color-primary);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
-  }
+.addedToNotes {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border-color: #10b981;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+:root[data-theme='sepia'] .addedToNotes {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(181, 137, 0, 0.3);
+}
+
+:root[data-theme='dark'] .addToNotesBtn {
+  background: var(--bg-tertiary);
+  color: white;
+  border: 1px solid white;
+}
+
+:root[data-theme='dark'] .addToNotesBtn:hover {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: white;
+  border-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .sendBtn:hover {

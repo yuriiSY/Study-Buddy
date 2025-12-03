@@ -10,6 +10,22 @@ import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import App from "./App.jsx";
 
+(() => {
+  const stored = localStorage.getItem("sb-theme");
+  let theme = "light";
+
+  if (stored === "light" || stored === "dark" || stored === "sepia") {
+    theme = stored;
+  } else {
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    theme = prefersDark ? "dark" : "light";
+  }
+
+  document.documentElement.dataset.theme = theme;
+})();
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter basename="/Study-Buddy">
