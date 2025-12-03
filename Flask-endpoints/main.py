@@ -1833,6 +1833,7 @@ def check_database(data: dict):
         return {"error": str(e)}
 # ---------------- RUN ----------------
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=3000, debug=True)
+    port = int(os.environ.get("PORT", 8000))  # fallback for local
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
 
