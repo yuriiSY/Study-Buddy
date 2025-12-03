@@ -34,18 +34,14 @@ const Header = ({
 
   // --- THEME STATE: "light" | "dark" | "sepia" ---
   const [theme, setTheme] = useState(() => {
-    if (typeof window === "undefined") return "light";
+    if (typeof document === "undefined") return "light";
 
-    const stored = window.localStorage.getItem("sb-theme");
-    if (stored === "light" || stored === "dark" || stored === "sepia") {
-      return stored;
+    const htmlTheme = document.documentElement.dataset.theme;
+    if (htmlTheme === "light" || htmlTheme === "dark" || htmlTheme === "sepia") {
+      return htmlTheme;
     }
 
-    const prefersDark =
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-    return prefersDark ? "dark" : "light";
+    return "light";
   });
 
   const menuRef = useRef();
@@ -56,12 +52,30 @@ const Header = ({
 
   const { isLoggedIn } = useSelector((state) => state.auth);
 
-  // Apply theme to <html data-theme="..."> and persist preference
+  // Apply theme to <html data-theme="..."> and persist preference (only when user toggles)
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.dataset.theme = theme;
     window.localStorage.setItem("sb-theme", theme);
   }, [theme]);
+
+  // Listen for system theme preference changes (only if no user preference)
+  useEffect(() => {
+    const userPreference = window.localStorage.getItem("sb-theme");
+    if (userPreference) return;
+
+    const darkModeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const handleSystemThemeChange = (e) => {
+      const newTheme = e.matches ? "dark" : "light";
+      setTheme(newTheme);
+      document.documentElement.dataset.theme = newTheme;
+      window.location.reload();
+    };
+
+    darkModeQuery.addEventListener("change", handleSystemThemeChange);
+    return () => darkModeQuery.removeEventListener("change", handleSystemThemeChange);
+  }, []);
 
   // Close mobile menus/search when clicking outside
   useEffect(() => {

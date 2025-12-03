@@ -7,6 +7,7 @@ import authenticateToken from "./middlewares/authMiddlewar.js";
 import streakRouter from "./routes/streakRouter.js";
 import notesRouter from "./routes/notesRouter.js";
 import testRouter from "./routes/testRoutes.js";
+import flashcardRouter from "./routes/flashcardRoutes.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -21,6 +22,7 @@ app.use("/api/files", authenticateToken, uploadRouter);
 app.use("/api/streak", authenticateToken, streakRouter);
 app.use("/api/notes", authenticateToken, notesRouter);
 app.use("/api/test", authenticateToken, testRouter);
+app.use("/api/flashcards", authenticateToken, flashcardRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRoutes);
 

@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { RiEyeLine, RiArrowLeftLine, RiArrowRightLine, RiLightbulbFlashLine } from "react-icons/ri";
 import styles from "./Flashcard.module.css";
 
-const Flashcard = ({ cards = [], onFinish }) => {
+const Flashcard = ({ cards = [], onFinish, onGenerateMore, isLoadingMore = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [showGenerateMore, setShowGenerateMore] = useState(false);
 
   const currentCard = cards[currentIndex];
 
@@ -14,7 +15,11 @@ const Flashcard = ({ cards = [], onFinish }) => {
       setCurrentIndex((prev) => prev + 1);
       setShowAnswer(false);
     } else {
-      onFinish?.();
+      if ((currentIndex + 1) % 5 === 0) {
+        setShowGenerateMore(true);
+      } else {
+        onFinish?.();
+      }
     }
   };
 
@@ -23,6 +28,11 @@ const Flashcard = ({ cards = [], onFinish }) => {
       setCurrentIndex((prev) => prev - 1);
       setShowAnswer(false);
     }
+  };
+
+  const handleGenerateMore = async () => {
+    setShowGenerateMore(false);
+    await onGenerateMore?.();
   };
 
   return (
@@ -101,6 +111,31 @@ const Flashcard = ({ cards = [], onFinish }) => {
           Next <RiArrowRightLine />
         </button>
       </div>
+
+      {showGenerateMore && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <h2>Generate More Flashcards?</h2>
+            <p>You've completed {currentIndex + 1} flashcards. Would you like to generate {currentIndex + 1 < 5 ? 'more' : 'another 5'} flashcards?</p>
+            <div className={styles.modalButtons}>
+              <button
+                className={styles.modalBtn}
+                onClick={() => setShowGenerateMore(false)}
+                disabled={isLoadingMore}
+              >
+                Continue Later
+              </button>
+              <button
+                className={`${styles.modalBtn} ${styles.primary}`}
+                onClick={handleGenerateMore}
+                disabled={isLoadingMore}
+              >
+                {isLoadingMore ? 'Generating...' : 'Generate More'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

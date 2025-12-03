@@ -1,7 +1,7 @@
 .button {
   width: 100%;
-  background-color: #28324e;
-  color: #fff;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
   padding: 1rem;
   border: none;
   border-radius: 10px;
@@ -11,5 +11,6 @@
 }
 
 .button:hover {
-  background-color: #3a4a7a;
+  background-color: var(--bg-hover);
+  color: var(--color-primary);
 }

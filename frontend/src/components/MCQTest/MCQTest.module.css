@@ -102,8 +102,14 @@
 }
 
 .option input {
-  accent-color: auto;
+  accent-color: #000;
   cursor: pointer;
+}
+
+@media (prefers-color-scheme: dark) {
+  .option input {
+    accent-color: #fff;
+  }
 }
 
 .selected {
