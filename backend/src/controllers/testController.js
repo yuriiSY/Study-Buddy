@@ -92,7 +92,6 @@ export const getTestsForFile = async (req, res) => {
 };
 
 export const createFromMCQs = async (req, res) => {
-  console.log("Create from MCQs request body:", req.body);
   try {
     const { file_id, title, description, mcqs, totalQuestions } = req.body;
 
@@ -101,7 +100,7 @@ export const createFromMCQs = async (req, res) => {
       title,
       description,
       mcqs,
-      total_questions: totalQuestions,
+      totalQuestions,
     });
 
     res.json(test);

@@ -94,6 +94,7 @@ export const createTestFromMCQs = async ({
   title,
   description,
   mcqs,
+  totalQuestions,
 }) => {
   if (!file_id || !mcqs) {
     throw new Error("file_id and mcqs are required");
@@ -105,6 +106,7 @@ export const createTestFromMCQs = async ({
       title,
       description,
       questions: mcqs,
+      total_questions: totalQuestions,
     },
   });
 };
