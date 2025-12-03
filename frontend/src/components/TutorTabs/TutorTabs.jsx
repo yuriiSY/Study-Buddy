@@ -31,6 +31,8 @@ const TutorTabs = ({
   const [showFlashcardsTab, setShowFlashcardsTab] = useState(false);
   const [showQuizTab, setShowQuizTab] = useState(false);
   const [testsExist, setTestsExist] = useState(false);
+  const [flashcardsExist, setFlashcardsExist] = useState(false);
+  const [currentFlashcardSetId, setCurrentFlashcardSetId] = useState(null);
   const [selectedTest, setSelectedTest] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -73,7 +75,26 @@ const TutorTabs = ({
       }
     };
 
+    const loadStoredFlashcards = async () => {
+      try {
+        const res = await api.get(`/flashcards/file/${externalId}`);
+        const flashcardSets = res.data || [];
+        if (flashcardSets.length > 0) {
+          setFlashcardsExist(true);
+          setShowFlashcardsTab(true);
+          setCurrentFlashcardSetId(flashcardSets[0].id);
+          const cards = Array.isArray(flashcardSets[0].cards)
+            ? flashcardSets[0].cards
+            : [];
+          setFlashcards(cards);
+        }
+      } catch (err) {
+        console.error("Failed to load flashcards:", err);
+      }
+    };
+
     loadTests();
+    loadStoredFlashcards();
   }, [externalId]);
 
   const handleSaveNotes = async () => {
@@ -124,7 +145,29 @@ const TutorTabs = ({
         throw new Error("Invalid response format");
       }
 
-      setFlashcards(res.data.flashcards);
+      const newCards = res.data.flashcards;
+
+      if (flashcardsExist && currentFlashcardSetId) {
+        const appendRes = await api.post(
+          `/flashcards/${currentFlashcardSetId}/append`,
+          { cards: newCards }
+        );
+        const allCards = Array.isArray(appendRes.data.cards)
+          ? appendRes.data.cards
+          : [];
+        setFlashcards(allCards);
+      } else {
+        const saveRes = await api.post("/flashcards", {
+          file_id: externalId,
+          title: "Generated Flashcards",
+          description: "Auto-generated flashcards from document",
+          cards: newCards,
+        });
+        setFlashcards(newCards);
+        setFlashcardsExist(true);
+        setCurrentFlashcardSetId(saveRes.data.id);
+      }
+
       setShowFlashcardsTab(true);
       setActiveTab("flashcards");
     } catch (err) {
@@ -137,6 +180,10 @@ const TutorTabs = ({
     } finally {
       setLoadingFlashcards(false);
     }
+  };
+
+  const handleGenerateMoreFlashcards = async () => {
+    await loadFlashcards();
   };
 
   const handleGenerateQuiz = () => {
@@ -231,6 +278,7 @@ const TutorTabs = ({
             onGenerateFlashcards={loadFlashcards}
             onGenerateQuiz={handleGenerateQuiz}
             testsExist={testsExist}
+            flashcardsExist={flashcardsExist}
           />
         )}
 
@@ -302,7 +350,11 @@ const TutorTabs = ({
                 </button>
               </div>
             ) : flashcards.length > 0 ? (
-              <Flashcard cards={flashcards} />
+              <Flashcard 
+                cards={flashcards}
+                onGenerateMore={handleGenerateMoreFlashcards}
+                isLoadingMore={loadingFlashcards}
+              />
             ) : (
               <p style={{ padding: 20 }}>No flashcards available.</p>
             )}

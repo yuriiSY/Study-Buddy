@@ -9,7 +9,8 @@ const Chat = ({
   onAddNote,
   onGenerateFlashcards,
   onGenerateQuiz,
-  testsExist
+  testsExist,
+  flashcardsExist
 }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -206,15 +207,17 @@ const Chat = ({
             <Brain size={16} />
             Generate Analogy
           </button>
-          <button
-            className={styles.actionBtn}
-            onClick={onGenerateFlashcards}
-            disabled={!externalId}
-            title={!externalId ? "Select a file first" : "Generate flashcards"}
-          >
-            <BookMarked size={16} />
-            Generate Flashcards
-          </button>
+          {!flashcardsExist && (
+            <button
+              className={styles.actionBtn}
+              onClick={onGenerateFlashcards}
+              disabled={!externalId}
+              title={!externalId ? "Select a file first" : "Generate flashcards"}
+            >
+              <BookMarked size={16} />
+              Generate Flashcards
+            </button>
+          )}
           {!testsExist && (
             <button
               className={styles.actionBtn}
