@@ -382,6 +382,7 @@
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 14px;
+  gap: 8px;
 }
 
 .fileIcon {
@@ -431,6 +432,84 @@
               0 0 0 4px var(--color-primary),
               0 4px 12px rgba(91, 158, 255, 0.4);
   transform: scale(1.05);
+}
+
+.rejectedSection {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  width: 100%;
+}
+
+.rejectedTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.rejectedList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rejectedFile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 6px 8px;
+  background-color: rgba(239, 68, 68, 0.05);
+  border-radius: 4px;
+}
+
+.rejectedIcon {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.fileName {
+  flex: 1;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.rejectedFileName {
+  flex: 1;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.removeFileBtn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  margin-left: 8px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.removeFileBtn:hover {
+  color: var(--color-error);
+  transform: scale(1.2);
 }
 
 @media (max-width: 768px) {
