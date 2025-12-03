@@ -3,31 +3,19 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 50%, #f9fafb 100%);
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 50%, var(--bg-primary) 100%);
   padding: 1rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  .pageWrapper {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-  }
-}
-
 .card {
-  background-color: white;
+  background-color: var(--bg-primary);
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(91, 158, 255, 0.15);
+  box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 440px;
   padding: 2.5rem;
   text-align: center;
-}
-
-@media (prefers-color-scheme: dark) {
-  .card {
-    background-color: #1e293b;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  }
+  border: 1px solid var(--border-color);
 }
 
 .header {

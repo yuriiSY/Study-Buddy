@@ -63,7 +63,7 @@ const ModuleModal = ({
     if (rejected.length > 0) {
       setRejectedFiles((prev) => [...prev, ...rejected]);
       toast.error(
-        `❌ Unsupported file format(s): ${rejected.join(", ")}. Please use supported formats.`,
+        `Unsupported file format(s): ${rejected.join(", ")}. Please use supported formats.`,
         { autoClose: 5000 }
       );
     }
@@ -71,7 +71,7 @@ const ModuleModal = ({
     if (supported.length > 0) {
       setUploadedFiles((prev) => [...prev, ...supported]);
       if (rejected.length === 0) {
-        toast.success(`✅ ${supported.length} file(s) added successfully`, {
+        toast.success(` ${supported.length} file(s) added successfully`, {
           autoClose: 2000,
         });
       }
@@ -297,7 +297,7 @@ const ModuleModal = ({
             <ul className={styles.uploadList}>
               {uploadedFiles.map((file, i) => (
                 <li key={i} className={styles.uploadedFile}>
-                  <span className={styles.fileIcon}>✅</span>
+                  <span className={styles.fileIcon}></span>
                   <span className={styles.fileName}>{file.name}</span>
                   <button
                     type="button"
@@ -320,7 +320,7 @@ const ModuleModal = ({
               <ul className={styles.rejectedList}>
                 {rejectedFiles.map((filename, i) => (
                   <li key={i} className={styles.rejectedFile}>
-                    <span className={styles.rejectedIcon}>❌</span>
+                    <span className={styles.rejectedIcon}></span>
                     <span className={styles.rejectedFileName}>{filename}</span>
                     <button
                       type="button"

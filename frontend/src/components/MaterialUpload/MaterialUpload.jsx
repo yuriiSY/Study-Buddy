@@ -29,12 +29,12 @@ export default function MaterialUpload({ onUploadSuccess }) {
     if (file) {
       if (!isFileSupported(file.name)) {
         toast.error(
-          `❌ Unsupported file format: ${getFileExtension(file.name)}. Supported: ${SUPPORTED_EXTENSIONS.join(", ")}`
+          ` Unsupported file format: ${getFileExtension(file.name)}. Supported: ${SUPPORTED_EXTENSIONS.join(", ")}`
         );
         return;
       }
       setSelectedFile(file);
-      toast.success(`✅ ${file.name} selected`);
+      toast.success(` ${file.name} selected`);
     }
   };
 
@@ -57,13 +57,13 @@ export default function MaterialUpload({ onUploadSuccess }) {
       });
       setLoading(false);
       setSelectedFile(null);
-      toast.success("✅ File uploaded successfully");
+      toast.success("File uploaded successfully");
       if (onUploadSuccess) onUploadSuccess();
     } catch (err) {
       setLoading(false);
       console.error(err);
       const errorMsg = err.response?.data?.error || "Upload failed";
-      toast.error(`❌ ${errorMsg}`);
+      toast.error(` ${errorMsg}`);
     }
   };
 
