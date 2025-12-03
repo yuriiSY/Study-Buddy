@@ -526,7 +526,7 @@ export const markModuleCompleted = async (req, res) => {
     const completed = await uploadService.completeModule(userId, moduleId);
 
     await prisma.module.update({
-      where: { id: moduleId },
+      where: { id: Number(moduleId) },
       data: { archived: true },
     });
 
@@ -552,7 +552,7 @@ export const unmarkModuleCompleted = async (req, res) => {
     await uploadService.uncompleteModule(userId, moduleId);
 
     await prisma.module.update({
-      where: { id: moduleId },
+      where: { id: Number(moduleId) },
       data: { archived: false },
     });
 
