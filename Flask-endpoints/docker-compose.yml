@@ -1,3 +1,4 @@
+#./Flask-endpoints/docker-compose.yml
 services:
   flask-api:
     build: .
@@ -5,8 +6,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # OLLAMA_BASE_URL: "http://ollama:11434"
-      # OLLAMA_MODEL: "llava:latest"
       GROQ_API_KEY: "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"
       GROQ_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct"
       # For local development, use the following lines
