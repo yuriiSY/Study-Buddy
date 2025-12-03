@@ -4,14 +4,18 @@ import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import styles from "./CustomPdfViewer.module.css";
 import { getFileUrl } from "../api/filesApi";
-import { ZoomIn, ZoomOut } from "lucide-react";
+import { ZoomIn, ZoomOut, Upload, ChevronDown } from "lucide-react";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function CustomPdfViewer({
   fileId,
   fileName = "PDF Document",
-  height = "700px", // 👈 smaller block
+  height = "700px",
+  allFiles = [],
+  selectedFileId,
+  onFileSelect,
+  onUploadMore,
 }) {
   const [fileUrl, setFileUrl] = useState(null);
   const [numPages, setNumPages] = useState(null);
@@ -142,30 +146,66 @@ export default function CustomPdfViewer({
     <div className={styles.viewerWrapper}>
       {/* Header */}
       <div className={styles.header}>
-        <span className={styles.fileName}>{fileName}</span>
-        <div className={styles.zoomControls}>
-          <button
-            onClick={handleZoomOut}
-            className={styles.zoomBtn}
-            title="Zoom Out"
-          >
-            <ZoomOut size={18} />
-          </button>
-          <span className={styles.zoomLevel}>{Math.round(scale * 100)}%</span>
-          <button
-            onClick={handleZoomIn}
-            className={styles.zoomBtn}
-            title="Zoom In"
-          >
-            <ZoomIn size={18} />
-          </button>
-          <button
-            onClick={handleResetZoom}
-            className={styles.resetBtn}
-            title="Reset Zoom"
-          >
-            Reset
-          </button>
+        <div className={styles.fileSelector}>
+          {allFiles.length > 1 ? (
+            <>
+              <select
+                value={selectedFileId || ""}
+                onChange={(e) => {
+                  const file = allFiles.find((f) => f.id === parseInt(e.target.value));
+                  if (file && onFileSelect) {
+                    onFileSelect(file);
+                  }
+                }}
+                className={styles.fileDropdown}
+              >
+                {allFiles.map((file) => (
+                  <option key={file.id} value={file.id}>
+                    {file.displayTitle}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={16} className={styles.dropdownChevron} />
+            </>
+          ) : (
+            <span className={styles.fileName}>{fileName}</span>
+          )}
+        </div>
+
+        <div className={styles.controls}>
+          {onUploadMore && (
+            <button
+              onClick={onUploadMore}
+              className={styles.uploadBtn}
+              title="Upload more files"
+            >
+              <Upload size={16} />
+            </button>
+          )}
+          <div className={styles.zoomControls}>
+            <button
+              onClick={handleZoomOut}
+              className={styles.zoomBtn}
+              title="Zoom Out"
+            >
+              <ZoomOut size={16} />
+            </button>
+            <span className={styles.zoomLevel}>{Math.round(scale * 100)}%</span>
+            <button
+              onClick={handleZoomIn}
+              className={styles.zoomBtn}
+              title="Zoom In"
+            >
+              <ZoomIn size={16} />
+            </button>
+            <button
+              onClick={handleResetZoom}
+              className={styles.resetBtn}
+              title="Reset Zoom"
+            >
+              Reset
+            </button>
+          </div>
         </div>
       </div>
 

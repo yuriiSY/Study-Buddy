@@ -38,7 +38,7 @@ const ModuleCard = ({
   };
   const handleManage = (e) => {
     e.stopPropagation();
-    onManage(id, title);
+    onManage(id, title, coverImage);
   };
 
   const handleLeave = async (e) => {

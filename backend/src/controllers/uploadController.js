@@ -20,6 +20,21 @@ const s3 = new S3Client({
   },
 });
 
+// Supported file extensions (must match Flask backend)
+const SUPPORTED_EXTENSIONS = new Set([
+  'docx', 'doc', 'pptx', 'ppt', 'xlsx', 'xls',
+  'pdf', 'png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp', 'tiff', 'txt'
+]);
+
+const getFileExtension = (filename) => {
+  if (!filename || !filename.includes('.')) return '';
+  return filename.toLowerCase().split('.').pop();
+};
+
+const isFileSupported = (filename) => {
+  return SUPPORTED_EXTENSIONS.has(getFileExtension(filename));
+};
+
 // ----------------------------------------------------------------------
 // Upload files (create or update module)
 // ----------------------------------------------------------------------
@@ -36,6 +51,13 @@ export const uploadFiles = async (req, res) => {
     return res
       .status(400)
       .json({ error: "Missing file information from Python service" });
+  }
+
+  if (!isFileSupported(file_name)) {
+    const extension = getFileExtension(file_name);
+    return res.status(400).json({
+      error: `Unsupported file type: ${extension}. Supported formats: ${Array.from(SUPPORTED_EXTENSIONS).sort().join(', ')}`
+    });
   }
 
   try {
@@ -345,6 +367,39 @@ export const updateModuleTitle = async (req, res) => {
   } catch (error) {
     console.error("Error updating module title:", error);
     res.status(500).json({ error: "Failed to update module title" });
+  }
+};
+
+export const updateModuleCoverImage = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { moduleId } = req.params;
+    const { coverImage } = req.body;
+
+    if (!coverImage || !coverImage.trim()) {
+      return res.status(400).json({ error: "Cover image is required" });
+    }
+
+    const module = await prisma.module.findUnique({
+      where: { id: Number(moduleId) },
+    });
+
+    if (!module || module.ownerId !== userId) {
+      return res.status(404).json({ error: "Module not found" });
+    }
+
+    const updatedModule = await prisma.module.update({
+      where: { id: module.id },
+      data: { coverImage },
+    });
+
+    res.json({
+      message: "Module cover image updated successfully",
+      module: updatedModule,
+    });
+  } catch (error) {
+    console.error("Error updating module cover image:", error);
+    res.status(500).json({ error: "Failed to update module cover image" });
   }
 };
 
