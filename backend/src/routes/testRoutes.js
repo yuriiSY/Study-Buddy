@@ -6,6 +6,7 @@ import {
   deleteExistingTest,
   getTestsForFile,
   createFromMCQs,
+  getAverageScorePercentage,
 } from "../controllers/testController.js";
 
 const router = express.Router();
@@ -16,5 +17,6 @@ router.get("/:testId", getSingleTest);
 router.delete("/:testId", deleteExistingTest);
 router.get("/file/:fileId", getTestsForFile);
 router.post("/create-from-mcqs", createFromMCQs);
+router.get("/average-percentage", getAverageScorePercentage);
 
 export default router;

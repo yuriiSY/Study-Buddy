@@ -36,6 +36,7 @@ model User {
   weeklyForgiveness  WeeklyForgiveness[]
   notes Note[]
   testScores TestScore[]
+  moduleCompletions ModuleCompletion[]
 }
 
 //
@@ -57,6 +58,7 @@ model Module {
   files          File[]
 
   owner          User @relation("OwnedModules", fields: [ownerId], references: [id])
+  completions    ModuleCompletion[]
 }
 
 //
@@ -144,7 +146,7 @@ model chat_history {
 // ========================
 //
 
-/// @ignore
+
 model flashcards {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title       String?   @db.VarChar(255)
@@ -155,7 +157,7 @@ model flashcards {
   created_at  DateTime? @default(now()) @db.Timestamp(6)
 }
 
-/// @ignore
+
 model tests {
   id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title           String?   @db.VarChar(255)
@@ -215,4 +217,17 @@ model TestScore {
   test tests @relation(fields: [testId], references: [id])
 
   @@unique([userId, testId])
+}
+
+
+model ModuleCompletion {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  moduleId    Int
+  completedAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  module Module @relation(fields: [moduleId], references: [id])
+
+  @@unique([userId, moduleId]) 
 }
