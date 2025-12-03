@@ -1181,6 +1181,22 @@ def health():
         )
 
 
+SUPPORTED_EXTENSIONS = {
+    'docx', 'doc', 'pptx', 'ppt', 'xlsx', 'xls',
+    'pdf', 'png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp', 'tiff', 'txt'
+}
+
+def get_file_extension(filename: str) -> str:
+    """Extract file extension from filename."""
+    if not filename or '.' not in filename:
+        return ''
+    return filename.lower().split('.')[-1]
+
+def is_file_supported(filename: str) -> bool:
+    """Check if file extension is supported."""
+    extension = get_file_extension(filename)
+    return extension in SUPPORTED_EXTENSIONS
+
 @app.post("/upload-files")
 async def upload_files(
     files: list[UploadFile] = File(...),
@@ -1189,12 +1205,30 @@ async def upload_files(
     results = []
     errors = []
 
+    # Validate all files first
+    for file in files:
+        if not is_file_supported(file.filename):
+            errors.append({
+                "file_name": file.filename,
+                "error": f"Unsupported file type: {get_file_extension(file.filename)}. Supported formats: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
+            })
+
+    if len(errors) == len(files):
+        return JSONResponse(
+            status_code=400,
+            content={"error": "No supported files provided", "errors": errors}
+        )
+
     # Get vector stores
     store = get_vector_store()
     clip_store = get_clip_vector_store()
 
     for file in files:
         filename = file.filename
+        
+        if not is_file_supported(filename):
+            continue
+            
         content = await file.read()
         file_stream = io.BytesIO(content)
         
