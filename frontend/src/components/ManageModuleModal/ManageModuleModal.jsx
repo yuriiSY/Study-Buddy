@@ -10,6 +10,7 @@ const ManageModuleModal = ({
   moduleTitle,
   onUpdate,
   onRefresh,
+  onStatsRefresh,
 }) => {
   const [title, setTitle] = useState(moduleTitle || "");
   const [isCompleted, setIsCompleted] = useState(false);
@@ -56,7 +57,13 @@ const ManageModuleModal = ({
         await api.delete(`files/modules/${moduleId}/complete`);
       }
 
-      if (onRefresh) onRefresh();
+      if (onRefresh) {
+        onRefresh();
+      }
+
+      if (onStatsRefresh) {
+        onStatsRefresh();
+      }
     } catch (err) {
       console.error("Failed to update completion:", err);
     }

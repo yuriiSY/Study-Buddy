@@ -28,6 +28,7 @@ export const HomePage = () => {
   const [isProgressCollapsed, setIsProgressCollapsed] = useState(() => {
     return window.innerWidth <= 768;
   });
+  const [statsRefresh, setStatsRefresh] = useState(0);
 
   const fetchModules = async () => {
     try {
@@ -162,7 +163,9 @@ export const HomePage = () => {
                     )}
                   </button>
                 </div>
-                {!isProgressCollapsed && <StatsOverview />}
+                {!isProgressCollapsed && (
+                  <StatsOverview refresh={statsRefresh} />
+                )}
               </div>
               <div className={styles.mainContent}>
                 <div className={styles.modulesSection}>
@@ -307,6 +310,7 @@ export const HomePage = () => {
             moduleTitle={manageModal.title}
             onUpdate={handleUpdateModule}
             onRefresh={fetchModules}
+            onStatsRefresh={() => setStatsRefresh((prev) => prev + 1)}
           />
         )}
       </Layout>

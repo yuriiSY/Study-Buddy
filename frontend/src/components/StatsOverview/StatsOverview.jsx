@@ -3,7 +3,7 @@ import api from "../../api/axios";
 import styles from "./StatsOverview.module.css";
 import { TrendingUp, BookOpen, Clock, BarChart3 } from "lucide-react";
 
-export const StatsOverview = () => {
+export const StatsOverview = ({ refresh }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -61,7 +61,7 @@ export const StatsOverview = () => {
     };
 
     loadStats();
-  }, []);
+  }, [[refresh]]);
 
   if (loading) return <div>Loading stats...</div>;
   if (!stats) return <div>Failed to load stats.</div>;
