@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import styles from "./CommandPalette.module.css";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
@@ -13,11 +13,15 @@ const CommandPalette = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
 
-  // Fetch modules when palette is opened for the first time
+  const inputRef = useRef(null);
+
+  // Load modules once when opened
   useEffect(() => {
-    if (!isOpen || modules.length > 0) return;
+    if (!isOpen) return;
 
     const fetchModules = async () => {
+      // only fetch if we don't already have them
+      if (modules.length > 0) return;
       try {
         setLoadingModules(true);
         const res = await api.get("/files/modules");
@@ -32,31 +36,36 @@ const CommandPalette = ({ isOpen, onClose }) => {
     fetchModules();
   }, [isOpen, modules.length]);
 
-  // Reset state when opened/closed
+  // Reset state when opening
   useEffect(() => {
     if (isOpen) {
       setQuery("");
       setSelectedIndex(0);
+      if (inputRef.current) {
+        // slight delay for mount
+        setTimeout(() => inputRef.current?.focus(), 10);
+      }
     }
   }, [isOpen]);
 
+  // Quick global actions
   const baseActions = useMemo(
     () => [
       {
-        id: "home",
-        label: "Go to Home",
+        id: "go-home",
+        label: "Go to dashboard",
+        meta: "Navigation",
+        run: () => navigate("/home"),
+      },
+      {
+        id: "welcome",
+        label: "Go to welcome page",
         meta: "Navigation",
         run: () => navigate("/"),
       },
       {
-        id: "welcome",
-        label: "Open Welcome page",
-        meta: "Navigation",
-        run: () => navigate("/welcome"),
-      },
-      {
         id: "login",
-        label: "Go to Login",
+        label: "Go to login",
         meta: "Navigation",
         run: () => navigate("/login"),
       },
@@ -71,6 +80,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
     [navigate, theme, toggleTheme]
   );
 
+  // Modules as searchable items
   const moduleActions = useMemo(
     () =>
       modules.map((m) => ({
@@ -87,17 +97,19 @@ const CommandPalette = ({ isOpen, onClose }) => {
     [baseActions, moduleActions]
   );
 
+  // Filtered search
   const filteredActions = useMemo(() => {
     if (!query.trim()) return allActions;
+
     const q = query.toLowerCase();
-    return allActions.filter(
-      (a) =>
-        a.label.toLowerCase().includes(q) ||
-        (a.meta && a.meta.toLowerCase().includes(q))
-    );
+    return allActions.filter((action) => {
+      const label = action.label.toLowerCase();
+      const meta = (action.meta || "").toLowerCase();
+      return label.includes(q) || meta.includes(q);
+    });
   }, [allActions, query]);
 
-  // Keyboard navigation inside the palette
+  // Keyboard navigation  
   useEffect(() => {
     if (!isOpen) return;
 
@@ -127,14 +139,6 @@ const CommandPalette = ({ isOpen, onClose }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [filteredActions, isOpen, onClose, selectedIndex]);
 
-  // Auto-focus input
-  const inputRef = React.useRef(null);
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
   return (
@@ -146,50 +150,111 @@ const CommandPalette = ({ isOpen, onClose }) => {
         }}
       >
         <div className={styles.searchRow}>
-          <span className={styles.searchIcon}>⌘K</span>
+          <span className={styles.searchIcon}>🔍</span>
           <input
             ref={inputRef}
             className={styles.input}
-            placeholder="Search modules or actions…"
+            placeholder="Search modules, pages and actions…"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
           />
+          <span className={styles.shortcutHint}>Ctrl+K</span>
         </div>
 
         <div className={styles.hintRow}>
           <span>
-            Press <strong>↑</strong> / <strong>↓</strong> to navigate,{" "}
-            <strong>Enter</strong> to select, <strong>Esc</strong> to close.
+            Use <strong>↑</strong> / <strong>↓</strong> to navigate,{" "}
+            <strong>Enter</strong> to open, <strong>Esc</strong> to close.
           </span>
-          <span className={styles.loadingText}>
-            {loadingModules ? "Loading modules…" : ""}
-          </span>
+          {loadingModules && (
+            <span className={styles.loadingText}>Loading modules…</span>
+          )}
         </div>
 
-        <ul className={styles.list} role="listbox">
-          {filteredActions.length === 0 && (
-            <li className={styles.empty}>No matches. Try a different search.</li>
-          )}
+        <div className={styles.listWrapper}>
+          <ul className={styles.list} role="listbox">
+            {filteredActions.length === 0 && (
+              <li className={styles.empty}>
+                No matches. Try searching for a module name or action.
+              </li>
+            )}
 
-          {filteredActions.map((action, index) => (
-            <li
-              key={action.id}
-              className={`${styles.item} ${
-                index === selectedIndex ? styles.itemActive : ""
-              }`}
-              onClick={() => {
-                action.run();
-                onClose();
-              }}
-            >
-              <div className={styles.itemLabel}>{action.label}</div>
-              <div className={styles.itemMeta}>{action.meta}</div>
-            </li>
-          ))}
-        </ul>
+            {/* Group: Quick actions */}
+            {filteredActions.some((a) => a.meta === "Navigation" || a.meta === "Appearance") && (
+              <>
+                <li className={styles.groupLabel}>Quick actions</li>
+                {filteredActions
+                  .filter(
+                    (a) => a.meta === "Navigation" || a.meta === "Appearance"
+                  )
+                  .map((action, index) => {
+                    const globalIndex = filteredActions.indexOf(action);
+                    return (
+                      <li
+                        key={action.id}
+                        className={`${styles.item} ${
+                          globalIndex === selectedIndex
+                            ? styles.itemActive
+                            : ""
+                        }`}
+                        onClick={() => {
+                          action.run();
+                          onClose();
+                        }}
+                      >
+                        <div className={styles.itemMain}>
+                          <span className={styles.itemLabel}>
+                            {action.label}
+                          </span>
+                          <span className={styles.itemMeta}>
+                            {action.meta}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+              </>
+            )}
+
+            {/* Group: Modules */}
+            {filteredActions.some((a) => a.meta === "Module") && (
+              <>
+                <li className={styles.groupLabel}>Modules</li>
+                {filteredActions
+                  .filter((a) => a.meta === "Module")
+                  .map((action) => {
+                    const globalIndex = filteredActions.indexOf(action);
+                    return (
+                      <li
+                        key={action.id}
+                        className={`${styles.item} ${
+                          globalIndex === selectedIndex
+                            ? styles.itemActive
+                            : ""
+                        }`}
+                        onClick={() => {
+                          action.run();
+                          onClose();
+                        }}
+                      >
+                        <div className={styles.itemMain}>
+                          <span className={styles.itemLabel}>
+                            {action.label}
+                          </span>
+                          <span className={styles.itemMeta}>
+                            {action.meta}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+              </>
+            )}
+          </ul>
+        </div>
       </div>
     </div>
   );

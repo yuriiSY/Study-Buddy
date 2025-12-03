@@ -62,6 +62,8 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
     setOpen(false);
   };
 
+  const openSearch = () => setIsPaletteOpen(true);
+
   return (
     <>
       <header
@@ -99,6 +101,21 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
             </div>
           </div>
 
+          {/* Centre: global search bar trigger */}
+          <div className={styles.center}>
+            <button
+              type="button"
+              className={styles.searchBar}
+              onClick={openSearch}
+            >
+              <span className={styles.searchIcon}>🔍</span>
+              <span className={styles.searchPlaceholder}>
+                Search modules, pages and actions
+              </span>
+              <span className={styles.searchShortcut}>Ctrl+K</span>
+            </button>
+          </div>
+
           <div className={styles.userSection} ref={menuRef}>
             {/* Dark / light mode toggle */}
             <button
@@ -112,11 +129,11 @@ const Header = ({ onMenuClick, hasSidebar = false }) => {
               {theme === "light" ? "🌙" : "☀️"}
             </button>
 
-            {/* Command palette (also opens with Ctrl+K / Cmd+K) */}
+            {/* Command palette button (alternate trigger) */}
             <button
               type="button"
               className={styles.themeToggle}
-              onClick={() => setIsPaletteOpen(true)}
+              onClick={openSearch}
               aria-label="Open command palette (Ctrl+K / Cmd+K)"
             >
               ⌘K

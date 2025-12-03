@@ -8,9 +8,9 @@
     rgba(67, 56, 202, 0.96),
     rgba(99, 102, 241, 0.96)
   );
-  backdrop-filter: blur(10px); /* glass effect */
+  backdrop-filter: blur(10px);
   transition: box-shadow 0.2s ease, background 0.2s ease;
-  box-shadow: none; /* shadow only when scrolled */
+  box-shadow: none;
 }
 
 .headerScrolled {
@@ -24,7 +24,7 @@
   padding: 0 32px;
   height: 72px;
   display: flex;
-  align-items: center;
+  align-items: centre;
   justify-content: space-between;
   box-sizing: border-box;
   transition: height 0.18s ease, padding 0.18s ease;
@@ -38,7 +38,7 @@
 /* Left section (logo + optional menu) */
 .left {
   display: flex;
-  align-items: center;
+  align-items: centre;
   gap: 14px;
 }
 
@@ -54,13 +54,13 @@
 
 .logoSection {
   display: flex;
-  align-items: center;
+  align-items: centre;
   gap: 10px;
 }
 
 .logoLink {
   display: flex;
-  align-items: center;
+  align-items: centre;
   gap: 12px;
   text-decoration: none;
   color: inherit;
@@ -73,9 +73,9 @@
   border-radius: 14px;
   overflow: hidden;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(118, 169, 218, 0.35); /* secondary accent (logo blue) */
+  align-items: centre;
+  justify-content: centre;
+  background: rgba(118, 169, 218, 0.35);
   box-shadow: 0 6px 14px rgba(15, 23, 42, 0.45);
   transition: transform 0.18s ease, box-shadow 0.18s ease,
     background 0.18s ease;
@@ -106,17 +106,71 @@
   color: #e5e7eb;
 }
 
+/* CENTRE: global search bar */
+.center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 18px;
+}
+
+.searchBar {
+  max-width: 420px;
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid rgba(241, 245, 249, 0.6);
+  background: rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(8px);
+  height: 38px;
+  padding: 0 10px;
+  display: flex;
+  align-items: centre;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
+  transition: background 0.15s ease, box-shadow 0.15s ease,
+    transform 0.1s ease, border-color 0.15s ease;
+}
+
+.searchBar:hover {
+  background: rgba(15, 23, 42, 0.18);
+  border-color: rgba(241, 245, 249, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.5);
+}
+
+.searchIcon {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.searchPlaceholder {
+  flex: 1;
+  text-align: left;
+  font-size: 0.9rem;
+  color: #e5e7eb;
+}
+
+.searchShortcut {
+  font-size: 0.75rem;
+  color: #e5e7eb;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
 /* Right section (avatar / auth + theme toggle) */
 .userSection {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: centre;
   gap: 0.75rem;
 }
 
 .userMenu {
   display: flex;
-  align-items: center;
+  align-items: centre;
   cursor: pointer;
   gap: 8px;
 }
@@ -132,10 +186,10 @@
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.5);
 }
 
-/* Theme toggle + ⌘K button (pill-style) */
+/* Theme toggle + ⌘K button */
 .themeToggle {
   border: none;
-  background: rgba(118, 169, 218, 0.26); /* logo blue as subtle accent */
+  background: rgba(118, 169, 218, 0.26);
   border-radius: 999px;
   padding: 0.35rem 0.7rem;
   font-size: 0.9rem;
@@ -262,5 +316,9 @@
 
   .logoSection {
     display: none;
+  }
+
+  .center {
+    display: none; /* hide big search bar on small screens, rely on ⌘K button */
   }
 }
