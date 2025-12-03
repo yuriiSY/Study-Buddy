@@ -34,7 +34,7 @@ const Flashcard = ({ cards = [], onFinish }) => {
             <div className={styles.card}>
               <div className={styles.header}>
                 <span className={styles.tag}>
-                  Flashcard {currentIndex + 1} / {cards.length}
+                  Recap Card {currentIndex + 1} / {cards.length}
                 </span>
                 <button
                   className={styles.hintBtn}

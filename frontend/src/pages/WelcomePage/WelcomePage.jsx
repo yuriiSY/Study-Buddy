@@ -12,7 +12,7 @@ export const WelcomePage = () => {
     {
       title: "Choose how you want to study",
       description:
-        "Turn flashcards into multiple-choice questions and more using Study Mode. Strengthen your knowledge with fun learning games like Matching.",
+        "Turn recap cards into multiple-choice questions and more using Study Mode. Strengthen your knowledge with fun learning games like Matching.",
       buttonText: "Start",
       image: intoImg3,
       bgColor: "#f9faff",
