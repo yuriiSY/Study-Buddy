@@ -21,7 +21,9 @@ const ManageModuleModal = ({
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("editor");
   const [collaborators, setCollaborators] = useState([]);
-  const [selectedCoverImage, setSelectedCoverImage] = useState(moduleCoverImage || null);
+  const [selectedCoverImage, setSelectedCoverImage] = useState(
+    moduleCoverImage || null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -203,54 +205,52 @@ const ManageModuleModal = ({
           <div className={styles.divider} />
 
           <div className={styles.section}>
-           
-              <div className={styles.sectionHeader}>
-                <h3>Completion Status</h3>
-              </div>
+            <div className={styles.sectionHeader}>
+              <h3>Completion Status</h3>
+            </div>
 
-              <label className={styles.switchRow}>
-                <span>Mark as Completed</span>
-                <label className={styles.switch}>
-                  <input
-                    type="checkbox"
-                    checked={isCompleted}
-                    onChange={handleToggleCompletion}
-                  />
-                  <span className={styles.slider}></span>
-                </label>
+            <label className={styles.switchRow}>
+              <span>Mark as Completed</span>
+              <label className={styles.switch}>
+                <input
+                  type="checkbox"
+                  checked={isCompleted}
+                  onChange={handleToggleCompletion}
+                />
+                <span className={styles.slider}></span>
               </label>
+            </label>
 
-              <div className={styles.divider} />
+            <div className={styles.divider} />
 
-              <div className={styles.sectionHeader}>
-                <Image size={20} className={styles.sectionIcon} />
-                <h3>Module Cover Image</h3>
+            <div className={styles.sectionHeader}>
+              <Image size={20} className={styles.sectionIcon} />
+              <h3>Module Cover Image</h3>
+            </div>
+
+            <div className={styles.imagePickerSection}>
+              <div className={styles.imageGrid}>
+                {imageOptions.map((img, idx) => (
+                  <div
+                    key={idx}
+                    className={`${styles.imageItem} ${
+                      selectedCoverImage === img ? styles.selectedImage : ""
+                    }`}
+                    onClick={() => setSelectedCoverImage(img)}
+                  >
+                    <img src={img} alt={`cover-${idx + 1}`} />
+                  </div>
+                ))}
               </div>
 
-              <div className={styles.imagePickerSection}>
-                <div className={styles.imageGrid}>
-                  {imageOptions.map((img, idx) => (
-                    <div
-                      key={idx}
-                      className={`${styles.imageItem} ${
-                        selectedCoverImage === img ? styles.selectedImage : ""
-                      }`}
-                      onClick={() => setSelectedCoverImage(img)}
-                    >
-                      <img src={img} alt={`cover-${idx + 1}`} />
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  className={styles.primaryBtn}
-                  onClick={handleUpdateCoverImage}
-                  disabled={loading || !selectedCoverImage}
-                >
-                  {loading ? "Saving..." : "Update Cover Image"}
-                </button>
-              </div>
-
+              <button
+                className={styles.primaryBtn}
+                onClick={handleUpdateCoverImage}
+                disabled={loading || !selectedCoverImage}
+              >
+                {loading ? "Saving..." : "Update Cover Image"}
+              </button>
+            </div>
           </div>
 
           <div className={styles.divider} />
