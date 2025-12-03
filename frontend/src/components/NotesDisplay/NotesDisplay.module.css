@@ -1,0 +1,194 @@
+.notesDisplay {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.8;
+  overflow-y: auto;
+  flex: 1;
+  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.notesDisplay::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notesDisplay::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notesDisplay::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.notesDisplay::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+.heading1 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin: 20px 0 12px 0;
+  color: var(--color-primary);
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border-color-light);
+}
+
+.heading2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 16px 0 10px 0;
+  color: var(--text-primary);
+}
+
+.heading3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 14px 0 8px 0;
+  color: var(--text-primary);
+}
+
+.heading4 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 12px 0 6px 0;
+  color: var(--text-secondary);
+}
+
+.paragraph {
+  margin: 10px 0;
+  padding: 0;
+  color: var(--text-primary);
+  word-wrap: break-word;
+}
+
+.spacer {
+  height: 6px;
+}
+
+.highlight {
+  background-color: #ffd966;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .highlight {
+    background-color: #b8860b;
+    color: #ffffff;
+  }
+}
+
+.underline {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.bold {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.italic {
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.smallText {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.largeText {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  margin: 6px 0;
+  cursor: pointer;
+  font-size: 15px;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.checkbox:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-color-light);
+}
+
+.checkboxInput {
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: all 0.2s ease;
+}
+
+.checkboxInput:hover {
+  transform: scale(1.1);
+}
+
+.checkboxInput:checked {
+  background-color: var(--color-primary);
+}
+
+.checkboxInput:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.checkedText {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  .notesDisplay {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .heading1 {
+    font-size: 1.6rem;
+    margin: 16px 0 10px 0;
+  }
+
+  .heading2 {
+    font-size: 1.3rem;
+    margin: 12px 0 8px 0;
+  }
+
+  .paragraph {
+    margin: 8px 0;
+  }
+
+  .checkbox {
+    padding: 8px 10px;
+    font-size: 14px;
+    margin: 4px 0;
+  }
+
+  .checkboxInput {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+  }
+}

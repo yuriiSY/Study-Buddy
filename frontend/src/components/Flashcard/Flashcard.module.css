@@ -230,8 +230,8 @@
   top: 30px;
   right: 0;
   width: 180px;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   padding: 10px;
   border-radius: 6px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);

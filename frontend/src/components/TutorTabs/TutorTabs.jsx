@@ -5,6 +5,8 @@ import TestsList from "../TestsList/TestsList";
 import MCQTest from "../MCQTest/MCQTest";
 import TestLeaderboard from "../TestLeaderboard/TestLeaderboard";
 import PomodoroTimer from "../PomodoroTimer/PomodoroTimer";
+import NotesEditor from "../NotesEditor/NotesEditor";
+import NotesDisplay from "../NotesDisplay/NotesDisplay";
 import styles from "./TutorTabs.module.css";
 import api from "../../api/axios";
 import apiPY from "../../api/axiosPython";
@@ -22,6 +24,7 @@ const TutorTabs = ({
   const [activeTab, setActiveTab] = useState("chat");
   const [notes, setNotes] = useState("");
   const [editing, setEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [flashcards, setFlashcards] = useState([]);
   const [loadingFlashcards, setLoadingFlashcards] = useState(false);
   const [flashcardsError, setFlashcardsError] = useState(null);
@@ -75,6 +78,7 @@ const TutorTabs = ({
 
   const handleSaveNotes = async () => {
     console.log("Saving notes for fileId:", fileid, "notes:", notes);
+    setIsSaving(true);
     try {
       await api.post("/notes", {
         userId,
@@ -85,15 +89,18 @@ const TutorTabs = ({
       setEditing(false);
     } catch (err) {
       console.error("Failed to save notes", err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleAddNote = async (text) => {
     try {
+      const formattedText = `\n\n**AI Response:**\n${text}`;
       const res = await api.post("/notes/append", {
         userId,
         fileId: fileid,
-        text,
+        text: formattedText,
       });
 
       setNotes(res.data.content);
@@ -233,7 +240,7 @@ const TutorTabs = ({
               <>
                 {notes ? (
                   <>
-                    <div className={styles.notesDisplay}>{notes}</div>
+                    <NotesDisplay content={notes} />
                     <button
                       className={styles.editBtn}
                       onClick={() => setEditing(true)}
@@ -256,17 +263,12 @@ const TutorTabs = ({
                 )}
               </>
             ) : (
-              <>
-                <textarea
-                  className={styles.textArea}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Write or paste your notes here..."
-                />
-                <button className={styles.saveBtn} onClick={handleSaveNotes}>
-                  Save
-                </button>
-              </>
+              <NotesEditor 
+                notes={notes} 
+                setNotes={setNotes} 
+                onSave={handleSaveNotes}
+                isSaving={isSaving}
+              />
             )}
           </div>
         )}
