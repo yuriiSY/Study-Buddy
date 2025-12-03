@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import styles from "./Chat.module.css";
 import Message from "../Message/Message";
 import apiPY from "../../api/axiosPython";
-import { Send, BookMarked, Lightbulb, FileText, Brain } from "lucide-react";
+import { Send, BookMarked, Lightbulb, FileText, Brain, Target, Check } from "lucide-react";
 
 const Chat = ({ 
   externalId, 
@@ -16,6 +16,7 @@ const Chat = ({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [addedNotes, setAddedNotes] = useState(new Set());
   const chatBoxRef = useRef(null);
 
   useEffect(() => {
@@ -154,12 +155,27 @@ const Chat = ({
 
                   {msg.sender === "bot" && (
                     <button
-                      className={styles.addToNotesBtn}
-                      onClick={() => onAddNote(msg.text)}
-                      title="Add this response to notes"
+                      className={`${styles.addToNotesBtn} ${addedNotes.has(idx) ? styles.addedToNotes : ''}`}
+                      onClick={async () => {
+                        if (!addedNotes.has(idx)) {
+                          await onAddNote(msg.text);
+                          setAddedNotes(prev => new Set(prev).add(idx));
+                        }
+                      }}
+                      disabled={addedNotes.has(idx)}
+                      title={addedNotes.has(idx) ? "Added to notes" : "Add this response to notes"}
                     >
-                      <BookMarked size={14} />
-                      Add to Notes
+                      {addedNotes.has(idx) ? (
+                        <>
+                          <Check size={14} />
+                          Added to Notes
+                        </>
+                      ) : (
+                        <>
+                          <BookMarked size={14} />
+                          Add to Notes
+                        </>
+                      )}
                     </button>
                   )}
                 </div>
@@ -206,6 +222,15 @@ const Chat = ({
           >
             <Brain size={16} />
             Generate Analogy
+          </button>
+          <button
+            className={styles.actionBtn}
+            onClick={() => sendPresetPrompt("Detect Knowledge Gap", "Analyze these study notes and identify their biggest knowledge gaps. For each gap, generate additional notes that provide the missing depth, context, and practical applications needed for true mastery.")}
+            disabled={!externalId || loading}
+            title={!externalId ? "Select a file first" : "Detect knowledge gaps"}
+          >
+            <Target size={16} />
+            Detect Knowledge Gap
           </button>
           {!flashcardsExist && (
             <button
