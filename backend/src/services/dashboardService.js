@@ -4,10 +4,30 @@ import * as streakService from "./streakService.js";
 export const getDashboardStats = async (userId) => {
   userId = Number(userId);
 
-  const totalModules = await prisma.module.count();
+  const ownedModules = await prisma.module.findMany({
+    where: { ownerId: userId },
+    select: { id: true },
+  });
+
+  const colaboratedModules = await prisma.collaboration.findMany({
+    where: { userId },
+    select: { moduleId: true },
+  });
+
+  const userModuleIds = [
+    ...new Set([
+      ...ownedModules.map((m) => m.id),
+      ...colaboratedModules.map((c) => c.moduleId),
+    ]),
+  ];
+
+  const totalModules = userModuleIds.length;
 
   const totalCompleted = await prisma.moduleCompletion.count({
-    where: { userId },
+    where: {
+      userId,
+      moduleId: { in: userModuleIds },
+    },
   });
 
   const overallProgress =
