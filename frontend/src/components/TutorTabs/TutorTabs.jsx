@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Chat from "../Chat/Chat";
 import Flashcard from "../Flashcard/Flashcard";
 import TestsList from "../TestsList/TestsList";
@@ -35,6 +35,7 @@ const TutorTabs = ({
   const [currentFlashcardSetId, setCurrentFlashcardSetId] = useState(null);
   const [selectedTest, setSelectedTest] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const notesPanelRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -125,7 +126,6 @@ const TutorTabs = ({
       });
 
       setNotes(res.data.content);
-      setActiveTab("notes");
     } catch (err) {
       console.error("Failed to append note", err);
     }
@@ -134,6 +134,8 @@ const TutorTabs = ({
   const loadFlashcards = async () => {
     setLoadingFlashcards(true);
     setFlashcardsError(null);
+    setShowFlashcardsTab(true);
+    setActiveTab("flashcards");
 
     try {
       const res = await apiPY.post("/generate-flashcards", {
@@ -167,9 +169,6 @@ const TutorTabs = ({
         setFlashcardsExist(true);
         setCurrentFlashcardSetId(saveRes.data.id);
       }
-
-      setShowFlashcardsTab(true);
-      setActiveTab("flashcards");
     } catch (err) {
       console.error("Failed to load flashcards:", err);
       setFlashcardsError(
@@ -283,7 +282,7 @@ const TutorTabs = ({
         )}
 
         {activeTab === "notes" && (
-          <div className={styles.notesPanel}>
+          <div className={styles.notesPanel} ref={notesPanelRef}>
             {!editing ? (
               <>
                 {notes ? (

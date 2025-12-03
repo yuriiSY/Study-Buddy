@@ -104,12 +104,22 @@
 .option input {
   accent-color: #000;
   cursor: pointer;
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  .option input {
-    accent-color: #fff;
-  }
+:root[data-theme='sepia'] .option input {
+  accent-color: #000;
+  color-scheme: light;
+}
+
+:root[data-theme='light'] .option input {
+  accent-color: #000;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] .option input {
+  accent-color: #fff;
+  color-scheme: dark;
 }
 
 .selected {
