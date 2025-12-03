@@ -12,19 +12,25 @@ const ManageModuleModal = ({
   moduleId,
   moduleTitle,
   onUpdate,
+  onRefresh,
+  onStatsRefresh,
   moduleCoverImage,
 }) => {
   const [title, setTitle] = useState(moduleTitle || "");
+  const [isCompleted, setIsCompleted] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("editor");
   const [collaborators, setCollaborators] = useState([]);
-  const [selectedCoverImage, setSelectedCoverImage] = useState(moduleCoverImage || null);
+  const [selectedCoverImage, setSelectedCoverImage] = useState(
+    moduleCoverImage || null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (moduleId && isOpen) {
       fetchCollaborators();
+      fetchCompletionStatus();
     }
   }, [moduleId, isOpen]);
 
@@ -35,6 +41,38 @@ const ManageModuleModal = ({
     } catch (err) {
       console.error("Failed to fetch collaborators:", err);
       setError("Failed to load collaborators");
+    }
+  };
+
+  const fetchCompletionStatus = async () => {
+    try {
+      const res = await api.get(`files/modules/${moduleId}/iscompleted`);
+      setIsCompleted(res.data.completed || false);
+    } catch (err) {
+      console.error("Failed to load completion status:", err);
+    }
+  };
+
+  const handleToggleCompletion = async () => {
+    try {
+      const newState = !isCompleted;
+      setIsCompleted(newState);
+
+      if (newState) {
+        await api.post(`files/modules/${moduleId}/complete`);
+      } else {
+        await api.delete(`files/modules/${moduleId}/complete`);
+      }
+
+      if (onRefresh) {
+        onRefresh();
+      }
+
+      if (onStatsRefresh) {
+        onStatsRefresh();
+      }
+    } catch (err) {
+      console.error("Failed to update completion:", err);
     }
   };
 
@@ -168,9 +206,28 @@ const ManageModuleModal = ({
 
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
+              <h3>Completion Status</h3>
+            </div>
+
+            <label className={styles.switchRow}>
+              <span>Mark as Completed</span>
+              <label className={styles.switch}>
+                <input
+                  type="checkbox"
+                  checked={isCompleted}
+                  onChange={handleToggleCompletion}
+                />
+                <span className={styles.slider}></span>
+              </label>
+            </label>
+
+            <div className={styles.divider} />
+
+            <div className={styles.sectionHeader}>
               <Image size={20} className={styles.sectionIcon} />
               <h3>Module Cover Image</h3>
             </div>
+
             <div className={styles.imagePickerSection}>
               <div className={styles.imageGrid}>
                 {imageOptions.map((img, idx) => (
@@ -185,6 +242,7 @@ const ManageModuleModal = ({
                   </div>
                 ))}
               </div>
+
               <button
                 className={styles.primaryBtn}
                 onClick={handleUpdateCoverImage}

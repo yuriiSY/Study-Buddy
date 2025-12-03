@@ -94,6 +94,7 @@ export const createTestFromMCQs = async ({
   title,
   description,
   mcqs,
+  totalQuestions,
 }) => {
   if (!file_id || !mcqs) {
     throw new Error("file_id and mcqs are required");
@@ -105,6 +106,34 @@ export const createTestFromMCQs = async ({
       title,
       description,
       questions: mcqs,
+      total_questions: totalQuestions,
     },
   });
+};
+
+export const getUserAveragePercentage = async (userId) => {
+  userId = Number(userId);
+
+  const scores = await prisma.testScore.findMany({
+    where: { userId },
+    include: {
+      test: true,
+    },
+  });
+
+  if (scores.length === 0) return null;
+
+  let totalScore = 0;
+  let totalPossible = 0;
+
+  for (const s of scores) {
+    totalScore += s.score;
+    totalPossible += s.test.total_questions || 0;
+  }
+
+  if (totalPossible === 0) return 0;
+
+  const percentage = (totalScore / totalPossible) * 100;
+
+  return Number(percentage.toFixed(2));
 };

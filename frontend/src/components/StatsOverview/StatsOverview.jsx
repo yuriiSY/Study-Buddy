@@ -1,42 +1,70 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import api from "../../api/axios";
 import styles from "./StatsOverview.module.css";
 import { TrendingUp, BookOpen, Clock, BarChart3 } from "lucide-react";
 
-export const StatsOverview = () => {
-  const stats = [
-    {
-      id: 1,
-      label: "Overall Progress",
-      value: "65%",
-      icon: TrendingUp,
-      color: "blue",
-      sublabel: "+5% this week",
-    },
-    {
-      id: 2,
-      label: "Modules Completed",
-      value: "4 / 6",
-      icon: BookOpen,
-      color: "cyan",
-      sublabel: "67% done",
-    },
-    {
-      id: 3,
-      label: "Hours Studied",
-      value: "52",
-      icon: Clock,
-      color: "amber",
-      sublabel: "+8 this week",
-    },
-    {
-      id: 4,
-      label: "Average Test Score",
-      value: "84%",
-      icon: BarChart3,
-      color: "green",
-      sublabel: "Best: 92%",
-    },
-  ];
+export const StatsOverview = ({ refresh }) => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const res = await api.get("/dashboard");
+
+        const data = res.data;
+
+        setStats([
+          {
+            id: 1,
+            label: "Overall Progress",
+            value: `${data.overallProgress}%`,
+            icon: TrendingUp,
+            color: "blue",
+            sublabel: "",
+          },
+          {
+            id: 2,
+            label: "Modules Completed",
+            value: `${data.totalCompleted} / ${data.totalModules}`,
+            icon: BookOpen,
+            color: "cyan",
+            sublabel: `${(
+              (data.totalCompleted / data.totalModules) *
+              100
+            ).toFixed(0)}% done`,
+          },
+          {
+            id: 3,
+            label: "Days in a Row",
+            value: data.totalDaysInRow,
+            icon: Clock,
+            color: "amber",
+            sublabel: `${
+              data.totalDaysInRow > 1 ? "🔥 Keep going!" : "Start strong!"
+            }`,
+          },
+          {
+            id: 4,
+            label: "Average Test Score",
+            value: `${data.averageTestScore}%`,
+            icon: BarChart3,
+            color: "green",
+            sublabel: "",
+          },
+        ]);
+      } catch (err) {
+        console.error("Failed to load dashboard stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStats();
+  }, [[refresh]]);
+
+  if (loading) return <div>Loading stats...</div>;
+  if (!stats) return <div>Failed to load stats.</div>;
 
   const getColorClass = (color) => {
     const colorMap = {
@@ -53,8 +81,12 @@ export const StatsOverview = () => {
       <div className={styles.statsGrid}>
         {stats.map((stat) => {
           const IconComponent = stat.icon;
+
           return (
-            <div key={stat.id} className={`${styles.statCard} ${getColorClass(stat.color)}`}>
+            <div
+              key={stat.id}
+              className={`${styles.statCard} ${getColorClass(stat.color)}`}
+            >
               <div className={styles.iconWrapper}>
                 <IconComponent size={24} />
               </div>

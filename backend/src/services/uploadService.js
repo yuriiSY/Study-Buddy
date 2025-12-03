@@ -90,3 +90,67 @@ export const convertDocxToHtml = async (filePath) => {
 
   return result.value;
 };
+
+export const completeModule = async (userId, moduleId) => {
+  return prisma.moduleCompletion.upsert({
+    where: {
+      userId_moduleId: {
+        userId: Number(userId),
+        moduleId: Number(moduleId),
+      },
+    },
+    update: {},
+    create: {
+      userId: Number(userId),
+      moduleId: Number(moduleId),
+    },
+  });
+};
+
+export const isModuleCompleted = async (userId, moduleId) => {
+  return prisma.moduleCompletion.findUnique({
+    where: {
+      userId_moduleId: {
+        userId: Number(userId),
+        moduleId: Number(moduleId),
+      },
+    },
+  });
+};
+
+export const getUserCompletedModules = async (userId) => {
+  return prisma.moduleCompletion.findMany({
+    where: { userId: Number(userId) },
+    include: { module: true },
+  });
+};
+
+export const getModuleCompletionStats = async (userId) => {
+  userId = Number(userId);
+
+  const totalModules = await prisma.module.count();
+
+  const totalCompleted = await prisma.moduleCompletion.count({
+    where: { userId },
+  });
+
+  const percentageCompleted =
+    totalModules === 0
+      ? 0
+      : Number(((totalCompleted / totalModules) * 100).toFixed(2));
+
+  return {
+    totalModules,
+    totalCompleted,
+    percentageCompleted,
+  };
+};
+
+export const uncompleteModule = async (userId, moduleId) => {
+  return prisma.moduleCompletion.deleteMany({
+    where: {
+      userId: Number(userId),
+      moduleId: Number(moduleId),
+    },
+  });
+};

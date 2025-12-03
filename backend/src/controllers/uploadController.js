@@ -277,7 +277,7 @@ export const deleteModule = async (req, res) => {
       return res.status(404).json({ error: "Module not found" });
     }
 
-    const fileIds = module.files.map(f => String(f.id));
+    const fileIds = module.files.map((f) => String(f.id));
 
     if (fileIds.length > 0) {
       try {
@@ -289,9 +289,11 @@ export const deleteModule = async (req, res) => {
           },
           body: JSON.stringify({ file_ids: fileIds }),
         });
-        
+
         if (!response.ok) {
-          console.warn(`Flask delete embeddings failed with status ${response.status}`);
+          console.warn(
+            `Flask delete embeddings failed with status ${response.status}`
+          );
         } else {
           const result = await response.json();
           console.log("Flask deletion result:", result);
@@ -304,7 +306,7 @@ export const deleteModule = async (req, res) => {
         await prisma.note.deleteMany({
           where: {
             fileId: {
-              in: module.files.map(f => f.id),
+              in: module.files.map((f) => f.id),
             },
           },
         });
@@ -564,5 +566,96 @@ export const leaveModule = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to leave module" });
+  }
+};
+
+export const markModuleCompleted = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { moduleId } = req.params;
+
+    if (!moduleId) {
+      return res.status(400).json({ message: "moduleId is required" });
+    }
+
+    const completed = await uploadService.completeModule(userId, moduleId);
+
+    await prisma.module.update({
+      where: { id: Number(moduleId) },
+      data: { archived: true },
+    });
+
+    return res.json({
+      message: "Module marked as completed",
+      completed,
+    });
+  } catch (err) {
+    console.error("Error marking module completed:", err);
+    res.status(500).json({ message: "Failed to mark module completed" });
+  }
+};
+
+export const unmarkModuleCompleted = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { moduleId } = req.params;
+
+    if (!moduleId) {
+      return res.status(400).json({ message: "moduleId is required" });
+    }
+
+    await uploadService.uncompleteModule(userId, moduleId);
+
+    await prisma.module.update({
+      where: { id: Number(moduleId) },
+      data: { archived: false },
+    });
+
+    return res.json({
+      message: "Module marked as NOT completed",
+    });
+  } catch (err) {
+    console.error("Error unmarking module completed:", err);
+    res.status(500).json({ message: "Failed to unmark module completion" });
+  }
+};
+
+export const checkCompleted = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { moduleId } = req.params;
+
+    const completed = await uploadService.isModuleCompleted(userId, moduleId);
+
+    return res.json({ completed: !!completed });
+  } catch (err) {
+    console.error("Error checking completion:", err);
+    res.status(500).json({ message: "Failed to check completion" });
+  }
+};
+
+export const listCompletedModules = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const modules = await uploadService.getUserCompletedModules(userId);
+
+    return res.json(modules);
+  } catch (err) {
+    console.error("Error loading completed modules:", err);
+    res.status(500).json({ message: "Failed to load completed modules" });
+  }
+};
+
+export const getModuleCompletionSummary = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const stats = await uploadService.getModuleCompletionStats(userId);
+
+    return res.json(stats);
+  } catch (err) {
+    console.error("Error loading module summary:", err);
+    res.status(500).json({ message: "Failed to load module completion stats" });
   }
 };

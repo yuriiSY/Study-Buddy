@@ -6,6 +6,7 @@ import {
   deleteTest,
   getTestsByFileId,
   createTestFromMCQs,
+  getUserAveragePercentage,
 } from "../services/testService.js";
 
 export const getLeaderboard = async (req, res) => {
@@ -92,18 +93,36 @@ export const getTestsForFile = async (req, res) => {
 
 export const createFromMCQs = async (req, res) => {
   try {
-    const { file_id, title, description, mcqs } = req.body;
+    const { file_id, title, description, mcqs, totalQuestions } = req.body;
 
     const test = await createTestFromMCQs({
       file_id,
       title,
       description,
       mcqs,
+      totalQuestions,
     });
 
     res.json(test);
   } catch (err) {
     console.error("Create test error:", err);
     res.status(500).json({ error: "Failed to create test" });
+  }
+};
+
+export const getAverageScorePercentage = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const percentage = await getUserAveragePercentage(userId);
+
+    if (percentage === null) {
+      return res.json({ percentage: 0 });
+    }
+
+    return res.json({ percentage });
+  } catch (err) {
+    console.error("Error calculating percentage:", err);
+    return res.status(500).json({ message: "Failed to calculate percentage" });
   }
 };

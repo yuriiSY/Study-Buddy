@@ -16,6 +16,11 @@ import {
   getCollaborators,
   searchModulesByTitle,
   leaveModule,
+  markModuleCompleted,
+  checkCompleted,
+  listCompletedModules,
+  getModuleCompletionSummary,
+  unmarkModuleCompleted,
 } from "../controllers/uploadController.js";
 
 const router = express.Router();
@@ -43,5 +48,11 @@ router.delete(
 router.get("/modules/:moduleId/quit", leaveModule);
 
 router.get("/modules/:fileId", getFileUrl);
+
+router.post("/modules/:moduleId/complete", markModuleCompleted);
+router.delete("/modules/:moduleId/complete", unmarkModuleCompleted);
+router.get("/modules/:moduleId/iscompleted", checkCompleted);
+router.get("/modules/completed", listCompletedModules);
+router.get("modules/completed/info", getModuleCompletionSummary);
 
 export default router;
