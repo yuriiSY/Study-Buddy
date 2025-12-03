@@ -38,12 +38,14 @@ const TestsList = ({ fileId, onSelectTest }) => {
 
       const mcqs = aiRes.data.mcqs;
       const nextTestNumber = tests.length + 1;
+      const totalQuestions = mcqs.length;
 
       const saveRes = await api.post("/test/create-from-mcqs", {
         file_id: fileId,
         title: `Test ${nextTestNumber}`,
         description: `Auto-generated test (${mcqs.length} questions)`,
         mcqs,
+        totalQuestions,
       });
 
       setTests((prev) => [saveRes.data, ...prev]);
@@ -69,25 +71,33 @@ const TestsList = ({ fileId, onSelectTest }) => {
 
       <div className={styles.list}>
         {tests.map((test, index) => {
-          const hasScore = test.userScore !== null && test.userScore !== undefined;
-          const percentage = hasScore ? Math.round((test.userScore / test.questions.length) * 100) : null;
-          const scoreLevel = percentage >= 70 ? "good" : percentage >= 50 ? "average" : "poor";
+          const hasScore =
+            test.userScore !== null && test.userScore !== undefined;
+          const percentage = hasScore
+            ? Math.round((test.userScore / test.questions.length) * 100)
+            : null;
+          const scoreLevel =
+            percentage >= 70 ? "good" : percentage >= 50 ? "average" : "poor";
 
           return (
             <div key={test.id} className={styles.testCard}>
               <div className={styles.testInfo}>
-                <h3 className={styles.testName}>{test.title || `Test ${getTestNumberLabel(index)}`}</h3>
+                <h3 className={styles.testName}>
+                  {test.title || `Test ${getTestNumberLabel(index)}`}
+                </h3>
                 <p className={styles.testDesc}>{test.description}</p>
               </div>
-              
+
               <div className={styles.cardRight}>
                 {hasScore && (
                   <div className={`${styles.scoreBadge} ${styles[scoreLevel]}`}>
                     <div className={styles.scorePercentage}>{percentage}%</div>
-                    <div className={styles.scoreFraction}>{test.userScore}/{test.questions.length}</div>
+                    <div className={styles.scoreFraction}>
+                      {test.userScore}/{test.questions.length}
+                    </div>
                   </div>
                 )}
-                
+
                 <button
                   className={styles.takeTestBtn}
                   onClick={() => onSelectTest(test.id)}

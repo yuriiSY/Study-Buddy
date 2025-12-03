@@ -9,8 +9,10 @@ const ManageModuleModal = ({
   moduleId,
   moduleTitle,
   onUpdate,
+  onRefresh,
 }) => {
   const [title, setTitle] = useState(moduleTitle || "");
+  const [isCompleted, setIsCompleted] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("editor");
   const [collaborators, setCollaborators] = useState([]);
@@ -20,6 +22,7 @@ const ManageModuleModal = ({
   useEffect(() => {
     if (moduleId && isOpen) {
       fetchCollaborators();
+      fetchCompletionStatus();
     }
   }, [moduleId, isOpen]);
 
@@ -30,6 +33,32 @@ const ManageModuleModal = ({
     } catch (err) {
       console.error("Failed to fetch collaborators:", err);
       setError("Failed to load collaborators");
+    }
+  };
+
+  const fetchCompletionStatus = async () => {
+    try {
+      const res = await api.get(`files/modules/${moduleId}/iscompleted`);
+      setIsCompleted(res.data.completed || false);
+    } catch (err) {
+      console.error("Failed to load completion status:", err);
+    }
+  };
+
+  const handleToggleCompletion = async () => {
+    try {
+      const newState = !isCompleted;
+      setIsCompleted(newState);
+
+      if (newState) {
+        await api.post(`files/modules/${moduleId}/complete`);
+      } else {
+        await api.delete(`files/modules/${moduleId}/complete`);
+      }
+
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error("Failed to update completion:", err);
     }
   };
 
@@ -134,6 +163,26 @@ const ManageModuleModal = ({
                 {loading ? "Saving..." : "Update"}
               </button>
             </div>
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h3>Completion Status</h3>
+            </div>
+
+            <label className={styles.switchRow}>
+              <span>Mark as Completed</span>
+              <label className={styles.switch}>
+                <input
+                  type="checkbox"
+                  checked={isCompleted}
+                  onChange={handleToggleCompletion}
+                />
+                <span className={styles.slider}></span>
+              </label>
+            </label>
           </div>
 
           <div className={styles.divider} />

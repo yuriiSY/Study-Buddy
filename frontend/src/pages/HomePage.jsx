@@ -29,18 +29,19 @@ export const HomePage = () => {
     return window.innerWidth <= 768;
   });
 
+  const fetchModules = async () => {
+    try {
+      const res = await api.get("/files/modules");
+      setModules(res.data.modules || []);
+    } catch (err) {
+      console.error("Failed to fetch modules:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch modules
   useEffect(() => {
-    const fetchModules = async () => {
-      try {
-        const res = await api.get("/files/modules");
-        setModules(res.data.modules || []);
-      } catch (err) {
-        console.error("Failed to fetch modules:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchModules();
   }, []);
 
@@ -107,7 +108,7 @@ export const HomePage = () => {
 
   const activeModules = modules.filter((m) => !m.archived);
   const archivedModules = modules.filter((m) => m.archived);
-  
+
   const sortByLastOpened = (mods) => {
     return [...mods].sort((a, b) => {
       const aTime = new Date(a.lastAccessedAt || a.createdAt).getTime();
@@ -115,10 +116,10 @@ export const HomePage = () => {
       return bTime - aTime;
     });
   };
-  
+
   const sortedActiveModules = sortByLastOpened(activeModules);
   const sortedArchivedModules = sortByLastOpened(archivedModules);
-  
+
   const filteredActive = sortedActiveModules.filter((m) =>
     m.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -131,20 +132,34 @@ export const HomePage = () => {
     <>
       <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
       <Layout>
-        <div className={`${styles.homePage} ${isProgressCollapsed ? styles.progressCollapsed : ""}`}>
+        <div
+          className={`${styles.homePage} ${
+            isProgressCollapsed ? styles.progressCollapsed : ""
+          }`}
+        >
           {modules.length === 0 ? (
             <Onboarding onClick={handleOpenModal} />
           ) : (
             <div className={styles.content}>
-              <div className={`${styles.progressSection} ${isProgressCollapsed ? styles.collapsed : ""}`}>
+              <div
+                className={`${styles.progressSection} ${
+                  isProgressCollapsed ? styles.collapsed : ""
+                }`}
+              >
                 <div className={styles.progressHeader}>
                   <h3>Your Progress</h3>
-                  <button 
+                  <button
                     className={styles.collapseBtn}
                     onClick={() => setIsProgressCollapsed(!isProgressCollapsed)}
-                    title={isProgressCollapsed ? "Show progress" : "Hide progress"}
+                    title={
+                      isProgressCollapsed ? "Show progress" : "Hide progress"
+                    }
                   >
-                    {isProgressCollapsed ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                    {isProgressCollapsed ? (
+                      <ChevronDown size={20} />
+                    ) : (
+                      <ChevronUp size={20} />
+                    )}
                   </button>
                 </div>
                 {!isProgressCollapsed && <StatsOverview />}
@@ -192,8 +207,14 @@ export const HomePage = () => {
                   {viewMode === "active" && filteredActive.length === 0 ? (
                     <div className={styles.emptyState}>
                       <FolderOpen size={48} />
-                      <h3>{searchQuery ? "No modules found" : "No Active Modules"}</h3>
-                      <p>{searchQuery ? "Try a different search term" : "Create your first module to get started"}</p>
+                      <h3>
+                        {searchQuery ? "No modules found" : "No Active Modules"}
+                      </h3>
+                      <p>
+                        {searchQuery
+                          ? "Try a different search term"
+                          : "Create your first module to get started"}
+                      </p>
                       {!searchQuery && (
                         <button
                           className={styles.emptyStateBtn}
@@ -246,8 +267,16 @@ export const HomePage = () => {
                   {viewMode === "archived" && filteredArchived.length === 0 && (
                     <div className={styles.emptyState}>
                       <Archive size={48} />
-                      <h3>{searchQuery ? "No modules found" : "No Archived Modules"}</h3>
-                      <p>{searchQuery ? "Try a different search term" : "Archive modules to organize your workspace"}</p>
+                      <h3>
+                        {searchQuery
+                          ? "No modules found"
+                          : "No Archived Modules"}
+                      </h3>
+                      <p>
+                        {searchQuery
+                          ? "Try a different search term"
+                          : "Archive modules to organize your workspace"}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -277,6 +306,7 @@ export const HomePage = () => {
             moduleId={manageModal.moduleId}
             moduleTitle={manageModal.title}
             onUpdate={handleUpdateModule}
+            onRefresh={fetchModules}
           />
         )}
       </Layout>
