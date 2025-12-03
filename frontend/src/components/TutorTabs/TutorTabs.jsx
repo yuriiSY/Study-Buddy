@@ -238,7 +238,7 @@ const TutorTabs = ({
             className={`${styles.tab} ${activeTab === "flashcards" ? styles.active : ""}`}
             onClick={() => setActiveTab("flashcards")}
           >
-            Flashcards
+            Recap Cards
             {loadingFlashcards && <span className={styles.loadingIndicator}>...</span>}
           </button>
         )}
@@ -326,7 +326,7 @@ const TutorTabs = ({
               <div className={styles.generatingOverlay}>
                 <div className={styles.generatingContent}>
                   <div className={styles.spinner}></div>
-                  <p>Generating flashcards...</p>
+                  <p>Generating recap cards...</p>
                   <span className={styles.dot}>.</span>
                   <span className={styles.dot} style={{animationDelay: '0.2s'}}>.</span>
                   <span className={styles.dot} style={{animationDelay: '0.4s'}}>.</span>
@@ -334,7 +334,7 @@ const TutorTabs = ({
               </div>
             ) : flashcardsError ? (
               <div style={{ padding: 20 }}>
-                <h2 style={{ color: "red" }}>Failed to load flashcards</h2>
+                <h2 style={{ color: "red" }}>Failed to load recap cards</h2>
                 <button
                   onClick={loadFlashcards}
                   style={{

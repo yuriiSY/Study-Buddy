@@ -237,10 +237,10 @@ const Chat = ({
               className={styles.actionBtn}
               onClick={onGenerateFlashcards}
               disabled={!externalId}
-              title={!externalId ? "Select a file first" : "Generate flashcards"}
+              title={!externalId ? "Select a file first" : "Generate recap cards"}
             >
               <BookMarked size={16} />
-              Generate Flashcards
+              Generate Recap Cards
             </button>
           )}
           {!testsExist && (
