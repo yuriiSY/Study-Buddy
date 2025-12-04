@@ -8,6 +8,7 @@ const StudySection = ({
   image,
   reverse = false,
   bgColor = "#f5f7fb",
+  onButtonClick, // Welcome buttons click handler
 }) => {
   return (
     <section
@@ -21,7 +22,12 @@ const StudySection = ({
       <div className={styles.textContent}>
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.description}>{description}</p>
-        <button className={styles.button}>{buttonText}</button>
+        <button
+          className={styles.button}
+          onClick={onButtonClick} // Welcome buttons click handler
+        >
+          {buttonText}
+        </button>
       </div>
     </section>
   );
