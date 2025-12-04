@@ -154,3 +154,35 @@ select {
   margin: 1rem auto;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
+
+/* Study Buddy toast styling */
+.sb-toast {
+  border-radius: 12px;
+  padding: 0.6rem 0.85rem;
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: 0.85rem;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.35);
+}
+
+.sb-toast__body {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Error colouring */
+.Toastify__toast--success {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.Toastify__toast--error {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+}
+
+.Toastify__toast--info {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+}
+
+.Toastify__toast--warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}

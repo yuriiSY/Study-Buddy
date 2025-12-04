@@ -63,16 +63,21 @@ export default function App() {
         />
       </Routes>
 
+      {}
       <ToastContainer
         position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
+        autoClose={2500}
+        hideProgressBar
         newestOnTop
         closeOnClick
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="colored"
+        limit={3}
+        toastClassName={() =>
+          "sb-toast sb-toast--shadow sb-toast--rounded"
+        }
+        bodyClassName={() => "sb-toast__body"}
       />
     </div>
   );
