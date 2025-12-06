@@ -41,8 +41,6 @@ export default function App() {
             </PublicRoute>
           }
         />
-
-        {/* Private routes */}
         <Route
           path="/home"
           element={
@@ -51,6 +49,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+        {/* Private routes */}
         <Route
           path="/modules/:moduleId"
           element={

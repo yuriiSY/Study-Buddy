@@ -27,7 +27,7 @@ const Chat = ({
       try {
         const res = await apiPY.get("/chat-history", {
           params: {
-            "file_ids[]": externalId,
+            file_ids: externalId,
             limit: 50,
           },
         });

@@ -17,7 +17,7 @@ import openpyxl
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from typing import List
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -50,6 +50,10 @@ S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 AWS_REGION = os.environ.get("AWS_REGION")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+
+# Image / CLIP processing controls
+ENABLE_CLIP_IMAGES = os.environ.get("ENABLE_CLIP_IMAGES", "false").lower() == "true"
+MAX_IMAGES_PER_FILE = int(os.environ.get("MAX_IMAGES_PER_FILE", "20"))
 
 # ---------------- FASTAPI APP ----------------
 app = FastAPI(title="Study Buddy API")
@@ -1342,41 +1346,54 @@ async def upload_files(
                 print(f"❌ Failed to store text chunks: {e}")
 
         # CRITICAL: Store image descriptions in CLIP vector store
+        images_stored = 0  # default for debug_info below
+
         if images and len(images) > 0:
-            print(f"Processing {len(images)} images for CLIP storage...")
-            images_stored = 0
-            
-            for img_index, img in enumerate(images):
-                print(f"  Processing image {img_index + 1}/{len(images)}...")
-                try:
-                    # Generate image description
-                    description = generate_image_description(img)
-                    print(f"  Generated description: {description[:100]}...")
-                    
-                    # Prepare metadata
-                    metadata = {
-                        "file_id": file_id,
-                        "file_name": filename,
-                        "image_index": img_index,
-                        "file_type": "image",
-                        "content_type": "image",
-                        "original_content": description[:500]  # Limit description length
-                    }
-                    
-                    # Store in CLIP vector store
-                    clip_store.add_texts(
-                        texts=[description],
-                        metadatas=[metadata],
-                        ids=[str(uuid.uuid4())]
-                    )
-                    
-                    images_stored += 1
-                    print(f"  ✅ Successfully stored image {img_index + 1}")
-                    
-                except Exception as e:
-                    print(f"  ❌ Failed to process/store image {img_index}: {e}")
-            
-            print(f"✅ Total images stored in CLIP: {images_stored}/{len(images)}")
+            if not ENABLE_CLIP_IMAGES:
+                print(f"⚠️ CLIP image embedding DISABLED (ENABLE_CLIP_IMAGES=false). "
+                      f"Skipping {len(images)} images for file {filename}.")
+            else:
+                # Limit number of images per file for performance
+                total_images = len(images)
+                if total_images > MAX_IMAGES_PER_FILE:
+                    print(f"⚠️ Limiting images for CLIP from {total_images} to "
+                          f"{MAX_IMAGES_PER_FILE} for file {filename}.")
+                    images = images[:MAX_IMAGES_PER_FILE]
+
+                print(f"Processing {len(images)} images for CLIP storage...")
+                images_stored = 0
+
+                for img_index, img in enumerate(images):
+                    print(f"  Processing image {img_index + 1}/{len(images)}...")
+                    try:
+                        # Generate image description
+                        description = generate_image_description(img)
+                        print(f"  Generated description: {description[:100]}...")
+
+                        # Prepare metadata
+                        metadata = {
+                            "file_id": file_id,
+                            "file_name": filename,
+                            "image_index": img_index,
+                            "file_type": "image",
+                            "content_type": "image",
+                            "original_content": description[:500]  # Limit description length
+                        }
+
+                        # Store in CLIP vector store
+                        clip_store.add_texts(
+                            texts=[description],
+                            metadatas=[metadata],
+                            ids=[str(uuid.uuid4())]
+                        )
+
+                        images_stored += 1
+                        print(f"  ✅ Successfully stored image {img_index + 1}")
+
+                    except Exception as e:
+                        print(f"  ❌ Failed to process/store image {img_index}: {e}")
+
+                print(f"✅ Total images stored in CLIP: {images_stored}/{len(images)}")
         else:
             print(f"⚠️ No images found to store in CLIP")
 
@@ -1503,7 +1520,33 @@ Please answer based on the document content above."""
         error_msg = f"Groq API error: {e}"
         print(error_msg)
         return JSONResponse(content={"error": error_msg}, status_code=500)
-    
+
+def extract_file_ids_from_request(request: Request) -> List[str]:
+    """
+    Extract file IDs from query parameters.
+
+    Supports:
+    - ?file_ids=id1&file_ids=id2
+    - ?file_ids[]=id1&file_ids[]=id2
+    - ?file_ids=id1  (single value)
+    """
+    params = request.query_params
+
+    # Standard FastAPI style: ?file_ids=id1&file_ids=id2
+    ids = params.getlist("file_ids")
+
+    # Axios-style arrays: ?file_ids[]=id1&file_ids[]=id2
+    if not ids:
+        ids = params.getlist("file_ids[]")
+
+    # Fallback: single value
+    if not ids:
+        single = params.get("file_ids") or params.get("file_id")
+        if single:
+            ids = [single]
+
+    return ids
+
 @app.get("/file-ids")
 def list_file_ids():
     try:
@@ -1526,12 +1569,14 @@ def list_file_ids():
         return JSONResponse(content={"error": str(e)}, status_code=500)
     
 @app.get("/chat-history")
-def get_chat_history_endpoint(file_ids: List[str] = Query(None, alias="file_ids[]"), limit: int = 20):
+def get_chat_history_endpoint(request: Request, limit: int = 20):
+    # Accepts file_ids, file_ids[], or a single file_ids/file_id
+    file_ids = extract_file_ids_from_request(request)
     if not file_ids:
         raise HTTPException(status_code=400, detail="file_ids are required")
-    
+
     print(f"Received file_ids: {file_ids}")  # Debug log
-    
+
     history = get_chat_history(file_ids, limit)
     return {
         "chat_history": history,

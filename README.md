@@ -264,8 +264,8 @@ ssh -i /path/to/key.pem ubuntu@studybuddy.duckdns.org
 cd ~/Study-Buddy
 git status
 git fetch origin
-git checkout aws-demo
-git pull origin aws-demo
+git checkout main
+git pull origin main
 ```
 If there are local changes blocking the pull, either stash or discard:
 ```bash
@@ -276,11 +276,6 @@ git restore backend/src/app.js
 ### 2. Redeploy Backend
 ```bash
 cd ~/Study-Buddy/backend
-npm install
-npx prisma generate
-npx prisma migrate deploy
-sudo systemctl restart study-buddy-backend
-sudo systemctl status study-buddy-backend
 curl -v http://localhost:5000/health
 ```
 ### 3. Redeploy Python AI Service

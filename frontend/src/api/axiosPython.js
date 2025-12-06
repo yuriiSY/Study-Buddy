@@ -1,7 +1,10 @@
 import axios from "axios";
 
 const apiPY = axios.create({
-  baseURL: "http://localhost:3000/",
+  // Flask / Python service
+  baseURL:
+    import.meta.env.VITE_PYTHON_API_BASE_URL ||
+    "https://studybuddyai.duckdns.org/pypi",
 });
 
 apiPY.interceptors.request.use((config) => {

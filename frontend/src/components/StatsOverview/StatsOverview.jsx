@@ -61,7 +61,7 @@ export const StatsOverview = ({ refresh }) => {
     };
 
     loadStats();
-  }, [[refresh]]);
+  }, [refresh]);
 
   if (loading) return <div>Loading stats...</div>;
   if (!stats) return <div>Failed to load stats.</div>;

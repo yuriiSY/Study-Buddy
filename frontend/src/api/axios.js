@@ -1,8 +1,10 @@
 import axios from "axios";
 
 const api = axios.create({
-baseURL: "https://study-buddy-2o9t.onrender.com/api",
- // baseURL: "http://localhost:5000/api",
+  // Main backend (Render)
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL ||
+    "https://study-buddy-2o9t.onrender.com/api",
 });
 
 api.interceptors.request.use((config) => {
