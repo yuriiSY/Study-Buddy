@@ -1,0 +1,22 @@
+Here are the useful links that were used during the LLM and API research
+(These can be useful for referencing in final report)
+
+https://dergipark.org.tr/en/pub/naturengs/issue/89337/1587879
+https://medium.com/keeping-up-with-ai/how-i-built-a-rag-based-ai-chatbot-from-my-personal-data-88eec0d3483c
+https://www.youtube.com/watch?v=tcqEUSNCn8I
+https://ieeexplore.ieee.org/abstract/document/11134904
+https://www.techrxiv.org/doi/full/10.36227/techrxiv.175393328.84629021
+https://sabapub.com/index.php/jaai/article/view/1052
+https://londonic.uk/js/index.php/plic/article/view/282
+https://huggingface.co/papers/2308.02773
+https://discuss.huggingface.co/t/seeking-local-ai-model-for-assisting-students-with-coding-exercises/105955
+https://huggingface.co/Qwen/Qwen2.5-1.5B
+https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Instruct-0724
+https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct
+https://discuss.huggingface.co/t/title-recommendations-for-models-that-handle-text-and-screenshots-for-qa/114665/14
+https://www.youtube.com/watch?v=XfPu044sCRI&t=3s
+https://medium.com/@rajratangulab.more/building-a-multimodal-rag-chatbot-with-image-text-and-table-understanding-91946bc9c51c
+https://www.kdnuggets.com/multimodal-rag-implementation-hugging-face
+https://developers.llamaindex.ai/python/framework/module_guides/deploying/chat_engines/
+https://python.langchain.com/docs/integrations/llms/ollama/
+

@@ -1,0 +1,11 @@
+- Tile upscaling
+- Resume Study prioritised
+- Buttons same dimensions
+- Some Buttons sent to dropdown
+- Colour Highlighting
+- Competitor research
+- General UI cleaning
+- Footer
+- Carousel 
+- Less on screen?
+- Continue with removal? (login page)
