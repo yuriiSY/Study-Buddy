@@ -51,6 +51,10 @@ AWS_REGION = os.environ.get("AWS_REGION")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
+# Image / CLIP processing controls
+ENABLE_CLIP_IMAGES = os.environ.get("ENABLE_CLIP_IMAGES", "false").lower() == "true"
+MAX_IMAGES_PER_FILE = int(os.environ.get("MAX_IMAGES_PER_FILE", "20"))
+
 # ---------------- FASTAPI APP ----------------
 app = FastAPI(title="Study Buddy API")
 
@@ -1342,41 +1346,54 @@ async def upload_files(
                 print(f"❌ Failed to store text chunks: {e}")
 
         # CRITICAL: Store image descriptions in CLIP vector store
+        images_stored = 0  # default for debug_info below
+
         if images and len(images) > 0:
-            print(f"Processing {len(images)} images for CLIP storage...")
-            images_stored = 0
-            
-            for img_index, img in enumerate(images):
-                print(f"  Processing image {img_index + 1}/{len(images)}...")
-                try:
-                    # Generate image description
-                    description = generate_image_description(img)
-                    print(f"  Generated description: {description[:100]}...")
-                    
-                    # Prepare metadata
-                    metadata = {
-                        "file_id": file_id,
-                        "file_name": filename,
-                        "image_index": img_index,
-                        "file_type": "image",
-                        "content_type": "image",
-                        "original_content": description[:500]  # Limit description length
-                    }
-                    
-                    # Store in CLIP vector store
-                    clip_store.add_texts(
-                        texts=[description],
-                        metadatas=[metadata],
-                        ids=[str(uuid.uuid4())]
-                    )
-                    
-                    images_stored += 1
-                    print(f"  ✅ Successfully stored image {img_index + 1}")
-                    
-                except Exception as e:
-                    print(f"  ❌ Failed to process/store image {img_index}: {e}")
-            
-            print(f"✅ Total images stored in CLIP: {images_stored}/{len(images)}")
+            if not ENABLE_CLIP_IMAGES:
+                print(f"⚠️ CLIP image embedding DISABLED (ENABLE_CLIP_IMAGES=false). "
+                      f"Skipping {len(images)} images for file {filename}.")
+            else:
+                # Limit number of images per file for performance
+                total_images = len(images)
+                if total_images > MAX_IMAGES_PER_FILE:
+                    print(f"⚠️ Limiting images for CLIP from {total_images} to "
+                          f"{MAX_IMAGES_PER_FILE} for file {filename}.")
+                    images = images[:MAX_IMAGES_PER_FILE]
+
+                print(f"Processing {len(images)} images for CLIP storage...")
+                images_stored = 0
+
+                for img_index, img in enumerate(images):
+                    print(f"  Processing image {img_index + 1}/{len(images)}...")
+                    try:
+                        # Generate image description
+                        description = generate_image_description(img)
+                        print(f"  Generated description: {description[:100]}...")
+
+                        # Prepare metadata
+                        metadata = {
+                            "file_id": file_id,
+                            "file_name": filename,
+                            "image_index": img_index,
+                            "file_type": "image",
+                            "content_type": "image",
+                            "original_content": description[:500]  # Limit description length
+                        }
+
+                        # Store in CLIP vector store
+                        clip_store.add_texts(
+                            texts=[description],
+                            metadatas=[metadata],
+                            ids=[str(uuid.uuid4())]
+                        )
+
+                        images_stored += 1
+                        print(f"  ✅ Successfully stored image {img_index + 1}")
+
+                    except Exception as e:
+                        print(f"  ❌ Failed to process/store image {img_index}: {e}")
+
+                print(f"✅ Total images stored in CLIP: {images_stored}/{len(images)}")
         else:
             print(f"⚠️ No images found to store in CLIP")
 
