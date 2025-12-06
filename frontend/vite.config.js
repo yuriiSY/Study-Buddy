@@ -5,7 +5,7 @@ const repoName = "/Study-Buddy/";
 
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
-  base: mode === "production" ? repoName : "/",
+  base: "/",
   server: {
     host: true, // allow access from Docker container
     port: 5173,
