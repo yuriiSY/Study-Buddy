@@ -41,7 +41,7 @@ export const LoginPage = () => {
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate("/");
+      navigate("/home");
     }
   }, [isLoggedIn, navigate]);
 

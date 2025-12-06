@@ -18,7 +18,7 @@ export default function App() {
       <Routes>
         {/* Public routes */}
         <Route
-          path="/welcome"
+          path="/"
           element={
             <PublicRoute>
               <WelcomePage />
@@ -41,17 +41,10 @@ export default function App() {
             </PublicRoute>
           }
         />
-        <Route
-          path="/test/:fileId"
-          element={
-            <PrivateRoute>
-              <TestPage />
-            </PrivateRoute>
-          }
-        />
+
         {/* Private routes */}
         <Route
-          path="/"
+          path="/home"
           element={
             <PrivateRoute>
               <HomePage />
@@ -63,6 +56,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <StudySpacePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/test/:fileId"
+          element={
+            <PrivateRoute>
+              <TestPage />
             </PrivateRoute>
           }
         />

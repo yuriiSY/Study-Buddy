@@ -2,12 +2,19 @@ import Layout from "../../components/Layout/Layout";
 import Header from "../../components/Header/Header";
 import StudyOptions from "../../components/StudyOptions/StudyOptions";
 import StudySection from "../../components/StudySection/StudySection";
+import { useNavigate } from "react-router-dom";
 
 import intoImg1 from "../../assets/introImg1.png";
 import intoImg2 from "../../assets/introImg2.png";
 import intoImg3 from "../../assets/introImg2.png";
 
 export const WelcomePage = () => {
+  const navigate = useNavigate();
+
+  const handleCTA = () => {
+    navigate("/register");
+  };
+
   const studySections = [
     {
       title: "Choose how you want to study",
@@ -37,6 +44,7 @@ export const WelcomePage = () => {
       reverse: false,
     },
   ];
+
   return (
     <>
       <Header />
@@ -51,6 +59,7 @@ export const WelcomePage = () => {
             image={section.image}
             bgColor={section.bgColor}
             reverse={section.reverse}
+            onButtonClick={handleCTA} // All CTA buttons lead to signup
           />
         ))}
       </Layout>
