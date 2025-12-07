@@ -6,7 +6,8 @@ import {
 
 export async function handleStartSession(req, res) {
   try {
-    const { userId, durationSec, breakSec, type } = req.body;
+    const userId = req.user.id;
+    const { durationSec, breakSec, type } = req.body;
 
     const session = await startPomodoroSession({
       userId,
@@ -41,7 +42,7 @@ export async function handleCompleteSession(req, res) {
 
 export async function handleGetDailySessions(req, res) {
   try {
-    const userId = Number(req.params.userId);
+    const userId = Number(req.user.id);
 
     const sessions = await getUserDailyPomodoroSessions(userId);
 
