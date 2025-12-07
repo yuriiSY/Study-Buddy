@@ -6,7 +6,9 @@ const StudyCard = ({ title, color, image, text }) => {
     <div className={styles.card} style={{ backgroundColor: color }}>
       <h3 className={styles.title}>{title}</h3>
       <div className={styles.content}>
+      {image && (
         <img src={image} alt={title} className={styles.image} />
+      )}
         <p className={styles.text}>{text}</p>
       </div>
     </div>

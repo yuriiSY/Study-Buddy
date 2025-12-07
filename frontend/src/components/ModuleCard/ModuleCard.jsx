@@ -97,12 +97,14 @@ const ModuleCard = ({
         {coverImage && showImage && !imageLoaded && (
           <div className={styles.imageSkeleton}></div>
         )}
-        <img
-          src={coverImage && showImage ? coverImage : ""}
-          alt="module-cover"
-          style={{ display: "none" }}
-          onLoad={() => setImageLoaded(true)}
-        />
+        {coverImage && showImage && (
+          <img
+            src={coverImage}
+            alt="module-cover"
+            style={{ display: "none" }}
+            onLoad={() => setImageLoaded(true)}
+          />
+        )}
         <div className={styles.headerOverlay}>
           <p className={styles.dateOnImage}>{date}</p>
 

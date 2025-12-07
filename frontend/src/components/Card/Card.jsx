@@ -6,7 +6,9 @@ const Card = ({ title, description, imageUrl, linkUrl }) => {
     <div className={styles.card}>
       <Link to={linkUrl} className={styles.cardLink}>
         <div className={styles.cardTitle}>
-          <img src={imageUrl} alt={description} />
+        {imageUrl && (
+          <img src={imageUrl} alt={description || "card image"} />
+        )}
           <h3 className={styles.title}>{title}</h3>
         </div>
         <div className={styles.description}>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage/LoginPage";
 import { StudySpacePage } from "./pages/StudySpace/StudySpacePage";
@@ -41,6 +41,8 @@ export default function App() {
             </PublicRoute>
           }
         />
+
+        {/* Private routes */}
         <Route
           path="/home"
           element={
@@ -49,7 +51,6 @@ export default function App() {
             </PrivateRoute>
           }
         />
-        {/* Private routes */}
         <Route
           path="/modules/:moduleId"
           element={
@@ -66,6 +67,9 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
+        {/* Catch-all: any unknown URL -> go to "/" */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
       <ToastContainer

@@ -4,12 +4,15 @@ import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store/store.js";
+
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
+
 import App from "./App.jsx";
 
+// Theme bootstrap – same as before
 (() => {
   const stored = localStorage.getItem("sb-theme");
   let theme = "light";
@@ -26,12 +29,19 @@ import App from "./App.jsx";
   document.documentElement.dataset.theme = theme;
 })();
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <BrowserRouter basename="/">
+const rootElement = document.getElementById("root");
+
+// Vite: BASE_URL is "/" in dev, and your `base` (e.g. "/Study-Buddy/") in prod
+const basename = import.meta.env.BASE_URL.replace(/\/$/, ""); // keep leading "/", drop trailing "/"
+
+if (rootElement) {
+  createRoot(rootElement).render(
+    <StrictMode>
       <Provider store={store}>
-        <App />
+        <BrowserRouter basename={basename}>
+          <App />
+        </BrowserRouter>
       </Provider>
-    </BrowserRouter>
-  </StrictMode>
-);
+    </StrictMode>
+  );
+}

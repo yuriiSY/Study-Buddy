@@ -230,17 +230,14 @@ const ManageModuleModal = ({
 
             <div className={styles.imagePickerSection}>
               <div className={styles.imageGrid}>
-                {imageOptions.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className={`${styles.imageItem} ${
-                      selectedCoverImage === img ? styles.selectedImage : ""
-                    }`}
-                    onClick={() => setSelectedCoverImage(img)}
-                  >
-                    <img src={img} alt={`cover-${idx + 1}`} />
-                  </div>
-                ))}
+              {coverImages.map((img, idx) => (
+              <div
+                key={img || idx}
+                onClick={() => setSelectedCoverImage(img)}>
+                  
+                {img && <img src={img} alt={`cover-${idx + 1}`} />}
+              </div>
+              ))}
               </div>
 
               <button

@@ -54,10 +54,14 @@ export const StatsOverview = ({ refresh }) => {
           },
         ]);
       } catch (err) {
+        // Ignore aborted / cancelled requests (React StrictMode, fast navigation, etc.)
+        if (err.code === "ECONNABORTED" || err.message === "Request aborted") {
+          return;
+        }
         console.error("Failed to load dashboard stats:", err);
       } finally {
         setLoading(false);
-      }
+      }      
     };
 
     loadStats();
