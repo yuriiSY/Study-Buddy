@@ -36,6 +36,13 @@ export const HomePage = () => {
       const res = await api.get("/files/modules");
       setModules(res.data.modules || []);
     } catch (err) {
+      // Ignore browser/StrictMode aborts
+      if (
+        err?.code === "ECONNABORTED" &&
+        err?.message === "Request aborted"
+      ) {
+        return;
+      }
       console.error("Failed to fetch modules:", err);
     } finally {
       setLoading(false);

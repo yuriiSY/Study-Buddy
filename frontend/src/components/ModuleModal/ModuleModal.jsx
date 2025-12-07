@@ -8,9 +8,24 @@ import { toast } from "react-toastify";
 import LoadingAnimation from "./LoadingAnimation";
 
 const imageOptions = Array.from({ length: 10 }, (_, i) => `c${i + 1}.jpg`);
+const coverImages = imageOptions;
+
 const SUPPORTED_EXTENSIONS = [
-  "docx", "doc", "pptx", "ppt", "xlsx", "xls",
-  "pdf", "png", "jpg", "jpeg", "bmp", "gif", "webp", "tiff", "txt"
+  "docx",
+  "doc",
+  "pptx",
+  "ppt",
+  "xlsx",
+  "xls",
+  "pdf",
+  "png",
+  "jpg",
+  "jpeg",
+  "bmp",
+  "gif",
+  "webp",
+  "tiff",
+  "txt",
 ];
 
 const ModuleModal = ({
@@ -37,44 +52,51 @@ const ModuleModal = ({
 
   if (!isOpen) return null;
 
-  const getFileExtension = (filename) => {
-    if (!filename) return "";
-    return filename.toLowerCase().split(".").pop();
-  };
+  const validateFile = (file) => {
+    const maxSizeMB = 50;
+    const fileSizeMB = file.size / (1024 * 1024);
+    const extension = file.name.split(".").pop().toLowerCase();
 
-  const isFileSupported = (filename) => {
-    const extension = getFileExtension(filename);
-    return SUPPORTED_EXTENSIONS.includes(extension);
+    if (fileSizeMB > maxSizeMB) {
+      return { valid: false, reason: "File too large (max 50MB)" };
+    }
+    if (!SUPPORTED_EXTENSIONS.includes(extension)) {
+      return {
+        valid: false,
+        reason: `Unsupported file type (.${extension}). Allowed: ${SUPPORTED_EXTENSIONS.join(
+          ", "
+        )}`,
+      };
+    }
+    return { valid: true };
   };
 
   const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
-    const supported = [];
+    if (!files.length) return;
+
+    const validFiles = [];
     const rejected = [];
 
     files.forEach((file) => {
-      if (isFileSupported(file.name)) {
-        supported.push(file);
+      const { valid, reason } = validateFile(file);
+
+      if (valid) {
+        validFiles.push(file);
       } else {
-        rejected.push(file.name);
+        rejected.push({ file, reason });
       }
     });
 
     if (rejected.length > 0) {
       setRejectedFiles((prev) => [...prev, ...rejected]);
-      toast.error(
-        `Unsupported file format(s): ${rejected.join(", ")}. Please use supported formats.`,
-        { autoClose: 5000 }
-      );
+      rejected.forEach((item) => {
+        toast.warning(`⚠️ ${item.file.name}: ${item.reason}`);
+      });
     }
 
-    if (supported.length > 0) {
-      setUploadedFiles((prev) => [...prev, ...supported]);
-      if (rejected.length === 0) {
-        toast.success(` ${supported.length} file(s) added successfully`, {
-          autoClose: 2000,
-        });
-      }
+    if (validFiles.length > 0) {
+      setUploadedFiles((prev) => [...prev, ...validFiles]);
     }
   };
 
@@ -99,27 +121,32 @@ const ModuleModal = ({
 
     setLoading(true);
     setLoadingStage("uploading");
-    try {
-      const pyFormData = new FormData();
-      if (mode === "upload") {
-        pyFormData.append("moduleId", moduleId);
-      }
-      uploadedFiles.forEach((file) => pyFormData.append("files", file));
 
-      const respy = await apiPY.post("/upload-files", pyFormData, {
+    try {
+      // ---------- 1️⃣ SEND FILES TO PYTHON SERVICE ----------
+      const formDataPY = new FormData();
+      uploadedFiles.forEach((file) => {
+        formDataPY.append("files", file);
+      });
+
+      const respy = await apiPY.post("/upload", formDataPY, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("Python Upload successful:", respy.data);
-      setLoadingStage("processing");
-
-      // Check for Python errors
-      if (respy.data.errors && respy.data.errors.length > 0) {
-        console.error("Python upload errors:", respy.data.errors);
-        const errorFiles = respy.data.errors.map((e) => e.file_name).join(", ");
+      if (!respy.data || !Array.isArray(respy.data.uploaded)) {
         toast.error(
-          `❌ Some files failed to process: ${errorFiles}`
+          "❌ Unexpected response from Python service. Please try again."
         );
+        setLoading(false);
+        return;
+      }
+
+      if (respy.data.failed && respy.data.failed.length > 0) {
+        respy.data.failed.forEach((item) => {
+          toast.error(
+            `❌ ${item.file_name} failed: ${item.error || "Unknown error"}`
+          );
+        });
       }
 
       if (!respy.data.uploaded || respy.data.uploaded.length === 0) {
@@ -150,33 +177,21 @@ const ModuleModal = ({
           // File metadata from Python - EXACTLY what your backend expects
           file_id: uploadedInfo.file_id,
           file_name: uploadedInfo.file_name,
-          s3Url: uploadedInfo.s3_url,
-          s3Key: uploadedInfo.s3_key,
-          html: uploadedInfo.html || "",
-
-          // Cover image (only for first file in create mode)
-          ...(mode === "create" && i === 0 && { coverImage: selectedImage }),
+          file_path: uploadedInfo.file_path,
+          page_count: uploadedInfo.page_count,
+          content_type: uploadedInfo.content_type,
+          ...(selectedImage && { moduleCoverImage: selectedImage }),
         };
 
-        console.log(
-          `Sending to Node.js (file ${i + 1}/${respy.data.uploaded.length}):`,
-          nodePayload
-        );
+        const nodeResponse = await api.post("/files/upload", nodePayload);
 
-        // Send JSON to Node.js - NOT FormData
-        const res = await api.post("/files/upload", nodePayload, {
-          headers: { "Content-Type": "application/json" },
-        });
-
-        console.log("Node.js response:", res.data);
-
-        // Store the created module for subsequent files
-        if (mode === "create" && i === 0 && res.data.module) {
-          createdModule = res.data.module;
+        // Capture the created module from the first successful response
+        if (mode === "create" && i === 0) {
+          createdModule = nodeResponse.data.module;
         }
       }
 
-      // Call onCreate callback with the created module (only for create mode)
+      // Call onCreate callback with the created module
       if (mode === "create" && onCreate && createdModule) {
         onCreate(createdModule);
       }
@@ -202,13 +217,15 @@ const ModuleModal = ({
     } catch (err) {
       console.error("Upload failed:", err);
       console.error("Error details:", err.response?.data);
-      const errorMsg = err.response?.data?.error || err.message || "Upload failed";
+      const errorMsg =
+        err.response?.data?.error || err.message || "Upload failed";
       toast.error(`❌ Upload failed: ${errorMsg}`);
       setLoadingStage("uploading");
     } finally {
       setLoading(false);
     }
   };
+
   if (loading) {
     return <LoadingAnimation stage={loadingStage} />;
   }
@@ -221,9 +238,7 @@ const ModuleModal = ({
         </button>
 
         <h2 className={styles.title}>
-          {mode === "create"
-            ? "Create New Study Module"
-            : "Add Files to Module"}
+          {mode === "create" ? "Create New Study Module" : "Add Files to Module"}
         </h2>
         <p className={styles.subtitle}>
           {mode === "create"
@@ -245,80 +260,86 @@ const ModuleModal = ({
             />
           </div>
         )}
+
         {mode === "create" && (
           <div className={styles.imagePickerSection}>
             <label>Choose a Cover Image</label>
 
             <div className={styles.imageGrid}>
-            {coverImages.map((img, idx) => (
-            <div
-              key={img || idx}       
-              onClick={() => setSelectedImage(img)}>
-              
-              {img && <img src={img} alt={`cover-${idx + 1}`} />}
-            </div>
-            ))}
+              {coverImages.map((img, idx) => (
+                <div
+                  key={img || idx}
+                  onClick={() => setSelectedImage(img)}
+                  className={
+                    selectedImage === img ? styles.imageSelected : undefined
+                  }
+                >
+                  {img && (
+                    <img src={img} alt={`cover-${idx + 1}`} loading="lazy" />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}
+
         <div className={styles.uploadSection}>
-          <input
-            id="fileInput"
-            type="file"
-            multiple
-            className={styles.hiddenFileInput}
-            onChange={handleFileUpload}
-            disabled={loading}
-            accept={SUPPORTED_EXTENSIONS.map(ext => `.${ext}`).join(",")}
-          />
-          <div className={styles.uploadButtonContainer}>
-            <label htmlFor="fileInput" className={styles.uploadButton}>
-              📤 Upload Files
-            </label>
-            <div className={styles.infoTooltip}>
-              <span className={styles.supportedText}>Supported file types</span>
-              <Info size={16} />
-              <div className={styles.tooltipContent}>
-                <p className={styles.tooltipTitle}>Supported Formats</p>
-                <div className={styles.formatsList}>
-                  <div>Documents: DOCX, DOC, PPTX, PPT, XLSX, XLS</div>
-                  <div>PDF: PDF</div>
-                  <div>Images: PNG, JPG, JPEG, BMP, GIF, WEBP, TIFF</div>
-                  <div>Text: TXT</div>
-                </div>
+          <div className={styles.uploadHeader}>
+            <div className={styles.uploadTitle}>
+              <Info size={20} className={styles.infoIcon} />
+              <div>
+                <h3>Upload Study Materials</h3>
+                <p>Supported formats: PDF, DOCX, PPTX, images & more.</p>
               </div>
             </div>
           </div>
 
+          <label className={styles.uploadArea}>
+            <input
+              type="file"
+              multiple
+              onChange={handleFileUpload}
+              disabled={loading}
+            />
+            <p>
+              <span>Click to upload</span> or drag and drop files here
+            </p>
+            <p className={styles.helperText}>Maximum file size: 50MB</p>
+          </label>
+
           {uploadedFiles.length > 0 && (
-            <ul className={styles.uploadList}>
-              {uploadedFiles.map((file, i) => (
-                <li key={i} className={styles.uploadedFile}>
-                  <span className={styles.fileIcon}></span>
-                  <span className={styles.fileName}>{file.name}</span>
-                  <button
-                    type="button"
-                    className={styles.removeFileBtn}
-                    onClick={() => handleRemoveFile(i)}
-                    title="Remove file"
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div className={styles.fileList}>
+              <h4>Files to be uploaded</h4>
+              <ul>
+                {uploadedFiles.map((file, index) => (
+                  <li key={index} className={styles.fileItem}>
+                    <FileTextIcon />
+                    <span className={styles.fileName}>{file.name}</span>
+                    <button
+                      type="button"
+                      className={styles.removeFileBtn}
+                      onClick={() => handleRemoveFile(index)}
+                      title="Remove file"
+                    >
+                      ✕
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           {rejectedFiles.length > 0 && (
-            <div className={styles.rejectedSection}>
-              <p className={styles.rejectedTitle}>
-                <AlertCircle size={14} /> Unsupported files ({rejectedFiles.length})
-              </p>
-              <ul className={styles.rejectedList}>
-                {rejectedFiles.map((filename, i) => (
-                  <li key={i} className={styles.rejectedFile}>
-                    <span className={styles.rejectedIcon}></span>
-                    <span className={styles.rejectedFileName}>{filename}</span>
+            <div className={styles.rejectedFiles}>
+              <div className={styles.rejectedHeader}>
+                <AlertCircle size={18} className={styles.alertIcon} />
+                <span>Some files were rejected:</span>
+              </div>
+              <ul>
+                {rejectedFiles.map((item, i) => (
+                  <li key={i} className={styles.rejectedItem}>
+                    <span>{item.file.name}</span>
+                    <span className={styles.reason}>{item.reason}</span>
                     <button
                       type="button"
                       className={styles.removeFileBtn}
@@ -361,5 +382,25 @@ const ModuleModal = ({
     </div>
   );
 };
+
+const FileTextIcon = () => (
+  <span
+    style={{
+      display: "inline-flex",
+      width: 18,
+      height: 18,
+      borderRadius: 4,
+      background: "#e0f2fe",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 10,
+      marginRight: 8,
+    }}
+  >
+    <FileTextInner />
+  </span>
+);
+
+const FileTextInner = () => <span style={{ fontWeight: "bold" }}>F</span>;
 
 export default ModuleModal;

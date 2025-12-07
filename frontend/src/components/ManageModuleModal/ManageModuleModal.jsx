@@ -5,6 +5,7 @@ import { X, Users, Share2, FileText, Image } from "lucide-react";
 import { toast } from "react-toastify";
 
 const imageOptions = Array.from({ length: 10 }, (_, i) => `c${i + 1}.jpg`);
+const coverImages = imageOptions;
 
 const ManageModuleModal = ({
   isOpen,
@@ -36,11 +37,10 @@ const ManageModuleModal = ({
 
   const fetchCollaborators = async () => {
     try {
-      const res = await api.get(`/files/modules/${moduleId}/collaborators`);
-      setCollaborators(res.data.collaborators || []);
+      const res = await api.get(`modules/${moduleId}/collaborators`);
+      setCollaborators(res.data || []);
     } catch (err) {
-      console.error("Failed to fetch collaborators:", err);
-      setError("Failed to load collaborators");
+      console.error("Failed to load collaborators:", err);
     }
   };
 
@@ -58,38 +58,45 @@ const ManageModuleModal = ({
       const newState = !isCompleted;
       setIsCompleted(newState);
 
-      if (newState) {
-        await api.post(`files/modules/${moduleId}/complete`);
-      } else {
-        await api.delete(`files/modules/${moduleId}/complete`);
-      }
+      await api.put(`files/modules/${moduleId}/iscompleted`, {
+        completed: newState,
+      });
 
-      if (onRefresh) {
-        onRefresh();
-      }
+      toast.success(
+        newState
+          ? "✅ Module marked as completed"
+          : "⏳ Module marked as in progress"
+      );
 
-      if (onStatsRefresh) {
-        onStatsRefresh();
-      }
+      if (onStatsRefresh) onStatsRefresh();
     } catch (err) {
-      console.error("Failed to update completion:", err);
+      console.error("Failed to update completion status:", err);
+      setIsCompleted(!isCompleted);
+      toast.error("❌ Failed to update completion status");
     }
   };
 
   const handleUpdateTitle = async () => {
     if (!title.trim()) {
-      setError("Title cannot be empty");
+      setError("Module title cannot be empty");
       return;
     }
+
+    setLoading(true);
+    setError("");
+
     try {
-      setLoading(true);
-      setError("");
-      const res = await api.put(`/files/modules/${moduleId}/title`, { title });
-      onUpdate(res.data.module);
-      onClose();
+      const res = await api.put(`files/modules/${moduleId}/title`, {
+        moduleName: title.trim(),
+      });
+
+      toast.success("✅ Module title updated");
+      if (onUpdate) onUpdate(res.data);
+      if (onRefresh) onRefresh();
     } catch (err) {
-      console.error("Failed to update title:", err);
-      setError(err.response?.data?.error || "Failed to update title");
+      console.error("Failed to update module title:", err);
+      setError("Failed to update module title");
+      toast.error("❌ Failed to update module title");
     } finally {
       setLoading(false);
     }
@@ -100,34 +107,43 @@ const ManageModuleModal = ({
       setError("Email cannot be empty");
       return;
     }
+
+    setLoading(true);
+    setError("");
+
     try {
-      setLoading(true);
-      setError("");
-      await api.post(`/files/modules/${moduleId}/collaborators`, {
-        collaboratorEmail: email,
+      const res = await api.post(`modules/${moduleId}/collaborators`, {
+        email: email.trim(),
         role,
       });
+
+      toast.success("✅ Collaborator added");
+      setCollaborators((prev) => [...prev, res.data]);
       setEmail("");
-      fetchCollaborators();
+      setRole("editor");
     } catch (err) {
       console.error("Failed to add collaborator:", err);
-      setError(err.response?.data?.error || "Failed to add collaborator");
+      setError(
+        err.response?.data?.error || "Failed to add collaborator (check email)"
+      );
+      toast.error("❌ Failed to add collaborator");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRemoveCollaborator = async (collaboratorId) => {
+  const handleRemoveCollaborator = async (collabId) => {
+    setLoading(true);
+    setError("");
+
     try {
-      setLoading(true);
-      setError("");
-      await api.delete(
-        `/files/modules/${moduleId}/collaborators/${collaboratorId}`
-      );
-      fetchCollaborators();
+      await api.delete(`modules/${moduleId}/collaborators/${collabId}`);
+      toast.success("✅ Collaborator removed");
+      setCollaborators((prev) => prev.filter((c) => c.id !== collabId));
     } catch (err) {
       console.error("Failed to remove collaborator:", err);
       setError("Failed to remove collaborator");
+      toast.error("❌ Failed to remove collaborator");
     } finally {
       setLoading(false);
     }
@@ -135,18 +151,21 @@ const ManageModuleModal = ({
 
   const handleUpdateCoverImage = async () => {
     if (!selectedCoverImage) {
-      setError("Please select a cover image");
+      setError("Please select a cover image first");
       return;
     }
+
+    setLoading(true);
+    setError("");
+
     try {
-      setLoading(true);
-      setError("");
-      const res = await api.put(`/files/modules/${moduleId}/cover-image`, {
-        coverImage: selectedCoverImage,
+      const res = await api.put(`files/modules/${moduleId}/cover-image`, {
+        moduleCoverImage: selectedCoverImage,
       });
-      onUpdate(res.data.module);
-      toast.success("✅ Cover image updated successfully");
-      onClose();
+
+      toast.success("✅ Cover image updated");
+      if (onUpdate) onUpdate(res.data);
+      if (onRefresh) onRefresh();
     } catch (err) {
       console.error("Failed to update cover image:", err);
       setError(err.response?.data?.error || "Failed to update cover image");
@@ -164,40 +183,84 @@ const ManageModuleModal = ({
         <div className={styles.header}>
           <div className={styles.titleSection}>
             <FileText size={24} className={styles.icon} />
-            <h2 className={styles.title}>Module Settings</h2>
+            <div>
+              <h2>Manage Module</h2>
+              <p>Manage title, cover image, completion status & collaborators</p>
+            </div>
           </div>
-          <button className={styles.closeBtn} onClick={onClose} title="Close">
-            <X size={24} />
+          <button className={styles.closeButton} onClick={onClose}>
+            <X size={20} />
           </button>
         </div>
 
-        {error && (
-          <div className={styles.errorAlert}>
-            <p>{error}</p>
-          </div>
-        )}
+        {error && <div className={styles.errorBanner}>{error}</div>}
 
-        <div className={styles.sectionContainer}>
+        <div className={styles.content}>
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
               <FileText size={20} className={styles.sectionIcon} />
               <h3>Module Title</h3>
             </div>
-            <div className={styles.formRow}>
+
+            <div className={styles.formGroup}>
+              <label>Title</label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter module title"
                 className={styles.input}
                 disabled={loading}
               />
+            </div>
+
+            <div className={styles.actionsRow}>
               <button
                 className={styles.primaryBtn}
                 onClick={handleUpdateTitle}
-                disabled={loading}
+                disabled={loading || !title.trim()}
               >
-                {loading ? "Saving..." : "Update"}
+                {loading ? "Saving..." : "Save Title"}
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <Image size={20} className={styles.sectionIcon} />
+              <h3>Module Cover Image</h3>
+            </div>
+
+            <div className={styles.imagePickerSection}>
+              <div className={styles.imageGrid}>
+                {coverImages.map((img, idx) => (
+                  <div
+                    key={img || idx}
+                    onClick={() => setSelectedCoverImage(img)}
+                    className={
+                      selectedCoverImage === img
+                        ? styles.imageSelected
+                        : undefined
+                    }
+                  >
+                    {img && (
+                      <img
+                        src={img}
+                        alt={`cover-${idx + 1}`}
+                        loading="lazy"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                className={styles.primaryBtn}
+                onClick={handleUpdateCoverImage}
+                disabled={loading || !selectedCoverImage}
+              >
+                {loading ? "Saving..." : "Update Cover Image"}
               </button>
             </div>
           </div>
@@ -216,38 +279,11 @@ const ManageModuleModal = ({
                   type="checkbox"
                   checked={isCompleted}
                   onChange={handleToggleCompletion}
+                  disabled={loading}
                 />
-                <span className={styles.slider}></span>
+                <span className={styles.slider} />
               </label>
             </label>
-
-            <div className={styles.divider} />
-
-            <div className={styles.sectionHeader}>
-              <Image size={20} className={styles.sectionIcon} />
-              <h3>Module Cover Image</h3>
-            </div>
-
-            <div className={styles.imagePickerSection}>
-              <div className={styles.imageGrid}>
-              {coverImages.map((img, idx) => (
-              <div
-                key={img || idx}
-                onClick={() => setSelectedCoverImage(img)}>
-                  
-                {img && <img src={img} alt={`cover-${idx + 1}`} />}
-              </div>
-              ))}
-              </div>
-
-              <button
-                className={styles.primaryBtn}
-                onClick={handleUpdateCoverImage}
-                disabled={loading || !selectedCoverImage}
-              >
-                {loading ? "Saving..." : "Update Cover Image"}
-              </button>
-            </div>
           </div>
 
           <div className={styles.divider} />
@@ -257,26 +293,32 @@ const ManageModuleModal = ({
               <Share2 size={20} className={styles.sectionIcon} />
               <h3>Add Collaborator</h3>
             </div>
+
             <div className={styles.formGroup}>
-              <div className={styles.formRow}>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter collaborator email"
-                  className={styles.input}
-                  disabled={loading}
-                />
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className={styles.select}
-                  disabled={loading}
-                >
-                  <option value="editor">Editor</option>
-                  <option value="viewer">Viewer</option>
-                </select>
-              </div>
+              <label>Email address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={styles.input}
+                disabled={loading}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Role</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className={styles.select}
+                disabled={loading}
+              >
+                <option value="editor">Editor</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
+
+            <div className={styles.actionsRow}>
               <button
                 className={styles.primaryBtn}
                 onClick={handleAddCollaborator}
@@ -285,42 +327,32 @@ const ManageModuleModal = ({
                 {loading ? "Adding..." : "Add Collaborator"}
               </button>
             </div>
-          </div>
 
-          <div className={styles.divider} />
+            {collaborators.length > 0 && (
+              <div className={styles.collaboratorsSection}>
+                <div className={styles.sectionHeader}>
+                  <Users size={20} className={styles.sectionIcon} />
+                  <h3>Current Collaborators</h3>
+                </div>
 
-          <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <Users size={20} className={styles.sectionIcon} />
-              <h3>Collaborators ({collaborators.length})</h3>
-            </div>
-            {collaborators.length === 0 ? (
-              <div className={styles.emptyState}>
-                <Users size={32} className={styles.emptyIcon} />
-                <p>No collaborators yet</p>
-              </div>
-            ) : (
-              <div className={styles.collaboratorsList}>
-                {collaborators.map((c) => (
-                  <div key={c.user.id} className={styles.collaboratorItem}>
-                    <div className={styles.collaboratorInfo}>
-                      <p className={styles.collaboratorName}>
-                        {c.user.name || c.user.email}
-                      </p>
-                      <span className={`${styles.badge} ${styles[c.role]}`}>
-                        {c.role}
-                      </span>
+                <div className={styles.collaboratorsList}>
+                  {collaborators.map((collab) => (
+                    <div key={collab.id} className={styles.collaboratorItem}>
+                      <div>
+                        <p>{collab.email}</p>
+                        <span className={styles.roleTag}>{collab.role}</span>
+                      </div>
+                      <button
+                        className={styles.iconButton}
+                        onClick={() => handleRemoveCollaborator(collab.id)}
+                        disabled={loading}
+                        title="Remove collaborator"
+                      >
+                        <X size={18} />
+                      </button>
                     </div>
-                    <button
-                      className={styles.removeBtn}
-                      onClick={() => handleRemoveCollaborator(c.user.id)}
-                      disabled={loading}
-                      title="Remove collaborator"
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -6,3 +6,7 @@ study-buddy-key.pem
 Flask-endpoints/docker-compose.yml
 backend/docker-compose.yml
 frontend/docker-compose.yml
+*.yml
+*.pem
+frontend/package-lock.json
+Flask-endpoints/.env
