@@ -14,15 +14,17 @@ import { useParams } from "react-router-dom";
 import LoaderOverlay from "../LoaderOverlay/LoaderOverlay";
 import { FileText } from "lucide-react";
 
-const TutorTabs = ({ 
-  externalId, 
-  userId, 
+const TutorTabs = ({
+  externalId,
+  userId,
   fileid,
-  pdfFile
+  pdfFile,
+  notes,
+  setNotes,
 }) => {
   const { moduleId } = useParams();
   const [activeTab, setActiveTab] = useState("chat");
-  const [notes, setNotes] = useState("");
+  // const [notes, setNotes] = useState("");
   const [editing, setEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [flashcards, setFlashcards] = useState([]);
@@ -220,50 +222,62 @@ const TutorTabs = ({
       <div className={styles.tabs}>
         <div className={styles.tabButtons}>
           <button
-            className={`${styles.tab} ${activeTab === "chat" ? styles.active : ""}`}
+            className={`${styles.tab} ${
+              activeTab === "chat" ? styles.active : ""
+            }`}
             onClick={() => setActiveTab("chat")}
           >
             AI Chat
           </button>
 
-        <button
-          className={`${styles.tab} ${activeTab === "notes" ? styles.active : ""}`}
-          onClick={() => setActiveTab("notes")}
-        >
-          Notes
-        </button>
-
-        {showFlashcardsTab && (
           <button
-            className={`${styles.tab} ${activeTab === "flashcards" ? styles.active : ""}`}
-            onClick={() => setActiveTab("flashcards")}
+            className={`${styles.tab} ${
+              activeTab === "notes" ? styles.active : ""
+            }`}
+            onClick={() => setActiveTab("notes")}
           >
-            Recap Cards
-            {loadingFlashcards && <span className={styles.loadingIndicator}>...</span>}
+            Notes
           </button>
-        )}
 
-        {showQuizTab && (
-          <button
-            className={`${styles.tab} ${activeTab === "quiz" ? styles.active : ""}`}
-            onClick={() => setActiveTab("quiz")}
-          >
-            Quiz
-          </button>
-        )}
+          {showFlashcardsTab && (
+            <button
+              className={`${styles.tab} ${
+                activeTab === "flashcards" ? styles.active : ""
+              }`}
+              onClick={() => setActiveTab("flashcards")}
+            >
+              Recap Cards
+              {loadingFlashcards && (
+                <span className={styles.loadingIndicator}>...</span>
+              )}
+            </button>
+          )}
 
-        {windowWidth <= 1024 && (
-          <button
-            className={`${styles.tab} ${activeTab === "pdf" ? styles.active : ""}`}
-            onClick={() => setActiveTab("pdf")}
-            title="View PDF"
-          >
-            <FileText size={16} />
-            <span>PDF</span>
-          </button>
-        )}
+          {showQuizTab && (
+            <button
+              className={`${styles.tab} ${
+                activeTab === "quiz" ? styles.active : ""
+              }`}
+              onClick={() => setActiveTab("quiz")}
+            >
+              Quiz
+            </button>
+          )}
+
+          {windowWidth <= 1024 && (
+            <button
+              className={`${styles.tab} ${
+                activeTab === "pdf" ? styles.active : ""
+              }`}
+              onClick={() => setActiveTab("pdf")}
+              title="View PDF"
+            >
+              <FileText size={16} />
+              <span>PDF</span>
+            </button>
+          )}
         </div>
-        
+
         <div className={styles.timerWrapper}>
           <PomodoroTimer />
         </div>
@@ -271,8 +285,8 @@ const TutorTabs = ({
 
       <div className={styles.content}>
         {activeTab === "chat" && (
-          <Chat 
-            externalId={externalId} 
+          <Chat
+            externalId={externalId}
             onAddNote={handleAddNote}
             onGenerateFlashcards={loadFlashcards}
             onGenerateQuiz={handleGenerateQuiz}
@@ -310,9 +324,9 @@ const TutorTabs = ({
                 )}
               </>
             ) : (
-              <NotesEditor 
-                notes={notes} 
-                setNotes={setNotes} 
+              <NotesEditor
+                notes={notes}
+                setNotes={setNotes}
                 onSave={handleSaveNotes}
                 isSaving={isSaving}
               />
@@ -328,8 +342,18 @@ const TutorTabs = ({
                   <div className={styles.spinner}></div>
                   <p>Generating recap cards...</p>
                   <span className={styles.dot}>.</span>
-                  <span className={styles.dot} style={{animationDelay: '0.2s'}}>.</span>
-                  <span className={styles.dot} style={{animationDelay: '0.4s'}}>.</span>
+                  <span
+                    className={styles.dot}
+                    style={{ animationDelay: "0.2s" }}
+                  >
+                    .
+                  </span>
+                  <span
+                    className={styles.dot}
+                    style={{ animationDelay: "0.4s" }}
+                  >
+                    .
+                  </span>
                 </div>
               </div>
             ) : flashcardsError ? (
@@ -349,7 +373,7 @@ const TutorTabs = ({
                 </button>
               </div>
             ) : flashcards.length > 0 ? (
-              <Flashcard 
+              <Flashcard
                 cards={flashcards}
                 onGenerateMore={handleGenerateMoreFlashcards}
                 isLoadingMore={loadingFlashcards}
@@ -379,11 +403,13 @@ const TutorTabs = ({
                     transition: "all 0.2s ease",
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.3)";
+                    e.target.style.boxShadow =
+                      "0 4px 12px rgba(59, 130, 246, 0.3)";
                     e.target.style.transform = "translateY(-1px)";
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.boxShadow = "0 2px 8px rgba(59, 130, 246, 0.2)";
+                    e.target.style.boxShadow =
+                      "0 2px 8px rgba(59, 130, 246, 0.2)";
                     e.target.style.transform = "translateY(0)";
                   }}
                 >
@@ -396,18 +422,13 @@ const TutorTabs = ({
                 <TestLeaderboard testId={selectedTest.id} moduleId={moduleId} />
               </div>
             ) : (
-              <TestsList
-                fileId={externalId}
-                onSelectTest={handleSelectTest}
-              />
+              <TestsList fileId={externalId} onSelectTest={handleSelectTest} />
             )}
           </div>
         )}
 
         {activeTab === "pdf" && pdfFile && (
-          <div className={styles.pdfPanel}>
-            {pdfFile}
-          </div>
+          <div className={styles.pdfPanel}>{pdfFile}</div>
         )}
       </div>
     </div>
