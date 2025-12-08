@@ -258,7 +258,7 @@ const ModuleModal = ({
                   }`}
                   onClick={() => setSelectedImage(img)}
                 >
-                  <img src={img} alt="cover" />
+                  <img src={`/${img}`} alt="cover" />
                 </div>
               ))}
             </div>
