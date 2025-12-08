@@ -29,7 +29,7 @@ app.use("/api/test", authenticateToken, testRouter);
 app.use("/api/dashboard", authenticateToken, dashboardRouter);
 
 app.use("/api/flashcards", authenticateToken, flashcardRouter);
-app.use("/pomodoro", authenticateToken, pomodoroRoutes);
+app.use("/api/pomodoro", authenticateToken, pomodoroRoutes);
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRoutes);
