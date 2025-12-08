@@ -4,8 +4,8 @@ import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import styles from "./CustomPdfViewer.module.css";
 import { getFileUrl } from "../api/filesApi";
-import { ZoomIn, ZoomOut, Upload, ChevronDown } from "lucide-react";
-
+import { ZoomIn, ZoomOut, Upload, ChevronDown, BookMarked } from "lucide-react";
+import api from "../api/axios";
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function CustomPdfViewer({
@@ -16,6 +16,8 @@ export default function CustomPdfViewer({
   selectedFileId,
   onFileSelect,
   onUploadMore,
+  userId,
+  onSelectTextAddNote,
 }) {
   const [fileUrl, setFileUrl] = useState(null);
   const [numPages, setNumPages] = useState(null);
@@ -23,6 +25,9 @@ export default function CustomPdfViewer({
   const [currentPage, setCurrentPage] = useState(1);
   const [inputPage, setInputPage] = useState("1");
   const containerRef = useRef();
+  const [selectedText, setSelectedText] = useState("");
+  const [showAddBtn, setShowAddBtn] = useState(false);
+  const [btnPosition, setBtnPosition] = useState({ x: 0, y: 0 });
 
   const isMobile = window.innerWidth <= 768;
 
@@ -40,6 +45,56 @@ export default function CustomPdfViewer({
     };
     fetchFileUrl();
   }, [fileId]);
+
+  useEffect(() => {
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      const text = selection.toString().trim();
+
+      if (text.length === 0) {
+        setShowAddBtn(false);
+        return;
+      }
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+
+      setSelectedText(text);
+      setBtnPosition({
+        x: rect.left + window.scrollX,
+        y: rect.top + window.scrollY - 40,
+      });
+
+      setShowAddBtn(true);
+    };
+
+    document.addEventListener("mouseup", handleSelection);
+    document.addEventListener("keyup", handleSelection);
+
+    return () => {
+      document.removeEventListener("mouseup", handleSelection);
+      document.removeEventListener("keyup", handleSelection);
+    };
+  }, []);
+
+  const handleAddNote = async (text) => {
+    try {
+      const formattedText = `\n\n**Highlighted Text:**\n${text}`;
+
+      await api.post("/notes/append", {
+        userId,
+        fileId,
+        text: formattedText,
+      });
+
+      // Update TutorTabs notes
+      onSelectTextAddNote(formattedText);
+
+      // Hide floating UI
+      setShowAddBtn(false);
+    } catch (err) {
+      console.error("Failed to append note", err);
+    }
+  };
 
   // ✅ Auto-scale with container width
   // useEffect(() => {
@@ -152,7 +207,9 @@ export default function CustomPdfViewer({
               <select
                 value={selectedFileId || ""}
                 onChange={(e) => {
-                  const file = allFiles.find((f) => f.id === parseInt(e.target.value));
+                  const file = allFiles.find(
+                    (f) => f.id === parseInt(e.target.value)
+                  );
                   if (file && onFileSelect) {
                     onFileSelect(file);
                   }
@@ -231,7 +288,7 @@ export default function CustomPdfViewer({
                   scale={scale}
                   renderMode="canvas"
                   renderAnnotationLayer={false}
-                  renderTextLayer={false}
+                  renderTextLayer={true}
                   width={
                     isMobile ? containerRef.current?.offsetWidth : undefined
                   }
@@ -241,6 +298,25 @@ export default function CustomPdfViewer({
           </Document>
         )}
       </div>
+
+      {showAddBtn && (
+        <button
+          onClick={async () => {
+            await handleAddNote(selectedText);
+            setShowAddBtn(false);
+          }}
+          className={styles.addNoteFloating}
+          style={{
+            position: "absolute",
+            top: btnPosition.y,
+            left: btnPosition.x,
+            zIndex: 9999,
+          }}
+        >
+          <BookMarked size={14} />
+          Add to Notes
+        </button>
+      )}
 
       {/* Footer */}
       {fileUrl && (

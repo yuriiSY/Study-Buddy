@@ -16,6 +16,7 @@ export const StudySpacePage = () => {
   const [pdfFlex, setPdfFlex] = useState(1);
   const [isResizing, setIsResizing] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [notes, setNotes] = useState("");
   const containerRef = useRef(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [allFiles, setAllFiles] = useState([]);
@@ -95,6 +96,10 @@ export const StudySpacePage = () => {
     setIsResizing(true);
   };
 
+  const handleAddNote = (text) => {
+    setNotes((prev) => prev + "\n\n" + text);
+  };
+
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isResizing || !containerRef.current) return;
@@ -104,7 +109,7 @@ export const StudySpacePage = () => {
       const newPdfWidth = e.clientX - rect.left;
       const containerWidth = rect.width;
       const newFlex = newPdfWidth / (containerWidth - newPdfWidth);
-      
+
       if (newPdfWidth > 300 && containerWidth - newPdfWidth > 300) {
         setPdfFlex(newFlex);
       }
@@ -149,6 +154,7 @@ export const StudySpacePage = () => {
       selectedFileId={selectedFile?.id}
       onFileSelect={handleFileSelect}
       onUploadMore={() => setUploadModalOpen(true)}
+      onSelectTextAddNote={handleAddNote}
     />
   );
 
@@ -174,6 +180,8 @@ export const StudySpacePage = () => {
             externalId={selectedFile?.externalId}
             fileid={selectedFile?.id}
             pdfFile={!isDesktop ? pdfComponent : null}
+            notes={notes}
+            setNotes={setNotes}
           />
         </div>
       </div>
