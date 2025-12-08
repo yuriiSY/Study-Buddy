@@ -133,6 +133,17 @@ const ManageModuleModal = ({
     }
   };
 
+  const getImageUrl = (image) => {
+    if (!image) return "";
+    if (image.startsWith("http") || image.startsWith("/")) {
+      return image;
+    }
+    if (image.match(/^c\d+\.jpg$/)) {
+      return `/${image}`;
+    }
+    return `/assets/${image}`;
+  };
+
   const handleUpdateCoverImage = async () => {
     if (!selectedCoverImage) {
       setError("Please select a cover image");
@@ -238,7 +249,7 @@ const ManageModuleModal = ({
                     }`}
                     onClick={() => setSelectedCoverImage(img)}
                   >
-                    <img src={img} alt={`cover-${idx + 1}`} />
+                    <img src={`/${img}`} alt={`cover-${idx + 1}`} />
                   </div>
                 ))}
               </div>

@@ -76,6 +76,17 @@ const ModuleCard = ({
     }
   };
 
+  const getImageUrl = (image) => {
+    if (!image) return "";
+    if (image.startsWith("http") || image.startsWith("/")) {
+      return image;
+    }
+    if (image.match(/^c\d+\.jpg$/)) {
+      return `/${image}`;
+    }
+    return `/assets/${image}`;
+  };
+
   return (
     <div className={styles.card}>
       {/* ✅ Image section with lazy loading */}
@@ -87,7 +98,7 @@ const ModuleCard = ({
         style={
           coverImage && showImage
             ? {
-                backgroundImage: `url(${coverImage})`,
+                backgroundImage: `url(${getImageUrl(coverImage)})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }
@@ -98,7 +109,7 @@ const ModuleCard = ({
           <div className={styles.imageSkeleton}></div>
         )}
         <img
-          src={coverImage && showImage ? coverImage : ""}
+          src={coverImage && showImage ? getImageUrl(coverImage) : ""}
           alt="module-cover"
           style={{ display: "none" }}
           onLoad={() => setImageLoaded(true)}
