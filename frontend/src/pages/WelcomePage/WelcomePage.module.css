@@ -1,23 +1,388 @@
 .pageRoot {
-    width: 100%;
-    min-height: calc(100vh - 72px); /* leave room for the header */
-    background:
-      radial-gradient(circle at top left, #e5edff 0, #f7f9ff 38%, #ffffff 100%);
-    padding: 48px 0 80px;
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      sans-serif;
   }
   
-  /* Main content column */
-  .inner {
+  /* HERO */
+  
+  .hero {
+    background: linear-gradient(
+      135deg,
+      var(--color-primary) 0%,
+      var(--color-secondary) 55%,
+      var(--bg-secondary) 100%
+    );
+    color: #ffffff;
+    padding: 24px 0 80px;
+  }
+  
+  .heroInner {
     max-width: 1120px;
     margin: 0 auto;
     padding: 0 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
   }
   
-  /* Ensures sections sit nicely one under another without extra outside margins */
-  .inner > * {
+  /* top bar */
+  
+  .heroTopBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+  
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .brandIconWrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .brandIcon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
+  
+  .brandName {
+    font-weight: 700;
+    font-size: 18px;
+  }
+  
+  .brandTagline {
+    font-size: 13px;
+    opacity: 0.9;
+  }
+  
+  .topRight {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  /* theme toggler */
+  
+  .themeToggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 2px;
+    background: rgba(15, 23, 42, 0.35);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.4);
+  }
+  
+  .themeToggleButton {
+    border: none;
+    background: transparent;
+    color: #e5e7eb;
+    font-size: 15px;
+    width: 32px;
+    height: 28px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  
+  .themeToggleButtonActive {
+    background: #ffffff;
+    color: #1d4ed8;
+  }
+  
+  .signInButton {
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    background: transparent;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  }
+  
+  .signInButton:hover {
+    background: #ffffff;
+    color: var(--color-primary);
+    transform: translateY(-1px);
+  }
+  
+  /* hero body */
+  
+  .heroContent {
+    max-width: 760px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .heroPill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.22);
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  
+  .heroTitle {
+    font-size: clamp(32px, 5vw, 52px);
+    line-height: 1.1;
+    margin: 0 0 18px;
+    font-weight: 800;
+  }
+  
+  .heroSubtitle {
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 640px;
+    margin: 0 auto 28px;
+    opacity: 0.95;
+  }
+  
+  .heroCta {
+    padding: 14px 32px;
+    border-radius: 999px;
+    border: none;
+    background: #ffffff;
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  }
+  
+  .heroCta:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.02);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.4);
+  }
+  
+  .heroCta:active {
+    transform: translateY(0);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.35);
+  }
+  
+  /* FEATURES */
+  
+  .featuresSection {
+    background: var(--bg-primary);
+    padding: 64px 0 72px;
+  }
+  
+  .featuresInner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+    text-align: center;
+  }
+  
+  .featuresTitle {
+    font-size: clamp(26px, 3vw, 34px);
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  
+  .featuresSubtitle {
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 720px;
+    margin: 0 auto 32px;
+    color: var(--text-secondary);
+  }
+  
+/* container with arrows left/right, vertically centred */
+.carouselViewport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* window that clips overflow */
+.carouselWindow {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+/* horizontal track of cards that slides left/right */
+.carouselRow {
+  display: flex;
+  gap: 20px;
+  transition: transform 0.4s ease; /* smooth slide */
+}
+
+/* arrows (likely already there, keep if so) */
+.carouselArrow {
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.15s ease, transform 0.1s ease,
+    box-shadow 0.15s ease;
+}
+
+.carouselArrow:hover {
+  background: var(--bg-tertiary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.carouselArrowIcon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* each card takes 1/3 of the visible width */
+.featureCard {
+  flex: 0 0 calc(100% / 3);
+  min-width: 0;
+  background: var(--bg-secondary);
+  border-radius: 18px;
+  padding: 22px 20px 24px;
+  text-align: left;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+}
+  
+  .featureIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+  
+  .featureTitle {
+    margin: 0 0 8px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .featureText {
     margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+  
+  /* PROJECT SECTION */
+  
+  .projectSection {
+    background: linear-gradient(
+      135deg,
+      var(--color-primary) 0%,
+      var(--color-secondary) 100%
+    );
+    color: #ffffff;
+    padding: 64px 0 72px;
+  }
+  
+  .projectInner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+    text-align: center;
+  }
+  
+  .projectTitle {
+    font-size: clamp(26px, 3vw, 32px);
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  
+  .projectText {
+    font-size: 15px;
+    line-height: 1.7;
+    opacity: 0.96;
+    margin-bottom: 12px;
+  }
+  
+  .githubButton {
+    margin-top: 20px;
+    padding: 12px 26px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    background: transparent;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  }
+  
+  .githubButton:hover {
+    background: #ffffff;
+    color: var(--color-primary);
+    transform: translateY(-1px);
+  }
+  
+  /* RESPONSIVE */
+  
+  @media (max-width: 900px) {
+    .carouselRow {
+      transform: translateX(0);      /* always show from start */
+    }
+  
+    .featureCard {
+      flex: 1 1 100%;
+    }
+  
+    .carouselRow {
+      flex-direction: column;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .hero {
+      padding-bottom: 60px;
+    }
+  
+    .heroTopBar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+    }
+  
+    .heroContent {
+      text-align: left;
+    }
+  
+    .heroInner {
+      padding-inline: 16px;
+    }
   }
   
