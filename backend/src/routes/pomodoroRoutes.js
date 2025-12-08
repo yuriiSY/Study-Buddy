@@ -12,6 +12,6 @@ router.post("/start", handleStartSession);
 
 router.post("/complete/:id", handleCompleteSession);
 
-router.get("/user/:userId", handleGetDailySessions);
+router.get("/user/sessions", handleGetDailySessions);
 
 export default router;
