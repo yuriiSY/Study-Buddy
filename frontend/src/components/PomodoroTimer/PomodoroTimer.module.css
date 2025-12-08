@@ -4,11 +4,69 @@
   align-items: center;
 }
 
+.settingsBox {
+  background: var(--bg-tertiary);
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.settingsBox h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.settingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settingRow label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.settingRow input {
+  width: 70px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.saveBtn {
+  margin-top: 4px;
+  padding: 8px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #3b82f6 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.saveBtn:hover {
+  opacity: 0.9;
+}
+
 .timerToggle {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.15) 0%,
+    rgba(59, 130, 246, 0.1) 100%
+  );
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 8px 12px;
@@ -20,7 +78,11 @@
 }
 
 .timerToggle:hover {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(59, 130, 246, 0.15) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.25) 0%,
+    rgba(59, 130, 246, 0.15) 100%
+  );
   border-color: var(--color-primary);
 }
 
@@ -97,7 +159,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1) 0%,
+    rgba(99, 102, 241, 0.05) 100%
+  );
   border: 2px solid var(--color-primary);
   border-radius: 12px;
   padding: 20px;
@@ -105,7 +171,11 @@
 }
 
 .timerCircle.breakMode {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(74, 222, 128, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.1) 0%,
+    rgba(74, 222, 128, 0.05) 100%
+  );
   border-color: #22c55e;
 }
 
@@ -178,13 +248,21 @@
 }
 
 .breakBtn {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(74, 222, 128, 0.15) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.2) 0%,
+    rgba(74, 222, 128, 0.15) 100%
+  );
   color: #22c55e;
   border: 1px solid #22c55e;
 }
 
 .breakBtn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(74, 222, 128, 0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.3) 0%,
+    rgba(74, 222, 128, 0.2) 100%
+  );
 }
 
 .breakBtn:disabled {
@@ -239,7 +317,7 @@
     padding: 12px;
     right: 16px;
     left: 16px;
-    top: auto;
+    top: 20px;
     bottom: auto;
     max-height: 60vh;
     overflow-y: auto;

@@ -37,6 +37,7 @@ model User {
   notes Note[]
   testScores TestScore[]
   moduleCompletions ModuleCompletion[]
+  pomodoroSessions   PomodoroSession[]
 }
 
 //
@@ -230,4 +231,22 @@ model ModuleCompletion {
   module Module @relation(fields: [moduleId], references: [id])
 
   @@unique([userId, moduleId]) 
+}
+
+model PomodoroSession {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  startTime     DateTime
+  endTime       DateTime?
+  durationSec   Int       
+  breakSec      Int       
+  completed     Boolean   @default(false)
+  type          PomodoroType @default(STUDY) 
+
+  user          User      @relation(fields: [userId], references: [id])
+}
+
+enum PomodoroType {
+  STUDY
+  BREAK
 }

@@ -9,6 +9,7 @@ import notesRouter from "./routes/notesRouter.js";
 import testRouter from "./routes/testRoutes.js";
 import dashboardRouter from "./routes/dashboardRouter.js";
 import flashcardRouter from "./routes/flashcardRoutes.js";
+import pomodoroRoutes from "./routes/pomodoroRoutes.js";
 
 import dotenv from "dotenv";
 
@@ -28,6 +29,7 @@ app.use("/api/test", authenticateToken, testRouter);
 app.use("/api/dashboard", authenticateToken, dashboardRouter);
 
 app.use("/api/flashcards", authenticateToken, flashcardRouter);
+app.use("/api/pomodoro", authenticateToken, pomodoroRoutes);
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRoutes);
