@@ -1,53 +1,136 @@
+.head {
+  margin-top: 48px;
+  margin-bottom: 48px;
+}
+
+/* Text block at the top */
 .container {
-  text-align: center;
-  padding: 60px 20px;
-  background-color: var(--bg-primary);
+  max-width: 900px;
+  margin: 0 auto 24px;
+  text-align: left;
 }
 
 .title {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--text-primary);
+  margin-bottom: 6px;
 }
 
 .subtitle {
   color: var(--text-secondary);
-  max-width: 600px;
-  margin: 10px auto 30px;
+  max-width: 560px;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
-.button {
-  background-color: var(--color-primary);
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 25px;
-  padding: 12px 24px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.button:hover {
-  background-color: var(--color-primary-dark);
-  opacity: 0.9;
-}
-
-.link {
-  display: block;
-  color: var(--color-primary);
-  margin-top: 10px;
-  text-decoration: none;
-}
-
-.cards {
+/* Flowchart layout */
+.flowchart {
+  max-width: 1100px;
+  margin: 0 auto;
   display: flex;
-  justify-content: center;
   flex-wrap: wrap;
-  gap: 20px;
-  margin-top: 50px;
+  gap: 24px;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.head {
-  margin-top: 100px;
-  margin-bottom: 100px;
+.step {
+  flex: 1;
+  min-width: 240px;
+}
+
+/* Number + connector row */
+.stepTop {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.stepNumber {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.12); /* soft blue */
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Horizontal connector between steps */
+.stepConnector {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.connectorLine {
+  flex: 1;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--border-color-light);
+}
+
+.connectorArrow {
+  margin-left: 8px;
+  color: var(--border-color);
+}
+
+/* Card body – intentionally NOT button-like */
+.stepCard {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid var(--border-color-light);
+  padding: 16px 18px 18px;
+  box-shadow: var(--shadow-sm);
+  cursor: default; /* remove “clickable” affordance */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stepCard:hover {
+  /* Very subtle hover so it doesn’t feel like a button */
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-md);
+}
+
+.stepTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.stepDescription {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Responsive flow: stack vertically on small screens */
+@media (max-width: 768px) {
+  .head {
+    margin-top: 32px;
+    margin-bottom: 32px;
+  }
+
+  .container {
+    padding: 0 4px;
+  }
+
+  .flowchart {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .stepConnector {
+    display: none; /* hide horizontal connectors on mobile */
+  }
+
+  .stepCard {
+    padding: 14px 16px 16px;
+  }
 }

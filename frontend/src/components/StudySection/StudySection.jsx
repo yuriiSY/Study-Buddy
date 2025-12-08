@@ -16,21 +16,22 @@ const StudySection = ({
       style={{ backgroundColor: bgColor }}
     >
       <div className={styles.imageWrapper}>
-      {image && (
         <img src={image} alt={title} className={styles.image} />
-      )}
       </div>
 
       <div className={styles.textContent}>
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.description}>{description}</p>
 
-        <button
-          className={styles.button}
-          onClick={onButtonClick} // Welcome buttons click handler
-        >
-          {buttonText}
-        </button>
+        {buttonText && (
+          <button
+            type="button"
+            className={styles.button}
+            onClick={onButtonClick}
+          >
+            {buttonText}
+          </button>
+        )}
       </div>
     </section>
   );

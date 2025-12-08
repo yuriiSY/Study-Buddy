@@ -1,75 +1,91 @@
 .section {
+  padding: 80px 20px;
+}
+
+.inner {
+  max-width: 1100px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 60px 80px;
-  gap: 40px;
-  transition: all 0.3s ease;
+  gap: 48px;
 }
 
 .reverse {
   flex-direction: row-reverse;
 }
 
-.imageWrapper {
+.visualWrapper {
   flex: 1;
-  display: flex;
-  justify-content: center;
+  min-width: 0;
+}
+
+.customVisual {
+  width: 100%;
+  height: 100%;
 }
 
 .image {
   width: 100%;
-  max-width: 400px;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  max-width: 480px;
+  display: block;
+  border-radius: 24px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
 .textContent {
   flex: 1;
-  max-width: 500px;
+  min-width: 0;
 }
 
 .title {
-  font-size: 2rem;
+  font-size: 2.4rem;
   font-weight: 700;
-  color: #111;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  color: var(--text-primary);
 }
 
 .description {
-  color: #333;
-  font-size: 1.05rem;
+  font-size: 1rem;
   line-height: 1.6;
-  margin-bottom: 30px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
 }
 
 .button {
-  background-color: #4a56e2;
-  color: white;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border-radius: 999px;
   border: none;
-  border-radius: 25px;
-  padding: 12px 28px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #4b8bff, #7c5cff);
+  color: #fff;
   cursor: pointer;
-  transition: 0.2s ease;
+  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .button:hover {
-  background-color: #3b47c5;
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(79, 70, 229, 0.3);
+}
+
+.button:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
 }
 
 @media (max-width: 900px) {
-  .section {
+  .inner {
     flex-direction: column;
-    text-align: center;
-    padding: 40px 20px;
   }
 
   .reverse {
     flex-direction: column;
   }
 
-  .image {
-    max-width: 300px;
+  .section {
+    padding: 60px 20px;
   }
 }

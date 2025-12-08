@@ -3,177 +3,194 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 40px;
+  gap: 32px;
   min-height: 400px;
-  padding: 60px 40px;
+  padding: 48px 32px 56px;
   width: 100%;
 }
+
+/* Header text */
+
+.header {
+  text-align: center;
+  max-width: 720px;
+}
+
+.title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin-top: 8px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Flowchart steps */
 
 .stepsWrapper {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
   width: 100%;
-  max-width: 900px;
-}
-
-.stepCard {
+  max-width: 960px;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.step {
+  flex: 1;
+  min-width: 220px;
+}
+
+/* number + connector row */
+
+.stepTop {
+  display: flex;
   align-items: center;
-  text-align: center;
-  gap: 16px;
-  padding: 32px 24px;
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.stepCard:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(91, 158, 255, 0.15);
-}
-
-.stepCard.active {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-  border-color: var(--color-primary);
-  color: white;
-}
-
-.stepCard.active .stepNumber,
-.stepCard.active .stepIcon,
-.stepCard.active h3,
-.stepCard.active p {
-  color: white;
+  margin-bottom: 10px;
 }
 
 .stepNumber {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  background: var(--color-primary);
-  color: white;
-  border-radius: 50%;
-  font-weight: 700;
-  font-size: 1.6rem;
-  transition: all 0.3s ease;
-}
-
-.stepCard.active .stepNumber {
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 0 0 2px white;
-}
-
-.stepContent {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.stepIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.12);
   color: var(--color-primary);
-  transition: all 0.3s ease;
+  font-weight: 700;
+  font-size: 1rem;
 }
 
-.stepCard.active .stepIcon {
-  color: white;
+.connector {
+  flex: 1;
+  margin-left: 12px;
 }
 
-.stepCard h3 {
+.connectorLine {
+  display: block;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--border-color-light);
+}
+
+/* step card body – neutral, not button-like */
+
+.stepCard {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  border: 1px solid var(--border-color-light);
+  padding: 16px 18px 18px;
+  box-shadow: var(--shadow-sm);
+  cursor: default;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stepCard:hover {
+  /* subtle only – not screaming “click me” */
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-md);
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.iconBubble {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+}
+
+.stepTitle {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
-  transition: all 0.3s ease;
 }
 
-.stepCard p {
+.stepText {
   margin: 0;
+  margin-top: 4px;
   font-size: 0.9rem;
   color: var(--text-secondary);
-  transition: all 0.3s ease;
   line-height: 1.5;
 }
+
+/* CTA button – still the main action */
 
 .actionBtn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-secondary) 100%
+  );
   color: white;
   font-weight: 600;
   border: none;
-  border-radius: 10px;
-  padding: 14px 32px;
-  font-size: 1rem;
+  border-radius: 999px;
+  padding: 12px 28px;
+  font-size: 0.95rem;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(91, 158, 255, 0.25);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(91, 158, 255, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.15s ease;
 }
 
 .actionBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(91, 158, 255, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(91, 158, 255, 0.38);
+  filter: brightness(1.02);
 }
 
 .actionBtn:active {
   transform: translateY(0);
 }
 
+/* Responsive */
+
 @media (max-width: 900px) {
   .stepsWrapper {
-    gap: 20px;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .connector {
+    display: none; /* hide horizontal line on small screens */
   }
 
   .stepCard {
-    padding: 28px 20px;
-  }
-
-  .stepNumber {
-    width: 50px;
-    height: 50px;
-    font-size: 1.4rem;
+    padding: 14px 16px 16px;
   }
 }
 
 @media (max-width: 640px) {
   .container {
-    gap: 32px;
-    padding: 40px 24px;
+    padding: 40px 20px 48px;
+    gap: 28px;
   }
 
-  .stepsWrapper {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .title {
+    font-size: 1.6rem;
   }
 
-  .stepCard {
-    flex-direction: row;
-    text-align: left;
-    align-items: flex-start;
-    padding: 24px;
-    gap: 16px;
-  }
-
-  .stepNumber {
-    flex-shrink: 0;
-    width: 48px;
-    height: 48px;
-    font-size: 1.2rem;
-  }
-
-  .stepContent {
-    align-items: flex-start;
-  }
-
-  .stepIcon {
-    display: none;
+  .subtitle {
+    font-size: 0.9rem;
   }
 
   .actionBtn {

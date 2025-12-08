@@ -1,0 +1,23 @@
+.pageRoot {
+    width: 100%;
+    min-height: calc(100vh - 72px); /* leave room for the header */
+    background:
+      radial-gradient(circle at top left, #e5edff 0, #f7f9ff 38%, #ffffff 100%);
+    padding: 48px 0 80px;
+  }
+  
+  /* Main content column */
+  .inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  
+  /* Ensures sections sit nicely one under another without extra outside margins */
+  .inner > * {
+    margin: 0;
+  }
+  

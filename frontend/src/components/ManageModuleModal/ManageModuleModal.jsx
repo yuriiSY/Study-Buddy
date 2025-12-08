@@ -233,36 +233,47 @@ const ManageModuleModal = ({
             </div>
 
             <div className={styles.imagePickerSection}>
-              <div className={styles.imageGrid}>
-                {coverImages.map((img, idx) => (
-                  <div
-                    key={img || idx}
-                    onClick={() => setSelectedCoverImage(img)}
-                    className={
+            <div className={styles.imageGrid}>
+              {coverImages.map((img, idx) => (
+                <button
+                  type="button"
+                  key={img || idx}
+                  onClick={() => setSelectedCoverImage(img)}
+                  style={{
+                    borderRadius: 12,
+                    padding: 0,
+                    border:
                       selectedCoverImage === img
-                        ? styles.imageSelected
-                        : undefined
-                    }
-                  >
-                    {img && (
-                      <img
-                        src={img}
-                        alt={`cover-${idx + 1}`}
-                        loading="lazy"
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <button
-                className={styles.primaryBtn}
-                onClick={handleUpdateCoverImage}
-                disabled={loading || !selectedCoverImage}
-              >
-                {loading ? "Saving..." : "Update Cover Image"}
-              </button>
+                        ? "2px solid #3b82f6"
+                        : "1px solid #e5e7eb",
+                    overflow: "hidden",
+                    background: "white",
+                    cursor: "pointer",
+                  }}>
+                  {img && (
+                    <img
+                      src={img}
+                      alt={`cover-${idx + 1}`}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        height: 140,
+                        objectFit: "cover",
+                      }}
+                    />
+                  )}
+                </button>
+              ))}
             </div>
+
+            <button
+              className={styles.primaryBtn}
+              onClick={handleUpdateCoverImage}
+              disabled={loading || !selectedCoverImage}
+            >
+              {loading ? "Saving..." : "Update Cover Image"}
+            </button>
+          </div> 
           </div>
 
           <div className={styles.divider} />
