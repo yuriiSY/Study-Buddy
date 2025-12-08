@@ -11,6 +11,7 @@ export const StatsOverview = ({ refresh }) => {
     const loadStats = async () => {
       try {
         const res = await api.get("/dashboard");
+        console.log("Dashboard stats response:", 2);
 
         const data = res.data;
 
@@ -61,7 +62,7 @@ export const StatsOverview = ({ refresh }) => {
     };
 
     loadStats();
-  }, [[refresh]]);
+  }, [refresh]);
 
   if (loading) return <div>Loading stats...</div>;
   if (!stats) return <div>Failed to load stats.</div>;
