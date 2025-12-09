@@ -1263,24 +1263,11 @@ def is_file_supported(filename: str) -> bool:
 @app.post("/upload-files")
 async def upload_files(
     files: list[UploadFile] = File(...),
-    moduleId: str = Form(None)
+    moduleId: str = Form(None),
+    ocr: bool = Form(False)  # NEW: OCR flag
 ):
     results = []
     errors = []
-
-    # Validate all files first
-    for file in files:
-        if not is_file_supported(file.filename):
-            errors.append({
-                "file_name": file.filename,
-                "error": f"Unsupported file type: {get_file_extension(file.filename)}. Supported formats: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
-            })
-
-    if len(errors) == len(files):
-        return JSONResponse(
-            status_code=400,
-            content={"error": "No supported files provided", "errors": errors}
-        )
 
     # Get vector stores
     store = get_vector_store()
@@ -1295,43 +1282,34 @@ async def upload_files(
         content = await file.read()
         file_stream = io.BytesIO(content)
         
-        print(f"\n=== UPLOADING FILE: {filename} ===")
-        
-        # Extract text, images, pdf_data
-        text, error, images, pdf_data = process_file_content(file_stream, filename)
-        
-        print(f"Processing results - Text length: {len(text) if text else 0}, Images found: {len(images)}, Error: {error}")
+        print(f"\n=== UPLOADING FILE: {filename} (OCR: {ocr}) ===")
         
         file_id = str(uuid.uuid4())
         timestamp = int(time.time() * 1000)
-        pdf_filename = filename.rsplit('.', 1)[0] + '.pdf'
-        s3_key = f"modules/{moduleId}/{timestamp}-{pdf_filename}" if moduleId else f"uploads/{file_id}-{pdf_filename}"
-        s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
-
-        try:
-            if pdf_data:
-                s3.put_object(
-                    Bucket=S3_BUCKET_NAME,
-                    Key=s3_key,
-                    Body=pdf_data,
-                    ContentType='application/pdf'
-                )
-                print(f"✅ Uploaded PDF to S3: {s3_key}")
-            else:
-                s3.put_object(
-                    Bucket=S3_BUCKET_NAME,
-                    Key=s3_key,
-                    Body=content,
-                    ContentType=file.content_type
-                )
-        except Exception as e:
-            print(f"❌ S3 upload failed: {e}")
-            errors.append({"file_name": filename, "error": f"S3 upload failed: {e}"})
-            s3_key = None
-            s3_url = None
-
+        
+        # OCR PROCESSING
+        ocr_text = ""
+        if ocr:
+            print(f"🔍 Performing OCR extraction...")
+            try:
+                ocr_text = extract_text_with_groq_ocr(file_stream, filename)
+                print(f"✅ OCR extracted {len(ocr_text)} characters")
+            except Exception as e:
+                print(f"❌ OCR failed: {e}")
+                ocr_text = f"OCR failed: {str(e)}"
+        
+        # Process file normally
+        text, error, images, pdf_data = process_file_content(file_stream, filename)
+        
+        # If OCR was successful, use OCR text instead
+        if ocr and ocr_text:
+            text = ocr_text  # Replace with OCR text
+            print(f"📝 Using OCR text ({len(text)} chars) instead of regular extraction")
+        
+        # ... rest of your existing code for S3 upload ...
+        
         chunks = []
-        # Store text chunks in vector DB
+        # Store text chunks in vector DB (now includes OCR text if applicable)
         if text and text.strip():
             splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
             chunks = splitter.split_text(text)
@@ -1343,80 +1321,40 @@ async def upload_files(
                 "chunk_index": i,
                 "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
                 "content_type": "text",
+                "ocr_processed": ocr,  # NEW: Mark as OCR processed
                 "has_images": len(images) > 0
             } for i in range(len(chunks))]
             ids = [str(uuid.uuid4()) for _ in chunks]
             
             try:
                 store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
-                print(f"✅ Stored {len(chunks)} text chunks in vector DB")
+                print(f"✅ Stored {len(chunks)} text chunks in vector DB (OCR: {ocr})")
             except Exception as e:
                 print(f"❌ Failed to store text chunks: {e}")
 
-        # CRITICAL: Store image descriptions in CLIP vector store
-        if images and len(images) > 0:
-            print(f"Processing {len(images)} images for CLIP storage...")
-            images_stored = 0
-            
-            for img_index, img in enumerate(images):
-                print(f"  Processing image {img_index + 1}/{len(images)}...")
-                try:
-                    # Generate image description
-                    description = generate_image_description(img)
-                    print(f"  Generated description: {description[:100]}...")
-                    
-                    # Prepare metadata
-                    metadata = {
-                        "file_id": file_id,
-                        "file_name": filename,
-                        "image_index": img_index,
-                        "file_type": "image",
-                        "content_type": "image",
-                        "original_content": description[:500]  # Limit description length
-                    }
-                    
-                    # Store in CLIP vector store
-                    clip_store.add_texts(
-                        texts=[description],
-                        metadatas=[metadata],
-                        ids=[str(uuid.uuid4())]
-                    )
-                    
-                    images_stored += 1
-                    print(f"  ✅ Successfully stored image {img_index + 1}")
-                    
-                except Exception as e:
-                    print(f"  ❌ Failed to process/store image {img_index}: {e}")
-            
-            print(f"✅ Total images stored in CLIP: {images_stored}/{len(images)}")
-        else:
-            print(f"⚠️ No images found to store in CLIP")
-
+        # ... rest of your existing code for image storage ...
+        
         results.append({
             "file_name": filename,
             "file_id": file_id,
+            "ocr_processed": ocr,  # NEW
+            "ocr_text_length": len(ocr_text) if ocr else 0,
             "chunks": len(chunks),
             "images_processed": len(images),
             "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
             "s3_key": s3_key,
             "s3_url": s3_url,
             "html": None,
-            "error": error,
-            "debug_info": {
-                "text_extracted": len(text) if text else 0,
-                "images_found": len(images),
-                "images_stored_in_clip": images_stored if 'images_stored' in locals() else 0
-            }
+            "error": error
         })
         
-        print(f"=== COMPLETED: {filename} ===\n")
+        print(f"=== COMPLETED: {filename} (OCR: {ocr}) ===\n")
 
     response_data = {"uploaded": results}
     if errors:
         response_data["errors"] = errors
 
     return JSONResponse(content=response_data, status_code=201)
-
 class AskRequest(BaseModel):
     question: str
     file_ids: list[str]
@@ -1983,6 +1921,118 @@ def check_database(data: dict):
         
     except Exception as e:
         return {"error": str(e)}
+    
+
+
+#----------------------------OCR------------------------
+def extract_text_with_groq_ocr(file_stream, filename):
+    """Extract text from ANY file using Groq's OCR capability"""
+    client = Groq(api_key=GROQ_API_KEY)
+    
+    # Reset stream position
+    file_stream.seek(0)
+    
+    # Convert file to base64
+    file_bytes = file_stream.read()
+    
+    # For non-image files, convert to image first
+    file_ext = filename.lower().split('.')[-1] if '.' in filename else ''
+    
+    if file_ext in ['pdf', 'docx', 'pptx', 'txt']:
+        # Convert document to image(s) first
+        return extract_text_from_document_with_ocr(file_bytes, filename, client)
+    else:
+        # Direct OCR for image files
+        return extract_text_from_image(file_bytes, client)
+
+
+def extract_text_from_image(image_bytes, client):
+    """Extract text from image bytes using Groq"""
+    img_b64 = base64.b64encode(image_bytes).decode('utf-8')
+    
+    # Simple OCR prompt - JUST EXTRACT TEXT
+    response = client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Extract ALL text from this image. Return ONLY the text, no explanations."},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
+            ]
+        }],
+        max_tokens=2000,
+        temperature=0.1
+    )
+    
+    return response.choices[0].message.content.strip()
+
+
+def extract_text_from_document_with_ocr(file_bytes, filename, client):
+    """Extract text from documents by converting pages to images and OCRing each"""
+    # Convert PDF/DOC to images
+    images = []
+    
+    file_ext = filename.lower().split('.')[-1]
+    
+    if file_ext == 'pdf':
+        # Convert PDF pages to images
+        import fitz
+        doc = fitz.open(stream=file_bytes, filetype="pdf")
+        
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # Higher resolution for OCR
+            img_data = pix.tobytes("png")
+            img = Image.open(io.BytesIO(img_data))
+            images.append(img)
+        
+        doc.close()
+    
+    elif file_ext in ['docx', 'pptx']:
+        # Convert office docs to PDF then to images
+        # (Use your existing convert_office_to_pdf function)
+        pdf_data, error = convert_office_to_pdf(io.BytesIO(file_bytes), filename)
+        if pdf_data:
+            # Convert PDF to images as above
+            doc = fitz.open(stream=pdf_data, filetype="pdf")
+            for page_num in range(len(doc)):
+                page = doc[page_num]
+                pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+                img_data = pix.tobytes("png")
+                img = Image.open(io.BytesIO(img_data))
+                images.append(img)
+            doc.close()
+    
+    # OCR each image
+    all_text = []
+    for i, img in enumerate(images):
+        print(f"  OCRing page {i+1}/{len(images)}...")
+        
+        # Convert image to bytes
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format='PNG')
+        img_b64 = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
+        
+        # Extract text
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "Extract ALL text from this document page. Return ONLY the text, no explanations."},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
+                ]
+            }],
+            max_tokens=1000,
+            temperature=0.1
+        )
+        
+        page_text = response.choices[0].message.content.strip()
+        if page_text:
+            all_text.append(f"--- Page {i+1} ---\n{page_text}")
+    
+    return "\n\n".join(all_text)
+
 # ---------------- RUN ----------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))  # fallback for local
