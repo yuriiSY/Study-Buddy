@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { RiEyeLine, RiArrowLeftLine, RiArrowRightLine, RiLightbulbFlashLine } from "react-icons/ri";
-import { Zap, Trophy, Star, Sparkles } from "lucide-react";
+import { Zap, Trophy, Star, Sparkles, Clock } from "lucide-react";
+import { ClipLoader } from "react-spinners";
 import styles from "./Flashcard.module.css";
 
 const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescription = "" }) => {
@@ -8,14 +9,16 @@ const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescript
   const [showAnswer, setShowAnswer] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [celebration, setCelebration] = useState(false);
+  const [loadingFinish, setLoadingFinish] = useState(false);
+  const [loadingNextLevel, setLoadingNextLevel] = useState(false);
 
   const currentCard = cards[currentIndex];
 
   const getLevelColor = () => {
     switch(level) {
       case 1: return "#3B82F6";
-      case 2: return "#F59E0B";
-      case 3: return "#EF4444";
+      case 2: return "#5BC0DE";
+      case 3: return "#06B6D4";
       default: return "#3B82F6";
     }
   };
@@ -35,14 +38,7 @@ const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescript
       setShowAnswer(false);
       setShowHint(false);
     } else {
-      if (level === 3) {
-        onFinish?.();
-      } else {
-        setCelebration(true);
-        setTimeout(() => {
-          onFinish?.();
-        }, 2000);
-      }
+      setCelebration(true);
     }
   };
 
@@ -50,6 +46,24 @@ const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescript
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
       setShowAnswer(false);
+    }
+  };
+
+  const handleFinishClick = async () => {
+    setLoadingFinish(true);
+    try {
+      await onFinish?.();
+    } finally {
+      setLoadingFinish(false);
+    }
+  };
+
+  const handleNextLevelClick = async () => {
+    setLoadingNextLevel(true);
+    try {
+      await onNextLevel?.();
+    } finally {
+      setLoadingNextLevel(false);
     }
   };
 
@@ -70,13 +84,44 @@ const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescript
           <p className={styles.celebrationSubtext}>{levelDescription}</p>
           
           <div className={styles.celebrationButtons}>
+            <button 
+              className={styles.doLaterBtn} 
+              onClick={handleFinishClick}
+              disabled={loadingFinish || loadingNextLevel}
+            >
+              {loadingFinish ? (
+                <ClipLoader size={18} color="currentColor" />
+              ) : (
+                <>
+                  <Clock size={18} /> Do it Later
+                </>
+              )}
+            </button>
             {hasNextLevel ? (
-              <button className={styles.nextLevelBtn} onClick={() => onNextLevel?.()}>
-                <Zap size={18} /> Next Level
+              <button 
+                className={styles.nextLevelBtn} 
+                onClick={handleNextLevelClick}
+                disabled={loadingFinish || loadingNextLevel}
+              >
+                {loadingNextLevel ? (
+                  <ClipLoader size={18} color="white" />
+                ) : (
+                  <>
+                    <Zap size={18} /> Next Level
+                  </>
+                )}
               </button>
             ) : (
-              <button className={styles.finishBtn} onClick={() => onFinish?.()}>
-                Complete
+              <button 
+                className={styles.finishBtn} 
+                onClick={handleFinishClick}
+                disabled={loadingFinish || loadingNextLevel}
+              >
+                {loadingFinish ? (
+                  <ClipLoader size={18} color="white" />
+                ) : (
+                  <>Complete</>
+                )}
               </button>
             )}
           </div>

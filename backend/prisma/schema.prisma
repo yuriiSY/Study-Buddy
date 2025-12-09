@@ -155,6 +155,7 @@ model flashcards {
   file_ids    String[]
   cards       Json?
   total_cards Int?
+  level       Int?      @default(1)
   created_at  DateTime? @default(now()) @db.Timestamp(6)
 }
 
