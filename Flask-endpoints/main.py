@@ -61,6 +61,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+def startup_event():
+    print("Initializing recap cards progress table...")
+    init_recap_cards_table()
+
 # ---------- Connect to hosted PostgreSQL ----------
 print("Connecting to hosted PostgreSQL...")
 try:
@@ -886,6 +892,90 @@ def get_chat_history(file_ids, limit=10):
         return []
 
 
+def init_recap_cards_table():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS recap_cards_progress (
+                id SERIAL PRIMARY KEY,
+                file_id VARCHAR(255) NOT NULL,
+                level INTEGER NOT NULL,
+                completed BOOLEAN DEFAULT FALSE,
+                completed_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(file_id, level)
+            )
+        """)
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("Recap cards progress table initialized")
+        return True
+    except Exception as e:
+        print(f"Error initializing recap cards table: {e}")
+        return False
+
+
+def mark_level_completed(file_id: str, level: int):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            INSERT INTO recap_cards_progress (file_id, level, completed, completed_at)
+            VALUES (%s, %s, TRUE, %s)
+            ON CONFLICT (file_id, level) DO UPDATE SET completed = TRUE, completed_at = %s
+        """, (file_id, level, datetime.now(), datetime.now()))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error marking level completed: {e}")
+        return False
+
+
+def get_completed_levels(file_id: str) -> list:
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT level FROM recap_cards_progress 
+            WHERE file_id = %s AND completed = TRUE
+            ORDER BY level
+        """, (file_id,))
+        
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        return [r[0] for r in rows]
+    except Exception as e:
+        print(f"Error getting completed levels: {e}")
+        return []
+
+
+def get_next_available_level(file_id: str) -> int:
+    completed_levels = get_completed_levels(file_id)
+    
+    if not completed_levels:
+        return 1
+    
+    completed_levels.sort()
+    
+    for level in [1, 2, 3]:
+        if level not in completed_levels:
+            if level == 1 or (level - 1) in completed_levels:
+                return level
+    
+    return 4
+
+
 def groq_chat_with_history(context: str, question: str, chat_history: list, images: list = None) -> str:
     client = Groq(api_key=GROQ_API_KEY)
     
@@ -1031,59 +1121,91 @@ def get_db_connection():
 
     
 #-----------Flashcard Generation with Groq-----------
-def generate_flashcards_with_groq(context: str, num_flashcards: int = 5, fill_gaps: bool = False):
-    """Generate flashcards - with option to fill knowledge gaps"""
+def generate_flashcards_with_groq(context: str, num_flashcards: int = 5, level: int = 1, fill_gaps: bool = False):
+    """Generate flashcards at different difficulty levels"""
     client = Groq(api_key=GROQ_API_KEY)
     
-    # Choose prompt based on fill_gaps flag
-    if fill_gaps:
-        prompt = f"""
-        CONTENT FROM USER'S NOTES:
+    # Level-specific prompts
+    level_prompts = {
+        1: f"""
+        CONTEXT FROM USER'S NOTES:
         {context}
         
-        Create {num_flashcards} SMART flashcards that fill knowledge gaps and make the student an expert.
+        Create {num_flashcards} EASY flashcards based DIRECTLY on this content.
         
-        CRITICAL: Don't just repeat what's in the notes. Create cards that:
-        1. Add missing information the notes don't cover
-        2. Connect concepts to real-world applications
-        3. Address common misunderstandings
-        4. Explain WHY concepts matter
-        5. Build from basic to advanced understanding
+        LEVEL 1 REQUIREMENTS (EASY - DIRECT FROM NOTES):
+        - Questions should be simple and direct from the notes
+        - Test basic recall and understanding
+        - Answers should be short and factual
+        - Focus on key terms, definitions, and main ideas
+        - Make it suitable for beginners
         
-        For each card, include:
-        - question: Thought-provoking, addresses a gap
-        - answer: Comprehensive explanation that TEACHES
-        - hint: Guides thinking without giving answer away
-        
-        Return ONLY this JSON format:
-        [
-            {{
-                "question": "question text",
-                "answer": "answer text", 
-                "hint": "hint text"
-            }}
-        ]
-        
-        Example for sparse notes:
-        Notes: "Force = mass × acceleration"
-        Card: {{
-            "question": "While your notes show F=ma, how do we calculate force when an object is on an inclined plane?",
-            "answer": "On an inclined plane, we resolve weight into components. The force parallel to the plane = mg·sinθ, perpendicular = mg·cosθ. Friction force = μ·(mg·cosθ).",
-            "hint": "Think about breaking gravity into components parallel and perpendicular to the surface."
+        EXAMPLE LEVEL 1 CARD:
+        {{
+            "question": "What is Newton's First Law of Motion?",
+            "answer": "An object at rest stays at rest, and an object in motion stays in motion unless acted upon by an external force.",
+            "hint": "Think about inertia"
         }}
-        """
-    else:
-        prompt = f"""
-        CONTENT FROM USER'S NOTES:
+        
+        Return ONLY this JSON format:
+        [
+            {{
+                "question": "question text",
+                "answer": "answer text", 
+                "hint": "hint text"
+            }}
+        ]
+        """,
+        
+        2: f"""
+        CONTEXT FROM USER'S NOTES:
         {context}
         
-        Create {num_flashcards} high-quality flashcards based on this content.
+        Create {num_flashcards} INTERMEDIATE flashcards with practical applications.
         
-        REQUIREMENTS:
-        - Questions should test understanding of key concepts
-        - Answers should be clear and educational
-        - Hints should guide thinking without revealing answers
-        - Focus on the most important information
+        LEVEL 2 REQUIREMENTS (INTERMEDIATE - PRACTICAL/APPLICATION):
+        - Questions should apply concepts to real-world scenarios
+        - Include "twist and turns" - slightly tricky but fair
+        - Test application and problem-solving
+        - Connect concepts from different parts of the notes
+        - Make students think critically
+        
+        EXAMPLE LEVEL 2 CARD:
+        {{
+            "question": "If a car is moving at 60 km/h and suddenly brakes, why do passengers continue moving forward?",
+            "answer": "Due to inertia (Newton's First Law). Passengers maintain their forward motion until seatbelts or friction stop them.",
+            "hint": "Consider what happens when motion changes suddenly"
+        }}
+        
+        Return ONLY this JSON format:
+        [
+            {{
+                "question": "question text",
+                "answer": "answer text", 
+                "hint": "hint text"
+            }}
+        ]
+        """,
+        
+        3: f"""
+        CONTEXT FROM USER'S NOTES:
+        {context}
+        
+        Create {num_flashcards} ADVANCED flashcards using external knowledge.
+        
+        LEVEL 3 REQUIREMENTS (ADVANCED - BEYOND NOTES):
+        - Questions should extend beyond what's explicitly in the notes
+        - Incorporate advanced concepts, historical context, or real-world applications
+        - Connect to related fields or advanced topics
+        - Challenge students to synthesize information
+        - Use your external knowledge as an AI
+        
+        EXAMPLE LEVEL 3 CARD:
+        {{
+            "question": "How does Newton's First Law relate to Einstein's theory of relativity in understanding motion in space?",
+            "answer": "Newton's First Law works for inertial frames in classical mechanics, but Einstein showed that all motion is relative and gravity curves spacetime, affecting how objects move in the absence of forces.",
+            "hint": "Consider the limitations of classical mechanics at cosmic scales"
+        }}
         
         Return ONLY this JSON format:
         [
@@ -1094,6 +1216,17 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5, fill_ga
             }}
         ]
         """
+    }
+    
+    # Choose prompt based on level
+    if level not in level_prompts:
+        level = 1  # Default to level 1
+    
+    prompt = level_prompts[level]
+    
+    # Add fill_gaps enhancement if requested
+    if fill_gaps and level == 1:  # Usually only fill gaps for basic level
+        prompt += "\n\nADDITIONAL: Also identify and fill knowledge gaps in the notes."
     
     try:
         response = client.chat.completions.create(
@@ -1101,7 +1234,7 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5, fill_ga
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an expert educational content creator. Create effective flashcards that help students learn."
+                    "content": f"You are an expert educational content creator specializing in creating flashcards at difficulty level {level}."
                 },
                 {
                     "role": "user", 
@@ -1109,7 +1242,7 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5, fill_ga
                 }
             ],
             max_tokens=2000,
-            temperature=0.7
+            temperature=0.7 if level == 3 else 0.5  # Higher temperature for creative advanced questions
         )
         
         content = response.choices[0].message.content.strip()
@@ -1596,86 +1729,115 @@ def generate_flashcards(data: dict):
     file_ids = data.get("file_ids", [])
     num_flashcards = data.get("num_flashcards", 5)
     fill_gaps = data.get("fill_gaps", False)
+    requested_level = data.get("level", 1)
     
     if not file_ids:
         raise HTTPException(status_code=400, detail="file_ids are required")
     
-    # Use comprehensive search terms that work for both text and images
+    if requested_level not in [1, 2, 3]:
+        requested_level = 1
+    
+    level = requested_level
+    
     search_terms = [
-        "key concepts important information main topics",
-        "definitions formulas equations processes",
-        "diagrams charts graphs visual explanations",
-        "images pictures illustrations figures",
-        "content material study notes information"
+        "key concepts",
+        "important information", 
+        "main topics",
+        "detailed explanations"
     ]
     
-    # Try MULTIPLE search terms to get comprehensive content
-    all_text_chunks = []
-    all_image_descriptions = []
-    
-    for term in search_terms[:3]:  # Try first 3 terms
-        text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, term, k=6)
-        
-        # Add unique text chunks
-        for chunk in text_chunks:
-            if chunk not in all_text_chunks:
-                all_text_chunks.append(chunk)
-        
-        # Add unique image descriptions
-        for desc in image_descriptions:
-            if desc not in all_image_descriptions:
-                all_image_descriptions.append(desc)
-    
-    print(f"DEBUG: Total text chunks collected: {len(all_text_chunks)}")
-    print(f"DEBUG: Total image descriptions collected: {len(all_image_descriptions)}")
-    
-    # Build context with BOTH text and images
-    context_parts = []
-    
-    if all_text_chunks:
-        text_context = "TEXT CONTENT FROM NOTES/DOCUMENTS:\n" + "\n---\n".join(all_text_chunks[:10])  # Limit to 10 chunks
-        context_parts.append(text_context)
-    
-    if all_image_descriptions:
-        # Format image descriptions properly
-        image_context = "VISUAL CONTENT FROM IMAGES/DIAGRAMS/FIGURES:\n"
-        image_context += "\n".join([f"- {desc}" for desc in all_image_descriptions])
-        context_parts.append(image_context)
-    
-    # If no content found at all, try one more time with empty query
-    if not context_parts:
-        print("WARNING: No content found with standard terms, trying empty query...")
-        all_text_chunks, all_image_descriptions = retrieve_by_file_ids(file_ids, "", k=10)
-        
-        if all_text_chunks or all_image_descriptions:
-            if all_text_chunks:
-                context_parts.append("TEXT CONTENT:\n" + "\n".join(all_text_chunks))
-            if all_image_descriptions:
-                context_parts.append("IMAGE CONTENT:\n" + "\n".join(all_image_descriptions))
-    
-    context = "\n\n".join(context_parts) if context_parts else "No content found."
+    random_term = random.choice(search_terms)
+    context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=6)
+    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
 
-    if not context.strip() or context == "No content found.":
-        raise HTTPException(
-            status_code=400, 
-            detail=f"No content found in selected files. Text chunks: {len(all_text_chunks)}, Images: {len(all_image_descriptions)}"
-        )
+    if not context.strip():
+        raise HTTPException(status_code=400, detail="No content found in selected files")
 
-    # Generate flashcards with the combined context
-    flashcards = generate_flashcards_with_groq(context, num_flashcards, fill_gaps)
-
+    flashcards = generate_flashcards_with_groq(context, num_flashcards, level, fill_gaps)
+    print(flashcards)
     return {
         "flashcards": flashcards,
         "file_ids_used": file_ids,
         "total_generated": len(flashcards),
-        "fill_gaps_used": fill_gaps,
-        "debug_info": {
-            "text_chunks_used": len(all_text_chunks),
-            "image_descriptions_used": len(all_image_descriptions),
-            "context_length": len(context),
-            "file_count": len(file_ids)
-        }
+        "level": level,
+        "level_description": get_level_description(level),
+        "fill_gaps_used": fill_gaps
     }
+
+
+def get_level_description(level: int) -> str:
+    """Get description for each level"""
+    descriptions = {
+        1: "Easy Level - Foundational concepts and definitions",
+        2: "Intermediate Level - Practical applications and critical thinking",
+        3: "Advanced Level - Complex analysis and synthesis"
+    }
+    return descriptions.get(level, "Easy Level - Foundational concepts and definitions")
+
+
+@app.get("/recap-cards-progress")
+def get_recap_progress(file_ids: List[str] = Query(..., alias="file_ids[]")):
+    if not file_ids:
+        raise HTTPException(status_code=400, detail="file_ids are required")
+    
+    file_id = file_ids[0]
+    completed_levels = get_completed_levels(file_id)
+    next_available = get_next_available_level(file_id)
+    
+    level_status = {}
+    for level in [1, 2, 3]:
+        level_status[level] = {
+            "completed": level in completed_levels,
+            "available": level <= next_available,
+            "description": get_level_description(level)
+        }
+    
+    return {
+        "file_id": file_id,
+        "completed_levels": completed_levels,
+        "next_available_level": next_available,
+        "all_levels_completed": len(completed_levels) == 3,
+        "level_status": level_status
+    }
+
+
+@app.post("/recap-cards-complete-level")
+def complete_level(data: dict):
+    file_id = data.get("file_id")
+    level = data.get("level")
+    
+    if not file_id or not level:
+        raise HTTPException(status_code=400, detail="file_id and level are required")
+    
+    if level not in [1, 2, 3]:
+        raise HTTPException(status_code=400, detail="level must be 1, 2, or 3")
+    
+    completed_levels = get_completed_levels(file_id)
+    next_available = get_next_available_level(file_id)
+    
+    if level > next_available:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Level {level} is not available. Complete Level {level - 1} first."
+        )
+    
+    if mark_level_completed(file_id, level):
+        updated_completed = get_completed_levels(file_id)
+        updated_next = get_next_available_level(file_id)
+        
+        return {
+            "success": True,
+            "file_id": file_id,
+            "level_completed": level,
+            "completed_levels": updated_completed,
+            "next_available_level": updated_next,
+            "all_levels_completed": len(updated_completed) == 3,
+            "message": f"Level {level} completed! {get_level_description(level)}"
+        }
+    else:
+        raise HTTPException(status_code=500, detail="Failed to mark level as completed")
+
+
 @app.post("/enhance-notes")
 def enhance_notes(data: dict):
     """Get additional notes to fill knowledge gaps - INCLUDING IMAGES"""
