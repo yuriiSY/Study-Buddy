@@ -119,3 +119,12 @@
 • OCR improvements  
 • Interface may adapt to utilise DaisyUI for an upgraded interface  
 • Registration redirect automatically  
+
+## Week 11 Retrospectives:
+### What went well
+• Interface was overhauled  
+### What to improve
+• Additional features  
+### What actions are being taken  
+• More features are being tested out  
+• General application polish  
