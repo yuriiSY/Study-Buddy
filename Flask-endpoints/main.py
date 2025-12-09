@@ -1735,8 +1735,9 @@ def generate_flashcards(data: dict):
     
     completed_levels = get_completed_levels(file_ids[0])
     next_available = get_next_available_level(file_ids[0])
+    max_unlocked_level = max(completed_levels) if completed_levels else 0
     
-    if requested_level > next_available:
+    if requested_level > max_unlocked_level + 1:
         missing_level = requested_level - 1
         raise HTTPException(
             status_code=403,
@@ -1824,9 +1825,9 @@ def complete_level(data: dict):
         raise HTTPException(status_code=400, detail="level must be 1, 2, or 3")
     
     completed_levels = get_completed_levels(file_id)
-    next_available = get_next_available_level(file_id)
+    max_unlocked_level = max(completed_levels) if completed_levels else 0
     
-    if level > next_available:
+    if level > max_unlocked_level + 1:
         raise HTTPException(
             status_code=403,
             detail=f"Level {level} is not available. Complete Level {level - 1} first."
