@@ -28,6 +28,7 @@ const ModuleModal = ({
   const [loadingStage, setLoadingStage] = useState("uploading");
   const [selectedImage, setSelectedImage] = useState(null);
   const [rejectedFiles, setRejectedFiles] = useState([]);
+  const [ocr, setOcr] = useState(false);
 
   useEffect(() => {
     if (mode === "upload") {
@@ -105,6 +106,7 @@ const ModuleModal = ({
         pyFormData.append("moduleId", moduleId);
       }
       uploadedFiles.forEach((file) => pyFormData.append("files", file));
+      pyFormData.append("ocr", ocr);
 
       const respy = await apiPY.post("/upload-files", pyFormData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -245,6 +247,31 @@ const ModuleModal = ({
             />
           </div>
         )}
+        
+        <div className={styles.ocrToggleSection}>
+          <label className={styles.ocrLabel}>File Type</label>
+          <div className={styles.ocrOptions}>
+            <label className={styles.ocrOption}>
+              <input 
+                type="radio" 
+                checked={!ocr} 
+                onChange={() => setOcr(false)}
+                disabled={loading}
+              />
+              <span>📄 Regular Document</span>
+            </label>
+            <label className={styles.ocrOption}>
+              <input 
+                type="radio" 
+                checked={ocr} 
+                onChange={() => setOcr(true)}
+                disabled={loading}
+              />
+              <span>📝 Handwritten Notes (OCR)</span>
+            </label>
+          </div>
+        </div>
+
         {mode === "create" && (
           <div className={styles.imagePickerSection}>
             <label>Choose a Cover Image</label>

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import styles from "./MaterialUpload.module.css";
 import api from "../../api/axios";
+import apiPY from "../../api/axiosPython";
 import { toast } from "react-toastify";
 
 const SUPPORTED_EXTENSIONS = [
@@ -9,7 +10,7 @@ const SUPPORTED_EXTENSIONS = [
 ];
 
 export default function MaterialUpload({ onUploadSuccess }) {
-  const [ocr, setOcr] = useState(true);
+  const [ocr, setOcr] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const fileRef = useRef();
@@ -48,13 +49,36 @@ export default function MaterialUpload({ onUploadSuccess }) {
       return;
     }
 
-    const form = new FormData();
-
     setLoading(true);
     try {
-      await api.post("/files/upload", form, {
+      const pyFormData = new FormData();
+      pyFormData.append("files", selectedFile);
+      pyFormData.append("ocr", ocr);
+
+      const pyRes = await apiPY.post("/upload-files", pyFormData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
+      if (!pyRes.data.uploaded || pyRes.data.uploaded.length === 0) {
+        toast.error("No files were successfully processed.");
+        setLoading(false);
+        return;
+      }
+
+      const uploadedInfo = pyRes.data.uploaded[0];
+
+      const nodePayload = {
+        file_id: uploadedInfo.file_id,
+        file_name: uploadedInfo.file_name,
+        s3Url: uploadedInfo.s3_url,
+        s3Key: uploadedInfo.s3_key,
+        html: uploadedInfo.html || "",
+      };
+
+      await api.post("/files/upload", nodePayload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
       setLoading(false);
       setSelectedFile(null);
       toast.success("File uploaded successfully");
