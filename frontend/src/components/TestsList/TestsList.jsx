@@ -6,6 +6,7 @@ import apiPY from "../../api/axiosPython";
 const TestsList = ({ fileId, onSelectTest }) => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [creatingTest, setCreatingTest] = useState(false);
 
   useEffect(() => {
     if (!fileId) return;
@@ -30,6 +31,7 @@ const TestsList = ({ fileId, onSelectTest }) => {
   };
 
   const handleCreateTest = async () => {
+    setCreatingTest(true);
     try {
       const aiRes = await apiPY.post("/generate-mcq", {
         file_ids: [fileId],
@@ -49,18 +51,38 @@ const TestsList = ({ fileId, onSelectTest }) => {
       });
 
       setTests((prev) => [saveRes.data, ...prev]);
+      onSelectTest(saveRes.data.id);
     } catch (err) {
       console.error("Failed to create test:", err);
+    } finally {
+      setCreatingTest(false);
     }
   };
 
   if (loading) return <div className={styles.loading}>Loading tests...</div>;
 
+  if (creatingTest) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.generatingOverlay}>
+          <div className={styles.spinnerContainer}>
+            <div className={styles.spinner}></div>
+            <p className={styles.generatingText}>Generating test...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.title}>Tests</h2>
-        <button className={styles.createBtn} onClick={handleCreateTest}>
+        <button 
+          className={styles.createBtn} 
+          onClick={handleCreateTest}
+          disabled={creatingTest}
+        >
           + Create Test
         </button>
       </div>

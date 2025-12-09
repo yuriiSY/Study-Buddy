@@ -159,7 +159,7 @@ def get_clip_vector_store():
         )
     return clip_vector_store
 
-def retrieve_by_file_ids(file_ids, query, k=8):  # Increased k for better results
+def retrieve_by_file_ids(file_ids, query, k=8):
     store = get_vector_store()
     clip_store = get_clip_vector_store()
     
@@ -168,7 +168,7 @@ def retrieve_by_file_ids(file_ids, query, k=8):  # Increased k for better result
     
     filter_cond = {"file_id": file_ids}
     
-    print(f"\n=== RETRIEVING CONTENT ===")
+    print(f"\n=== RETRIEVING CONTENT FOR FLASHCARDS/MCQs ===")
     print(f"Query: '{query}'")
     print(f"File IDs: {file_ids}")
     
@@ -181,12 +181,12 @@ def retrieve_by_file_ids(file_ids, query, k=8):  # Increased k for better result
     except Exception as e:
         print(f"❌ Text search error: {e}")
     
-    # Get image descriptions - MULTIPLE SEARCH STRATEGIES
+    # Get image descriptions - MORE AGGRESSIVE SEARCH
     image_results = []
     
-    # Strategy 1: Search with the query directly
+    # Strategy 1: Try the query directly
     try:
-        image_docs = clip_store.similarity_search(query, k=3, filter=filter_cond)
+        image_docs = clip_store.similarity_search(query, k=min(4, k//2), filter=filter_cond)
         for doc in image_docs:
             if doc.page_content not in image_results:
                 image_results.append(doc.page_content)
@@ -194,38 +194,50 @@ def retrieve_by_file_ids(file_ids, query, k=8):  # Increased k for better result
     except Exception as e:
         print(f"Strategy 1 error: {e}")
     
-    # Strategy 2: If query is specific but no images, try broader terms
-    if len(image_results) == 0:
+    # Strategy 2: If query is specific, also try broader terms
+    if query and len(query.split()) > 2:
         try:
-            visual_terms = ["image", "picture", "photo", "diagram", "graph", "chart", "figure", "illustration", "visual"]
-            for term in visual_terms:
+            simple_terms = query.split()[:2]  # Take first 2 words
+            for term in simple_terms:
                 docs = clip_store.similarity_search(term, k=2, filter=filter_cond)
                 for doc in docs:
                     if doc.page_content not in image_results:
                         image_results.append(doc.page_content)
-            print(f"Strategy 2: Found {len(image_results)} images with visual terms")
+            print(f"Strategy 2: Found additional images with simple terms")
         except Exception as e:
             print(f"Strategy 2 error: {e}")
     
-    # Strategy 3: Get ALL images for these files if still none
+    # Strategy 3: Always search for "image" and "diagram"
+    try:
+        visual_terms = ["image", "diagram", "chart", "graph", "figure", "photo", "picture", "illustration"]
+        for term in visual_terms:
+            docs = clip_store.similarity_search(term, k=2, filter=filter_cond)
+            for doc in docs:
+                if doc.page_content not in image_results:
+                    image_results.append(doc.page_content)
+        print(f"Strategy 3: Found images with visual terms")
+    except Exception as e:
+        print(f"Strategy 3 error: {e}")
+    
+    # Strategy 4: If still no images, get ANY images from these files
     if len(image_results) == 0:
         try:
-            # Try to get any images by searching with empty or generic query
-            all_docs = clip_store.similarity_search("", k=5, filter=filter_cond)
+            # Get random content from these files
+            all_docs = clip_store.similarity_search("a", k=5, filter=filter_cond)
             for doc in all_docs:
                 if doc.page_content not in image_results:
                     image_results.append(doc.page_content)
-            print(f"Strategy 3: Found {len(image_results)} images with generic search")
+            print(f"Strategy 4: Found {len(image_results)} images with generic search")
         except Exception as e:
-            print(f"Strategy 3 error: {e}")
+            print(f"Strategy 4 error: {e}")
     
     print(f"✅ Total image descriptions retrieved: {len(image_results)}")
     
-    # Debug: Print what we found
+    # Show first few descriptions
     if image_results:
-        print("Image descriptions found:")
-        for i, desc in enumerate(image_results[:3]):  # Show first 3
-            print(f"  {i+1}. {desc[:80]}...")
+        print("Sample image descriptions:")
+        for i, desc in enumerate(image_results[:3]):
+            print(f"  {i+1}. {desc[:100]}...")
     
     print(f"=== RETRIEVAL COMPLETE ===\n")
     
@@ -1561,60 +1573,141 @@ def clear_chat_history(data: dict):
 
 @app.post("/generate-flashcards")
 def generate_flashcards(data: dict):
-
     file_ids = data.get("file_ids", [])
     num_flashcards = data.get("num_flashcards", 5)
-    fill_gaps = data.get("fill_gaps", False)  # NEW: Optional parameter
+    fill_gaps = data.get("fill_gaps", False)
     
-    # Get content from notes
+    if not file_ids:
+        raise HTTPException(status_code=400, detail="file_ids are required")
+    
+    # Use comprehensive search terms that work for both text and images
     search_terms = [
-        "key concepts",
-        "important information", 
-        "main topics",
-        "detailed explanations"
+        "key concepts important information main topics",
+        "definitions formulas equations processes",
+        "diagrams charts graphs visual explanations",
+        "images pictures illustrations figures",
+        "content material study notes information"
     ]
     
-    random_term = random.choice(search_terms)
-    context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=6)
-    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
+    # Try MULTIPLE search terms to get comprehensive content
+    all_text_chunks = []
+    all_image_descriptions = []
+    
+    for term in search_terms[:3]:  # Try first 3 terms
+        text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, term, k=6)
+        
+        # Add unique text chunks
+        for chunk in text_chunks:
+            if chunk not in all_text_chunks:
+                all_text_chunks.append(chunk)
+        
+        # Add unique image descriptions
+        for desc in image_descriptions:
+            if desc not in all_image_descriptions:
+                all_image_descriptions.append(desc)
+    
+    print(f"DEBUG: Total text chunks collected: {len(all_text_chunks)}")
+    print(f"DEBUG: Total image descriptions collected: {len(all_image_descriptions)}")
+    
+    # Build context with BOTH text and images
+    context_parts = []
+    
+    if all_text_chunks:
+        text_context = "TEXT CONTENT FROM NOTES/DOCUMENTS:\n" + "\n---\n".join(all_text_chunks[:10])  # Limit to 10 chunks
+        context_parts.append(text_context)
+    
+    if all_image_descriptions:
+        # Format image descriptions properly
+        image_context = "VISUAL CONTENT FROM IMAGES/DIAGRAMS/FIGURES:\n"
+        image_context += "\n".join([f"- {desc}" for desc in all_image_descriptions])
+        context_parts.append(image_context)
+    
+    # If no content found at all, try one more time with empty query
+    if not context_parts:
+        print("WARNING: No content found with standard terms, trying empty query...")
+        all_text_chunks, all_image_descriptions = retrieve_by_file_ids(file_ids, "", k=10)
+        
+        if all_text_chunks or all_image_descriptions:
+            if all_text_chunks:
+                context_parts.append("TEXT CONTENT:\n" + "\n".join(all_text_chunks))
+            if all_image_descriptions:
+                context_parts.append("IMAGE CONTENT:\n" + "\n".join(all_image_descriptions))
+    
+    context = "\n\n".join(context_parts) if context_parts else "No content found."
 
-    if not context.strip():
-        raise HTTPException(status_code=400, detail="No content found in selected files")
+    if not context.strip() or context == "No content found.":
+        raise HTTPException(
+            status_code=400, 
+            detail=f"No content found in selected files. Text chunks: {len(all_text_chunks)}, Images: {len(all_image_descriptions)}"
+        )
 
-    # Generate flashcards with gap-filling if requested
+    # Generate flashcards with the combined context
     flashcards = generate_flashcards_with_groq(context, num_flashcards, fill_gaps)
 
     return {
         "flashcards": flashcards,
         "file_ids_used": file_ids,
         "total_generated": len(flashcards),
-        "fill_gaps_used": fill_gaps  # Let frontend know if gaps were filled
+        "fill_gaps_used": fill_gaps,
+        "debug_info": {
+            "text_chunks_used": len(all_text_chunks),
+            "image_descriptions_used": len(all_image_descriptions),
+            "context_length": len(context),
+            "file_count": len(file_ids)
+        }
     }
-
-
 @app.post("/enhance-notes")
 def enhance_notes(data: dict):
-    """NEW ENDPOINT: Get additional notes to fill knowledge gaps"""
+    """Get additional notes to fill knowledge gaps - INCLUDING IMAGES"""
     file_ids = data.get("file_ids", [])
     
     if not file_ids:
         raise HTTPException(status_code=400, detail="file_ids are required")
     
-    # Get comprehensive context
-    context_chunks, _ = retrieve_by_file_ids(file_ids, "comprehensive understanding", k=8)
-    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
+    # Get comprehensive context including images
+    all_text_chunks = []
+    all_image_descriptions = []
+    
+    # Try multiple searches
+    for term in ["comprehensive understanding", "detailed information", "key concepts visual content"]:
+        text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, term, k=8)
+        
+        for chunk in text_chunks:
+            if chunk not in all_text_chunks:
+                all_text_chunks.append(chunk)
+        
+        for desc in image_descriptions:
+            if desc not in all_image_descriptions:
+                all_image_descriptions.append(desc)
+    
+    # Build context
+    context_parts = []
+    
+    if all_text_chunks:
+        text_context = "CURRENT NOTES TEXT:\n" + "\n---\n".join(all_text_chunks)
+        context_parts.append(text_context)
+    
+    if all_image_descriptions:
+        image_context = "CURRENT VISUAL CONTENT:\n" + "\n".join([f"- {desc}" for desc in all_image_descriptions])
+        context_parts.append(image_context)
+    
+    context = "\n\n".join(context_parts) if context_parts else "No content found."
     
     if not context.strip():
         raise HTTPException(status_code=400, detail="No content found in selected files")
     
-    # Generate missing notes
+    # Generate missing notes with the full context
     result = generate_missing_notes(context)
     
     return {
         "enhanced_notes": result.get("missing_notes", []),
         "study_advice": result.get("study_advice", ""),
         "file_ids_used": file_ids,
-        "original_notes_summary": context[:500] + "..." if len(context) > 500 else context
+        "original_content_summary": {
+            "text_chunks": len(all_text_chunks),
+            "images": len(all_image_descriptions),
+            "total_content": f"{len(all_text_chunks)} text chunks, {len(all_image_descriptions)} images"
+        }
     }
 
 @app.post("/generate-mcq")
@@ -1622,30 +1715,89 @@ def generate_mcq(data: dict):
     file_ids = data.get("file_ids", [])
     num_questions = data.get("num_questions", 5)
 
+    if not file_ids:
+        raise HTTPException(status_code=400, detail="file_ids are required")
+    
+    # Use search terms that capture ALL content types
     search_terms = [
-        "key concepts and definitions",
-        "important principles and theories",
-        "formulas and equations",
-        "processes and methods",
-        "relationships and connections"
+        "key concepts definitions important points",
+        "formulas equations calculations data",
+        "diagrams images charts visual information",
+        "processes methods steps procedures",
+        "facts information details explanations"
     ]
+    
+    # Collect content from multiple searches
+    all_text_chunks = []
+    all_image_descriptions = []
+    
+    for term in search_terms[:3]:  # Try first 3 terms
+        text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, term, k=6)
+        
+        for chunk in text_chunks:
+            if chunk not in all_text_chunks:
+                all_text_chunks.append(chunk)
+        
+        for desc in image_descriptions:
+            if desc not in all_image_descriptions:
+                all_image_descriptions.append(desc)
+    
+    print(f"MCQ DEBUG: Text chunks: {len(all_text_chunks)}, Images: {len(all_image_descriptions)}")
+    
+    # Build comprehensive context
+    context_parts = []
+    
+    if all_text_chunks:
+        text_context = "DOCUMENT TEXT CONTENT:\n" + "\n---\n".join(all_text_chunks[:12])  # Limit to reasonable size
+        context_parts.append(text_context)
+    
+    if all_image_descriptions:
+        image_context = "VISUAL CONTENT (Images/Diagrams/Charts):\n"
+        for i, desc in enumerate(all_image_descriptions):
+            # Clean up the description
+            clean_desc = desc
+            for prefix in ["This image shows", "The image depicts", "The image contains", "This is an image of"]:
+                if desc.startswith(prefix):
+                    clean_desc = desc[len(prefix):].strip()
+                    break
+            
+            image_context += f"\nVisual {i+1}: {clean_desc}"
+        context_parts.append(image_context)
+    
+    # Last resort if no content
+    if not context_parts:
+        all_text_chunks, all_image_descriptions = retrieve_by_file_ids(file_ids, "", k=15)
+        
+        combined = []
+        if all_text_chunks:
+            combined.extend(all_text_chunks)
+        if all_image_descriptions:
+            combined.extend(all_image_descriptions)
+        
+        if combined:
+            context_parts.append("ALL AVAILABLE CONTENT:\n" + "\n".join(combined))
+    
+    context = "\n\n".join(context_parts) if context_parts else "No content found."
 
-    random_term = random.choice(search_terms)
-    context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=8)
-    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
+    if not context.strip() or context == "No content found.":
+        raise HTTPException(
+            status_code=400, 
+            detail=f"No content available to generate questions. Found {len(all_text_chunks)} text chunks and {len(all_image_descriptions)} images."
+        )
 
-    if not context.strip():
-        raise HTTPException(status_code=400, detail="No content found in selected files")
-
+    # Generate MCQs from the combined context
     mcqs = generate_mcq_with_groq(context, num_questions)
 
     return {
         "mcqs": mcqs,
         "file_ids_used": file_ids,
-        "total_questions": len(mcqs)
+        "total_questions": len(mcqs),
+        "debug_info": {
+            "text_chunks_used": len(all_text_chunks),
+            "image_descriptions_used": len(all_image_descriptions),
+            "context_length": len(context)
+        }
     }
-
-
 @app.post("/delete-file-embeddings")
 def delete_file_embeddings(data: dict):
     """Delete all embeddings and chat history for given file IDs"""
