@@ -177,9 +177,9 @@ def retrieve_by_file_ids(file_ids, query, k=8):
     try:
         text_docs = store.similarity_search(query, k=k, filter=filter_cond)
         text_results = [doc.page_content for doc in text_docs]
-        print(f"✅ Found {len(text_results)} text chunks")
+        print(f"Found {len(text_results)} text chunks")
     except Exception as e:
-        print(f"❌ Text search error: {e}")
+        print(f"Text search error: {e}")
     
     # Get image descriptions - MORE AGGRESSIVE SEARCH
     image_results = []
@@ -231,7 +231,7 @@ def retrieve_by_file_ids(file_ids, query, k=8):
         except Exception as e:
             print(f"Strategy 4 error: {e}")
     
-    print(f"✅ Total image descriptions retrieved: {len(image_results)}")
+    print(f"Total image descriptions retrieved: {len(image_results)}")
     
     # Show first few descriptions
     if image_results:
@@ -328,15 +328,15 @@ def extract_images_from_pdf(file_stream):
                     
                     pix = None  # Free memory
                 except Exception as img_error:
-                    print(f"    ⚠️ Failed to extract image {img_index}: {img_error}")
+                    print(f"    Failed to extract image {img_index}: {img_error}")
                     continue
         
         doc.close()
-        print(f"  ✅ Total images extracted: {len(images)}")
+        print(f"  Total images extracted: {len(images)}")
         return images
         
     except Exception as e:
-        print(f"❌ Error extracting images from PDF: {e}")
+        print(f"Error extracting images from PDF: {e}")
         return []
     
 def extract_text_from_docx(file_stream):
@@ -500,21 +500,21 @@ def generate_image_description(image):
                 description = response.choices[0].message.content.strip()
                 
                 if description and len(description) > 20:  # Valid description
-                    print(f"  ✅ Generated description ({len(description)} chars): {description[:100]}...")
+                    print(f"  Generated description ({len(description)} chars): {description[:100]}...")
                     return description
                 else:
-                    print(f"  ⚠️ Attempt {attempt+1}: Description too short: '{description}'")
+                    print(f"  Attempt {attempt+1}: Description too short: '{description}'")
                     
             except Exception as e:
-                print(f"  ⚠️ Attempt {attempt+1} failed: {e}")
+                print(f"  Attempt {attempt+1} failed: {e}")
                 continue
         
         # If all attempts fail, create a basic description
-        print(f"  ⚠️ All attempts failed, creating basic description")
+        print(f"  All attempts failed, creating basic description")
         return f"An image of size {image.size[0]}x{image.size[1]} pixels"
         
     except Exception as e:
-        print(f"  ❌ Error generating image description: {e}")
+        print(f"  Error generating image description: {e}")
         return f"Image content (error: {str(e)[:50]})"
     
 def convert_image_or_text_to_pdf(file_stream, filename):
@@ -523,7 +523,7 @@ def convert_image_or_text_to_pdf(file_stream, filename):
     """
     ext = filename.lower().split('.')[-1]
 
-    # IMAGE → PDF
+    # IMAGE to PDF
     if ext in ["png", "jpg", "jpeg", "bmp", "gif", "webp"]:
         try:
             file_stream.seek(0)
@@ -547,14 +547,14 @@ def convert_image_or_text_to_pdf(file_stream, filename):
             # Use optimal settings
             image.save(pdf_out, format="PDF", quality=95, optimize=True)
             pdf_bytes = pdf_out.getvalue()
-            print(f"    ✅ PDF created: {len(pdf_bytes)} bytes")
+            print(f"    PDF created: {len(pdf_bytes)} bytes")
             return pdf_bytes, None
             
         except Exception as e:
-            print(f"    ❌ Image → PDF failed: {e}")
-            return None, f"Image → PDF failed: {e}"
+            print(f"    Image to PDF failed: {e}")
+            return None, f"Image to PDF failed: {e}"
 
-    # TEXT → PDF
+    # TEXT to PDF
     if ext == "txt":
         try:
             file_stream.seek(0)
@@ -587,14 +587,14 @@ def convert_image_or_text_to_pdf(file_stream, filename):
             
             c.save()
             pdf_bytes = pdf_out.getvalue()
-            print(f"    ✅ Text PDF created: {len(pdf_bytes)} bytes")
+            print(f"    Text PDF created: {len(pdf_bytes)} bytes")
             return pdf_bytes, None
             
         except Exception as e:
-            print(f"    ❌ Text → PDF failed: {e}")
-            return None, f"Text → PDF failed: {e}"
+            print(f"    Text to PDF failed: {e}")
+            return None, f"Text to PDF failed: {e}"
 
-    print(f"    ⚠️ Unsupported file type for conversion: {ext}")
+    print(f"    Unsupported file type for conversion: {ext}")
     return None, f"Unsupported file type for conversion to PDF: {ext}"
 
 
@@ -615,39 +615,39 @@ def process_file_content(file, filename):
     # ---------- Office files (convert to PDF first) ----------
     office_types = ['docx', 'pptx', 'xlsx', 'doc', 'ppt', 'xls']
     if file_extension in office_types:
-        print(f"🔄 Converting {file_extension.upper()} to PDF for full processing...")
+        print(f"Converting {file_extension.upper()} to PDF for full processing...")
         pdf_data, error = convert_office_to_pdf(file_stream, filename)
         if error:
-            print(f"⚠️ Office → PDF failed: {error}, falling back to native extraction...")
+            print(f"Office to PDF failed: {error}, falling back to native extraction...")
             # Fallback text extraction
             try:
                 file_stream.seek(0)
                 if file_extension == 'docx' and DOCX_SUPPORT:
                     text = extract_text_from_docx(file_stream)
-                    print(f"📝 Fallback: Extracted {len(text)} chars from DOCX")
+                    print(f"Fallback: Extracted {len(text)} chars from DOCX")
                     return text, f"Fallback text only. {error}", [], None
                 elif file_extension == 'pptx' and PPTX_SUPPORT:
                     text = extract_text_from_pptx(file_stream)
-                    print(f"📝 Fallback: Extracted {len(text)} chars from PPTX")
+                    print(f"Fallback: Extracted {len(text)} chars from PPTX")
                     return text, f"Fallback text only. {error}", [], None
                 elif file_extension == 'xlsx' and XLSX_SUPPORT:
                     text = extract_text_from_xlsx(file_stream)
-                    print(f"📝 Fallback: Extracted {len(text)} chars from XLSX")
+                    print(f"Fallback: Extracted {len(text)} chars from XLSX")
                     return text, f"Fallback text only. {error}", [], None
                 else:
                     return None, f"No extraction fallback available. {error}", [], None
             except Exception as e:
-                print(f"❌ Fallback extraction failed: {e}")
+                print(f"Fallback extraction failed: {e}")
                 return None, f"Fallback extraction failed: {e}", [], None
 
         # Success: extract text and images from PDF
-        print(f"✅ Successfully converted to PDF ({len(pdf_data)} bytes)")
+        print(f"Successfully converted to PDF ({len(pdf_data)} bytes)")
         pdf_stream = io.BytesIO(pdf_data)
         
         # Extract text
         pdf_stream.seek(0)
         text = extract_text_from_pdf(pdf_stream)
-        print(f"📝 Extracted {len(text)} chars of text")
+        print(f"Extracted {len(text)} chars of text")
         
         # Extract images
         pdf_stream.seek(0)
@@ -670,7 +670,7 @@ def process_file_content(file, filename):
         # Extract text
         pdf_stream = io.BytesIO(file_bytes)
         text = extract_text_from_pdf(pdf_stream)
-        print(f"📝 Extracted {len(text)} chars of text")
+        print(f"Extracted {len(text)} chars of text")
         
         # Extract images
         pdf_stream.seek(0)
@@ -716,10 +716,10 @@ def process_file_content(file, filename):
                     processed_image = image
                 
                 images = [original_image]  # Keep original for description generation
-                print(f"  ✅ Image ready: size={image.size}, mode={image.mode}")
+                print(f"  Image ready: size={image.size}, mode={image.mode}")
                 
             except Exception as img_error:
-                print(f"  ❌ Failed to open image: {img_error}")
+                print(f"  Failed to open image: {img_error}")
                 # Try alternative approach
                 file_stream.seek(0)
                 try:
@@ -729,7 +729,7 @@ def process_file_content(file, filename):
                     image = Image.open(file_stream)
                     image.load()  # Force load
                     images = [image]
-                    print(f"  ✅ Loaded with alternative method")
+                    print(f"  Loaded with alternative method")
                 except:
                     return None, f"Failed to process image: {img_error}", [], None
             
@@ -737,20 +737,20 @@ def process_file_content(file, filename):
             file_stream.seek(0)
             pdf_data, error = convert_image_or_text_to_pdf(file_stream, filename)
             if error:
-                print(f"  ❌ PDF conversion failed: {error}")
+                print(f"  PDF conversion failed: {error}")
                 # Still return the images even if PDF conversion fails
                 return "", error, images, None
             
-            print(f"  ✅ Successfully generated PDF ({len(pdf_data)} bytes)")
+            print(f"  Successfully generated PDF ({len(pdf_data)} bytes)")
             return "", None, images, pdf_data
             
         except Exception as e:
-            print(f"❌ Error processing image file {filename}: {e}")
+            print(f"Error processing image file {filename}: {e}")
             return None, f"Image processing failed: {e}", [], None
 
     # ---------- TEXT files ----------
     elif file_extension == 'txt':
-        print(f"📝 Processing text file: {filename}")
+        print(f"Processing text file: {filename}")
         try:
             file_stream.seek(0)
             text = file_stream.read().decode("utf-8", errors="ignore")
@@ -760,25 +760,25 @@ def process_file_content(file, filename):
             file_stream.seek(0)
             pdf_data, error = convert_image_or_text_to_pdf(file_stream, filename)
             if error:
-                print(f"  ⚠️ PDF conversion failed: {error}")
+                print(f"  PDF conversion failed: {error}")
                 return text, error, [], None
             
-            print(f"  ✅ Successfully generated PDF ({len(pdf_data)} bytes)")
+            print(f"  Successfully generated PDF ({len(pdf_data)} bytes)")
             return text, None, [], pdf_data
             
         except Exception as e:
-            print(f"❌ Error processing text file {filename}: {e}")
+            print(f"Error processing text file {filename}: {e}")
             return None, f"Text processing failed: {e}", [], None
 
     # ---------- Plain text fallback ----------
     else:
-        print(f"🤔 Unknown file type: {file_extension}, trying as text...")
+        print(f"Unknown file type: {file_extension}, trying as text...")
         try:
             text = file_bytes.decode("utf-8", errors="ignore")
-            print(f"✅ Processed as plain text: {len(text)} chars")
+            print(f"Processed as plain text: {len(text)} chars")
             return text, None, [], None
         except Exception as e:
-            print(f"❌ Unsupported file type: {file_extension}. {e}")
+            print(f"Unsupported file type: {file_extension}. {e}")
             return None, f"Unsupported file type: {file_extension}. {e}", [], None
         
 # ---------- LLM (Groq API call) ----------
@@ -1264,7 +1264,7 @@ def is_file_supported(filename: str) -> bool:
 async def upload_files(
     files: list[UploadFile] = File(...),
     moduleId: str = Form(None),
-    ocr: bool = Form(False)  # NEW: OCR flag
+    ocr: bool = Form(False)
 ):
     results = []
     errors = []
@@ -1317,7 +1317,7 @@ async def upload_files(
                     Body=pdf_data,
                     ContentType='application/pdf'
                 )
-                print(f"✅ Uploaded PDF to S3: {s3_key}")
+                print(f"Uploaded PDF to S3: {s3_key}")
             else:
                 s3.put_object(
                     Bucket=S3_BUCKET_NAME,
@@ -1326,31 +1326,31 @@ async def upload_files(
                     ContentType=file.content_type
                 )
         except Exception as e:
-            print(f"❌ S3 upload failed: {e}")
+            print(f"S3 upload failed: {e}")
             errors.append({"file_name": filename, "error": f"S3 upload failed: {e}"})
             s3_key = None
             s3_url = None
 
         chunks = []
-        # OCR PROCESSING - ADDED HERE (AFTER normal processing)
+        # OCR PROCESSING
         ocr_text = ""
         if ocr:
-            print(f"🔍 OCR flag enabled, extracting text with Groq...")
+            print(f"OCR flag enabled, extracting text with Groq...")
             try:
                 # Create FRESH stream for OCR (don't reuse the consumed stream)
                 ocr_stream = io.BytesIO(content)
                 ocr_text = extract_text_with_groq_ocr(ocr_stream, filename)
-                print(f"✅ OCR extracted {len(ocr_text)} characters")
+                print(f"OCR extracted {len(ocr_text)} characters")
                 
-                # Use OCR text INSTEAD of regular text for vector storage
+                # Use OCR text for vector storage
                 if ocr_text and len(ocr_text) > 10:
                     text = ocr_text
-                    print(f"📝 Using OCR text for vector storage")
+                    print(f"Using OCR text for vector storage")
             except Exception as e:
-                print(f"❌ OCR failed: {e}")
+                print(f"OCR failed: {e}")
                 ocr_text = f"OCR failed: {str(e)}"
         
-        # Store text chunks in vector DB (NOW includes OCR text if applicable)
+        # Store text chunks in vector DB
         if text and text.strip():
             splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
             chunks = splitter.split_text(text)
@@ -1363,17 +1363,17 @@ async def upload_files(
                 "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
                 "content_type": "text",
                 "has_images": len(images) > 0,
-                "ocr_processed": ocr  # NEW: Mark if OCR was used
+                "ocr_processed": ocr
             } for i in range(len(chunks))]
             ids = [str(uuid.uuid4()) for _ in chunks]
             
             try:
                 store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
-                print(f"✅ Stored {len(chunks)} text chunks in vector DB")
+                print(f"Stored {len(chunks)} text chunks in vector DB")
             except Exception as e:
-                print(f"❌ Failed to store text chunks: {e}")
+                print(f"Failed to store text chunks: {e}")
 
-        # CRITICAL: Store image descriptions in CLIP vector store
+        # Store image descriptions in CLIP vector store
         if images and len(images) > 0:
             print(f"Processing {len(images)} images for CLIP storage...")
             images_stored = 0
@@ -1403,14 +1403,14 @@ async def upload_files(
                     )
                     
                     images_stored += 1
-                    print(f"  ✅ Successfully stored image {img_index + 1}")
+                    print(f"  Successfully stored image {img_index + 1}")
                     
                 except Exception as e:
-                    print(f"  ❌ Failed to process/store image {img_index}: {e}")
+                    print(f"  Failed to process/store image {img_index}: {e}")
             
-            print(f"✅ Total images stored in CLIP: {images_stored}/{len(images)}")
+            print(f"Total images stored in CLIP: {images_stored}/{len(images)}")
         else:
-            print(f"⚠️ No images found to store in CLIP")
+            print(f"No images found to store in CLIP")
 
         results.append({
             "file_name": filename,
@@ -1866,7 +1866,7 @@ async def test_image_upload(file: UploadFile = File(...)):
     content = await file.read()
     file_stream = io.BytesIO(content)
     
-    print(f"\n🧪 TEST: Uploading {filename}")
+    print(f"\nTEST: Uploading {filename}")
     
     # 1. Test file processing
     text, error, images, pdf_data = process_file_content(file_stream, filename)
@@ -1889,10 +1889,10 @@ async def test_image_upload(file: UploadFile = File(...)):
             description = generate_image_description(images[0])
             result["image_description"] = description[:200] + "..."
             result["description_length"] = len(description)
-            print(f"✅ Generated description ({len(description)} chars)")
+            print(f"Generated description ({len(description)} chars)")
         except Exception as e:
             result["description_error"] = str(e)
-            print(f"❌ Description failed: {e}")
+            print(f"Description failed: {e}")
     
     # 3. Test CLIP storage
     if images and len(images) > 0:
@@ -1916,24 +1916,24 @@ async def test_image_upload(file: UploadFile = File(...)):
                 metadatas=[metadata],
                 ids=[str(uuid.uuid4())]
             )
-            result["clip_storage"] = "✅ Success"
-            print(f"✅ Stored in CLIP vector store")
+            result["clip_storage"] = "Success"
+            print(f"Stored in CLIP vector store")
             
             # Verify storage
             try:
                 # Try to retrieve it
                 retrieved = clip_store.similarity_search(description[:50], k=1, filter={"file_id": test_file_id})
-                result["retrieval_test"] = f"✅ Retrieved {len(retrieved)} items"
-                print(f"✅ Verified retrieval works")
+                result["retrieval_test"] = f"Retrieved {len(retrieved)} items"
+                print(f"Verified retrieval works")
             except Exception as e:
-                result["retrieval_test"] = f"❌ Retrieval failed: {e}"
-                print(f"❌ Retrieval failed: {e}")
+                result["retrieval_test"] = f"Retrieval failed: {e}"
+                print(f"Retrieval failed: {e}")
                 
         except Exception as e:
             result["clip_storage_error"] = str(e)
-            print(f"❌ CLIP storage failed: {e}")
+            print(f"CLIP storage failed: {e}")
     
-    print(f"🧪 TEST COMPLETE")
+    print(f"TEST COMPLETE")
     return result
 
 @app.post("/check-database")
