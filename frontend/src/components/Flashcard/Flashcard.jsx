@@ -1,16 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RiEyeLine, RiArrowLeftLine, RiArrowRightLine, RiLightbulbFlashLine } from "react-icons/ri";
 import { Zap, Trophy, Star, Sparkles, Clock } from "lucide-react";
 import { ClipLoader } from "react-spinners";
 import styles from "./Flashcard.module.css";
 
-const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescription = "" }) => {
+const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescription = "", loadingNextLevel: isLoadingNextLevel = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [celebration, setCelebration] = useState(false);
   const [loadingFinish, setLoadingFinish] = useState(false);
   const [loadingNextLevel, setLoadingNextLevel] = useState(false);
+
+  useEffect(() => {
+    setCelebration(false);
+    setCurrentIndex(0);
+    setShowAnswer(false);
+    setShowHint(false);
+  }, [cards]);
 
   const currentCard = cards[currentIndex];
 
@@ -73,6 +80,14 @@ const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescript
     return (
       <div className={styles.container}>
         <div className={styles.celebrationContainer}>
+          {isLoadingNextLevel && (
+            <div className={styles.loadingOverlay}>
+              <div className={styles.loadingSpinner}>
+                <ClipLoader size={50} color="#3B82F6" />
+                <p className={styles.loadingText}>Loading next level...</p>
+              </div>
+            </div>
+          )}
           <div className={styles.confetti}>
             {[...Array(20)].map((_, i) => (
               <div key={i} className={styles.confettiPiece} style={{ "--delay": `${i * 0.05}s` }} />
