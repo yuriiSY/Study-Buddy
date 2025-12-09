@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { ClipLoader } from "react-spinners";
 import styles from "./TestsList.module.css";
 import api from "../../api/axios";
 import apiPY from "../../api/axiosPython";
@@ -66,7 +67,7 @@ const TestsList = ({ fileId, onSelectTest }) => {
       <div className={styles.container}>
         <div className={styles.generatingOverlay}>
           <div className={styles.spinnerContainer}>
-            <div className={styles.spinner}></div>
+            <ClipLoader size={50} color="#3B82F6" />
             <p className={styles.generatingText}>Generating test...</p>
           </div>
         </div>
