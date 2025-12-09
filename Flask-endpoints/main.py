@@ -61,12 +61,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-def startup_event():
-    print("Initializing recap cards progress table...")
-    init_recap_cards_table()
-
 # ---------- Connect to hosted PostgreSQL ----------
 print("Connecting to hosted PostgreSQL...")
 try:
@@ -1352,6 +1346,8 @@ def generate_missing_notes(context: str):
 @app.get("/")
 def health():
     try:
+        init_recap_cards_table()
+        
         client = Groq(api_key=GROQ_API_KEY)
         models = client.models.list()
         model_names = [model.id for model in models.data]
@@ -1737,6 +1733,16 @@ def generate_flashcards(data: dict):
     if requested_level not in [1, 2, 3]:
         requested_level = 1
     
+    completed_levels = get_completed_levels(file_ids[0])
+    next_available = get_next_available_level(file_ids[0])
+    
+    if requested_level > next_available:
+        missing_level = requested_level - 1
+        raise HTTPException(
+            status_code=403,
+            detail=f"Level {requested_level} is locked. Complete Level {missing_level} first."
+        )
+    
     level = requested_level
     
     search_terms = [
@@ -1761,7 +1767,12 @@ def generate_flashcards(data: dict):
         "total_generated": len(flashcards),
         "level": level,
         "level_description": get_level_description(level),
-        "fill_gaps_used": fill_gaps
+        "fill_gaps_used": fill_gaps,
+        "progress": {
+            "completed_levels": completed_levels,
+            "next_available_level": next_available,
+            "all_levels_completed": len(completed_levels) == 3
+        }
     }
 
 
