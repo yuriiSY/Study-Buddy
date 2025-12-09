@@ -259,7 +259,7 @@ const Chat = ({
           {!flashcardsExist && (
             <button
               className={styles.actionBtn}
-              onClick={onGenerateFlashcards}
+              onClick={() => onGenerateFlashcards()}
               disabled={!externalId}
               title={!externalId ? "Select a file first" : "Generate recap cards"}
             >
@@ -270,7 +270,7 @@ const Chat = ({
           {!testsExist && (
             <button
               className={styles.actionBtn}
-              onClick={onGenerateQuiz}
+              onClick={() => onGenerateQuiz()}
               disabled={!externalId}
               title={!externalId ? "Select a file first" : "Generate quiz"}
             >

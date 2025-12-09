@@ -3,11 +3,144 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 2rem;
+  gap: 1rem;
   height: 100%;
-  padding: 20px;
+  padding: 16px;
   overflow-y: auto;
 }
+
+.levelBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(135deg, var(--level-color) 0%, rgba(59, 130, 246, 0.6) 100%);
+  color: white;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  animation: levelBadgePulse 0.6s ease-out;
+}
+
+.levelEmoji {
+  font-size: 1.3rem;
+  animation: emojiFloat 2s ease-in-out infinite;
+}
+
+.levelText {
+  letter-spacing: 0.5px;
+}
+
+.levelDescription {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  max-width: 600px;
+}
+
+.progressBar {
+  width: 100%;
+  max-width: 700px;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 10px currentColor;
+}
+
+.celebrationContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1.5rem;
+  position: relative;
+  padding: 2rem;
+}
+
+.trophy {
+  color: var(--color-primary);
+  animation: trophyBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 4px 12px rgba(91, 158, 255, 0.4));
+}
+
+.celebrationTitle {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: slideInDown 0.6s ease-out;
+  margin: 0;
+}
+
+.celebrationText {
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  animation: slideInUp 0.6s ease-out 0.2s backwards;
+  margin: 0.5rem 0 0 0;
+}
+
+.celebrationSubtext {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  animation: slideInUp 0.6s ease-out 0.3s backwards;
+  margin: 0;
+}
+
+.confetti {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confettiPiece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  border-radius: 50%;
+  animation: confettiFall 3s ease-in forwards;
+  --delay: 0s;
+  left: calc(50% + (var(--index, 0) * 30px) - 50px);
+  top: -20px;
+  opacity: 0.8;
+}
+
+.confettiPiece:nth-child(1) { animation-delay: 0s; left: 10%; }
+.confettiPiece:nth-child(2) { animation-delay: 0.05s; left: 15%; }
+.confettiPiece:nth-child(3) { animation-delay: 0.1s; left: 20%; }
+.confettiPiece:nth-child(4) { animation-delay: 0.15s; left: 25%; }
+.confettiPiece:nth-child(5) { animation-delay: 0.2s; left: 30%; }
+.confettiPiece:nth-child(6) { animation-delay: 0.25s; left: 35%; }
+.confettiPiece:nth-child(7) { animation-delay: 0.3s; left: 40%; }
+.confettiPiece:nth-child(8) { animation-delay: 0.35s; left: 45%; }
+.confettiPiece:nth-child(9) { animation-delay: 0.4s; left: 50%; }
+.confettiPiece:nth-child(10) { animation-delay: 0.45s; left: 55%; }
+.confettiPiece:nth-child(11) { animation-delay: 0.5s; left: 60%; }
+.confettiPiece:nth-child(12) { animation-delay: 0.55s; left: 65%; }
+.confettiPiece:nth-child(13) { animation-delay: 0.6s; left: 70%; }
+.confettiPiece:nth-child(14) { animation-delay: 0.65s; left: 75%; }
+.confettiPiece:nth-child(15) { animation-delay: 0.7s; left: 80%; }
+.confettiPiece:nth-child(16) { animation-delay: 0.75s; left: 85%; }
+.confettiPiece:nth-child(17) { animation-delay: 0.8s; left: 90%; }
+.confettiPiece:nth-child(18) { animation-delay: 0.85s; left: 5%; }
+.confettiPiece:nth-child(19) { animation-delay: 0.9s; left: 12%; }
+.confettiPiece:nth-child(20) { animation-delay: 0.95s; left: 95%; }
 
 .card {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
@@ -563,6 +696,76 @@
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
+@keyframes levelBadgePulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes emojiFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes trophyBounce {
+  0% {
+    transform: translateY(-40px) scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(0) scale(1.1);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(0) rotateZ(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(600px) rotateZ(720deg);
+    opacity: 0;
+  }
+}
+
 @media (max-width: 768px) {
   .modalContent {
     padding: 1.5rem;
@@ -578,5 +781,243 @@
 
   .modalBtn {
     width: 100%;
+  }
+
+  .celebrationTitle {
+    font-size: 2rem;
+  }
+
+  .celebrationText {
+    font-size: 1rem;
+  }
+
+  .celebrationSubtext {
+    font-size: 0.9rem;
+  }
+
+  .trophy {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+.celebrationButtons {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: slideInUp 0.6s ease-out 0.5s backwards;
+}
+
+.nextLevelBtn,
+.finishBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.nextLevelBtn {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: white;
+}
+
+.nextLevelBtn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(91, 158, 255, 0.4);
+}
+
+.nextLevelBtn:active {
+  transform: translateY(-2px);
+}
+
+.finishBtn {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: white;
+}
+
+.finishBtn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+}
+
+.finishBtn:active {
+  transform: translateY(-2px);
+}
+
+.masterPiece {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  animation: trophyBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.masterTrophy {
+  color: var(--color-primary);
+  filter: drop-shadow(0 8px 20px rgba(91, 158, 255, 0.5));
+  z-index: 2;
+}
+
+.sparkles {
+  position: absolute;
+  color: var(--color-secondary);
+  animation: spin 3s linear infinite;
+  filter: drop-shadow(0 4px 12px rgba(91, 192, 222, 0.4));
+}
+
+.masterTitle {
+  font-size: 2.8rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: slideInDown 0.6s ease-out;
+  margin: 0 0 1rem 0;
+  letter-spacing: -1px;
+}
+
+.masterText {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  font-weight: 700;
+  animation: slideInUp 0.6s ease-out 0.2s backwards;
+  margin: 0 0 2rem 0;
+}
+
+.achievements {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 2rem 0;
+  animation: slideInUp 0.6s ease-out 0.3s backwards;
+}
+
+.achievement {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, rgba(91, 158, 255, 0.1) 0%, rgba(91, 192, 222, 0.1) 100%);
+  border-left: 4px solid var(--color-primary);
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.achievement:hover {
+  transform: translateX(8px);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+}
+
+.achievementIcon {
+  font-size: 1.8rem;
+}
+
+.achievementText {
+  flex: 1;
+}
+
+.compliments {
+  margin: 2rem 0;
+  animation: slideInUp 0.6s ease-out 0.4s backwards;
+}
+
+.complimentText {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin: 1.5rem 0;
+  font-weight: 600;
+  line-height: 1.6;
+  text-align: center;
+  animation: slideInUp 0.6s ease-out 0.4s backwards;
+}
+
+.masterButtons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  justify-content: center;
+  animation: slideInUp 0.6s ease-out 0.5s backwards;
+}
+
+.finishMasterBtn {
+  padding: 1.2rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(91, 158, 255, 0.3);
+  animation: slideInUp 0.6s ease-out 0.5s backwards;
+}
+
+.finishMasterBtn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(91, 158, 255, 0.5);
+}
+
+.finishMasterBtn:active {
+  transform: translateY(-2px);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .masterTitle {
+    font-size: 2rem;
+  }
+
+  .masterText {
+    font-size: 1.2rem;
+  }
+
+  .achievements {
+    gap: 0.75rem;
+  }
+
+  .achievement {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+
+  .achievementIcon {
+    font-size: 1.5rem;
+  }
+
+  .complimentText {
+    font-size: 0.95rem;
+  }
+
+  .nextLevelBtn,
+  .finishBtn,
+  .finishMasterBtn {
+    padding: 0.9rem 1.6rem;
+    font-size: 0.95rem;
   }
 }

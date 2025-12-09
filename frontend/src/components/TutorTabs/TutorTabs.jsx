@@ -28,6 +28,8 @@ const TutorTabs = ({
   const [editing, setEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [flashcards, setFlashcards] = useState([]);
+  const [flashcardLevel, setFlashcardLevel] = useState(1);
+  const [flashcardLevelDescription, setFlashcardLevelDescription] = useState("Easy - Direct recall from notes");
   const [loadingFlashcards, setLoadingFlashcards] = useState(false);
   const [flashcardsError, setFlashcardsError] = useState(null);
   const [showFlashcardsTab, setShowFlashcardsTab] = useState(false);
@@ -37,6 +39,9 @@ const TutorTabs = ({
   const [currentFlashcardSetId, setCurrentFlashcardSetId] = useState(null);
   const [selectedTest, setSelectedTest] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [completedLevels, setCompletedLevels] = useState([]);
+  const [allLevelsCompleted, setAllLevelsCompleted] = useState(false);
+  const [showLevelCompletionPage, setShowLevelCompletionPage] = useState(false);
   const notesPanelRef = useRef(null);
 
   useEffect(() => {
@@ -96,8 +101,16 @@ const TutorTabs = ({
       }
     };
 
+    const loadCompletionStatus = () => {
+      const storageKey = `flashcard_completed_${externalId}`;
+      const completed = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      setCompletedLevels(completed);
+      setAllLevelsCompleted(completed.length === 3);
+    };
+
     loadTests();
     loadStoredFlashcards();
+    loadCompletionStatus();
   }, [externalId]);
 
   const handleSaveNotes = async () => {
@@ -133,53 +146,111 @@ const TutorTabs = ({
     }
   };
 
-  const loadFlashcards = async () => {
+  const loadFlashcards = async (requestedLevel = 1) => {
     setLoadingFlashcards(true);
     setFlashcardsError(null);
     setShowFlashcardsTab(true);
     setActiveTab("flashcards");
+    setShowLevelCompletionPage(false);
 
     try {
+      setFlashcardLevel(requestedLevel);
+      
+      const levelDescriptions = {
+        1: "Easy Level - Foundational concepts and definitions",
+        2: "Intermediate Level - Practical applications and critical thinking",
+        3: "Advanced Level - Complex analysis and synthesis"
+      };
+
+      try {
+        console.log(`Checking for existing Level ${requestedLevel} flashcards...`);
+        const existingRes = await api.get(`/flashcards/file/${externalId}`);
+        const existingSets = Array.isArray(existingRes.data) ? existingRes.data : [];
+        const existingSet = existingSets.find(set => set.title === `Recap Cards Level ${requestedLevel}`);
+        
+        if (existingSet && Array.isArray(existingSet.cards) && existingSet.cards.length > 0) {
+          console.log(`Found existing Level ${requestedLevel} flashcards in database (${existingSet.cards.length} cards)`);
+          setFlashcards(existingSet.cards);
+          setCurrentFlashcardSetId(existingSet.id);
+          setFlashcardLevelDescription(levelDescriptions[requestedLevel]);
+          setLoadingFlashcards(false);
+          return;
+        }
+      } catch (err) {
+        console.log("Checking existing flashcards - none found yet, will generate new ones");
+      }
+
+      console.log(`No existing Level ${requestedLevel} flashcards found. Generating new ones...`);
       const res = await apiPY.post("/generate-flashcards", {
         file_ids: [externalId],
         num_flashcards: 5,
+        level: requestedLevel,
       });
 
       if (!res.data || !res.data.flashcards) {
         throw new Error("Invalid response format");
       }
 
-      const newCards = res.data.flashcards;
+      const newCards = res.data.flashcards.map(card => ({
+        question: card.question,
+        answer: card.answer,
+        hint: card.hint || ""
+      }));
+      const level = res.data.level || requestedLevel;
 
-      if (flashcardsExist && currentFlashcardSetId) {
-        const appendRes = await api.post(
-          `/flashcards/${currentFlashcardSetId}/append`,
-          { cards: newCards }
-        );
-        const allCards = Array.isArray(appendRes.data.cards)
-          ? appendRes.data.cards
-          : [];
-        setFlashcards(allCards);
-      } else {
-        const saveRes = await api.post("/flashcards", {
-          file_id: externalId,
-          title: "Generated Flashcards",
-          description: "Auto-generated flashcards from document",
-          cards: newCards,
-        });
-        setFlashcards(newCards);
-        setFlashcardsExist(true);
-        setCurrentFlashcardSetId(saveRes.data.id);
-      }
+      setFlashcardLevel(level);
+      setFlashcardLevelDescription(levelDescriptions[level]);
+      setFlashcards(newCards);
+
+      console.log(`Saving Level ${level} flashcards to database...`);
+      const saveRes = await api.post("/flashcards", {
+        file_id: externalId,
+        title: `Recap Cards Level ${level}`,
+        description: levelDescriptions[level],
+        cards: newCards,
+      });
+      setCurrentFlashcardSetId(saveRes.data.id);
+      console.log(`Saved new flashcard set with ID: ${saveRes.data.id}`);
     } catch (err) {
       console.error("Failed to load flashcards:", err);
       setFlashcardsError(
-        err?.response?.data?.error ||
+        err?.response?.data?.detail ||
+          err?.response?.data?.error ||
           err.message ||
           "Failed to load flashcards."
       );
     } finally {
       setLoadingFlashcards(false);
+    }
+  };
+
+  const handleFinishFlashcards = () => {
+    if (flashcardLevel >= 1 && flashcardLevel <= 3) {
+      const storageKey = `flashcard_completed_${externalId}`;
+      const completed = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      
+      if (!completed.includes(flashcardLevel)) {
+        completed.push(flashcardLevel);
+        completed.sort();
+        localStorage.setItem(storageKey, JSON.stringify(completed));
+        console.log(`Saved Level ${flashcardLevel} completion to localStorage`);
+      }
+      
+      setCompletedLevels(completed);
+      setAllLevelsCompleted(completed.length === 3);
+      setShowLevelCompletionPage(true);
+    }
+  };
+
+  const handleNextFlashcardLevel = async () => {
+    setShowLevelCompletionPage(false);
+    if (flashcardLevel === 3) {
+      await loadFlashcards(1);
+    } else {
+      const nextLevel = flashcardLevel + 1;
+      if (nextLevel <= 3) {
+        await loadFlashcards(nextLevel);
+      }
     }
   };
 
@@ -244,7 +315,10 @@ const TutorTabs = ({
               className={`${styles.tab} ${
                 activeTab === "flashcards" ? styles.active : ""
               }`}
-              onClick={() => setActiveTab("flashcards")}
+              onClick={() => {
+                setActiveTab("flashcards");
+                loadFlashcards(1);
+              }}
             >
               Recap Cards
               {loadingFlashcards && (
@@ -360,7 +434,7 @@ const TutorTabs = ({
               <div style={{ padding: 20 }}>
                 <h2 style={{ color: "red" }}>Failed to load recap cards</h2>
                 <button
-                  onClick={loadFlashcards}
+                  onClick={() => loadFlashcards()}
                   style={{
                     padding: "10px 20px",
                     background: "var(--color-primary)",
@@ -372,11 +446,105 @@ const TutorTabs = ({
                   Retry
                 </button>
               </div>
+            ) : allLevelsCompleted ? (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                padding: '3rem 2rem',
+                textAlign: 'center',
+                gap: '2rem'
+              }}>
+                <div style={{ fontSize: '4rem' }}>🏆</div>
+                <h2 style={{ fontSize: '2rem', margin: 0, fontWeight: 700 }}>All Levels Completed!</h2>
+                <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', margin: 0 }}>
+                  You've mastered all 3 levels. You're a champion! 🎯
+                </p>
+                <button
+                  onClick={() => {
+                    setAllLevelsCompleted(false);
+                    setShowLevelCompletionPage(false);
+                    loadFlashcards(1);
+                  }}
+                  style={{
+                    padding: '0.9rem 2rem',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    marginTop: '1rem',
+                    boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 4px 15px rgba(59, 130, 246, 0.3)';
+                  }}
+                >
+                  Start Again
+                </button>
+              </div>
+            ) : showLevelCompletionPage ? (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                padding: '3rem 2rem',
+                textAlign: 'center',
+                gap: '2rem'
+              }}>
+                <div style={{ fontSize: '4rem' }}>🎉</div>
+                <h2 style={{ fontSize: '2rem', margin: 0, fontWeight: 700 }}>Level {flashcardLevel} Completed!</h2>
+                <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', margin: 0 }}>
+                  {flashcardLevelDescription}
+                </p>
+                <button
+                  onClick={handleNextFlashcardLevel}
+                  style={{
+                    padding: '0.9rem 2rem',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    marginTop: '1rem',
+                    boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 4px 15px rgba(59, 130, 246, 0.3)';
+                  }}
+                >
+                  {flashcardLevel === 3 ? '🏆 Finish' : '⚡ Next Level'}
+                </button>
+              </div>
             ) : flashcards.length > 0 ? (
               <Flashcard
                 cards={flashcards}
                 onGenerateMore={handleGenerateMoreFlashcards}
                 isLoadingMore={loadingFlashcards}
+                level={flashcardLevel}
+                levelDescription={flashcardLevelDescription}
+                onNextLevel={handleNextFlashcardLevel}
+                onFinish={handleFinishFlashcards}
               />
             ) : (
               <p style={{ padding: 20 }}>No flashcards available.</p>
