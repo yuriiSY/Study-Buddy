@@ -1269,6 +1269,20 @@ async def upload_files(
     results = []
     errors = []
 
+    # Validate all files first
+    for file in files:
+        if not is_file_supported(file.filename):
+            errors.append({
+                "file_name": file.filename,
+                "error": f"Unsupported file type: {get_file_extension(file.filename)}. Supported formats: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
+            })
+
+    if len(errors) == len(files):
+        return JSONResponse(
+            status_code=400,
+            content={"error": "No supported files provided", "errors": errors}
+        )
+
     # Get vector stores
     store = get_vector_store()
     clip_store = get_clip_vector_store()
@@ -1282,34 +1296,61 @@ async def upload_files(
         content = await file.read()
         file_stream = io.BytesIO(content)
         
-        print(f"\n=== UPLOADING FILE: {filename} (OCR: {ocr}) ===")
+        print(f"\n=== UPLOADING FILE: {filename} ===")
+        
+        # Extract text, images, pdf_data (YOUR ORIGINAL CODE)
+        text, error, images, pdf_data = process_file_content(file_stream, filename)
+        
+        print(f"Processing results - Text length: {len(text) if text else 0}, Images found: {len(images)}, Error: {error}")
         
         file_id = str(uuid.uuid4())
         timestamp = int(time.time() * 1000)
-        
-        # OCR PROCESSING
+        pdf_filename = filename.rsplit('.', 1)[0] + '.pdf'
+        s3_key = f"modules/{moduleId}/{timestamp}-{pdf_filename}" if moduleId else f"uploads/{file_id}-{pdf_filename}"
+        s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+
+        try:
+            if pdf_data:
+                s3.put_object(
+                    Bucket=S3_BUCKET_NAME,
+                    Key=s3_key,
+                    Body=pdf_data,
+                    ContentType='application/pdf'
+                )
+                print(f"✅ Uploaded PDF to S3: {s3_key}")
+            else:
+                s3.put_object(
+                    Bucket=S3_BUCKET_NAME,
+                    Key=s3_key,
+                    Body=content,
+                    ContentType=file.content_type
+                )
+        except Exception as e:
+            print(f"❌ S3 upload failed: {e}")
+            errors.append({"file_name": filename, "error": f"S3 upload failed: {e}"})
+            s3_key = None
+            s3_url = None
+
+        chunks = []
+        # OCR PROCESSING - ADDED HERE (AFTER normal processing)
         ocr_text = ""
         if ocr:
-            print(f"🔍 Performing OCR extraction...")
+            print(f"🔍 OCR flag enabled, extracting text with Groq...")
             try:
-                ocr_text = extract_text_with_groq_ocr(file_stream, filename)
+                # Create FRESH stream for OCR (don't reuse the consumed stream)
+                ocr_stream = io.BytesIO(content)
+                ocr_text = extract_text_with_groq_ocr(ocr_stream, filename)
                 print(f"✅ OCR extracted {len(ocr_text)} characters")
+                
+                # Use OCR text INSTEAD of regular text for vector storage
+                if ocr_text and len(ocr_text) > 10:
+                    text = ocr_text
+                    print(f"📝 Using OCR text for vector storage")
             except Exception as e:
                 print(f"❌ OCR failed: {e}")
                 ocr_text = f"OCR failed: {str(e)}"
         
-        # Process file normally
-        text, error, images, pdf_data = process_file_content(file_stream, filename)
-        
-        # If OCR was successful, use OCR text instead
-        if ocr and ocr_text:
-            text = ocr_text  # Replace with OCR text
-            print(f"📝 Using OCR text ({len(text)} chars) instead of regular extraction")
-        
-        # ... rest of your existing code for S3 upload ...
-        
-        chunks = []
-        # Store text chunks in vector DB (now includes OCR text if applicable)
+        # Store text chunks in vector DB (NOW includes OCR text if applicable)
         if text and text.strip():
             splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
             chunks = splitter.split_text(text)
@@ -1321,40 +1362,81 @@ async def upload_files(
                 "chunk_index": i,
                 "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
                 "content_type": "text",
-                "ocr_processed": ocr,  # NEW: Mark as OCR processed
-                "has_images": len(images) > 0
+                "has_images": len(images) > 0,
+                "ocr_processed": ocr  # NEW: Mark if OCR was used
             } for i in range(len(chunks))]
             ids = [str(uuid.uuid4()) for _ in chunks]
             
             try:
                 store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
-                print(f"✅ Stored {len(chunks)} text chunks in vector DB (OCR: {ocr})")
+                print(f"✅ Stored {len(chunks)} text chunks in vector DB")
             except Exception as e:
                 print(f"❌ Failed to store text chunks: {e}")
 
-        # ... rest of your existing code for image storage ...
-        
+        # CRITICAL: Store image descriptions in CLIP vector store
+        if images and len(images) > 0:
+            print(f"Processing {len(images)} images for CLIP storage...")
+            images_stored = 0
+            
+            for img_index, img in enumerate(images):
+                print(f"  Processing image {img_index + 1}/{len(images)}...")
+                try:
+                    # Generate image description
+                    description = generate_image_description(img)
+                    print(f"  Generated description: {description[:100]}...")
+                    
+                    # Prepare metadata
+                    metadata = {
+                        "file_id": file_id,
+                        "file_name": filename,
+                        "image_index": img_index,
+                        "file_type": "image",
+                        "content_type": "image",
+                        "original_content": description[:500]  # Limit description length
+                    }
+                    
+                    # Store in CLIP vector store
+                    clip_store.add_texts(
+                        texts=[description],
+                        metadatas=[metadata],
+                        ids=[str(uuid.uuid4())]
+                    )
+                    
+                    images_stored += 1
+                    print(f"  ✅ Successfully stored image {img_index + 1}")
+                    
+                except Exception as e:
+                    print(f"  ❌ Failed to process/store image {img_index}: {e}")
+            
+            print(f"✅ Total images stored in CLIP: {images_stored}/{len(images)}")
+        else:
+            print(f"⚠️ No images found to store in CLIP")
+
         results.append({
             "file_name": filename,
             "file_id": file_id,
-            "ocr_processed": ocr,  # NEW
-            "ocr_text_length": len(ocr_text) if ocr else 0,
             "chunks": len(chunks),
             "images_processed": len(images),
             "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
             "s3_key": s3_key,
             "s3_url": s3_url,
             "html": None,
-            "error": error
+            "error": error,
+            "debug_info": {
+                "text_extracted": len(text) if text else 0,
+                "images_found": len(images),
+                "images_stored_in_clip": images_stored if 'images_stored' in locals() else 0
+            }
         })
         
-        print(f"=== COMPLETED: {filename} (OCR: {ocr}) ===\n")
+        print(f"=== COMPLETED: {filename} ===\n")
 
     response_data = {"uploaded": results}
     if errors:
         response_data["errors"] = errors
 
     return JSONResponse(content=response_data, status_code=201)
+
 class AskRequest(BaseModel):
     question: str
     file_ids: list[str]
