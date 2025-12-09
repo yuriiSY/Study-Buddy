@@ -18,6 +18,7 @@ const PomodoroTimer = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
   const [sessionId, setSessionId] = useState(null);
+  const [showReminder, setShowReminder] = useState(false);
 
   const intervalRef = useRef(null);
 
@@ -44,9 +45,16 @@ const PomodoroTimer = () => {
     }
   };
 
-  // Load session count on mount
+  // Load session count on mount and show reminder
   useEffect(() => {
     fetchDailySessions();
+    // Show reminder after 2 seconds if timer not running
+    const timer = setTimeout(() => {
+      if (!isRunning) {
+        setShowReminder(true);
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   // ------------------------------
@@ -83,6 +91,7 @@ const PomodoroTimer = () => {
       await startSession(STUDY_DURATION, BREAK_DURATION, "STUDY");
     }
     setIsRunning(true);
+    setShowReminder(false);
   };
 
   const handleSessionTransition = async () => {
@@ -107,6 +116,15 @@ const PomodoroTimer = () => {
 
     setIsRunning(true);
   };
+
+  useEffect(() => {
+    if (!isRunning) {
+      const timer = setTimeout(() => {
+        setShowReminder(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isRunning]);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -198,6 +216,18 @@ const PomodoroTimer = () => {
         <Clock size={20} />
         <span className={styles.timeDisplay}>{formatTime(timeLeft)}</span>
       </button>
+
+      {showReminder && (
+        <div className={styles.reminderTip}>
+          <span className={styles.tipText}>💡 Start Pomodoro to focus & study efficiently</span>
+          <button
+            className={styles.tipClose}
+            onClick={() => setShowReminder(false)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {isExpanded && (
         <div className={styles.timerPanel}>

@@ -39,6 +39,12 @@
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
+.createBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 @media (prefers-color-scheme: dark) {
   .createBtn {
     box-shadow: 0 2px 8px rgba(30, 58, 138, 0.4);
@@ -227,6 +233,36 @@
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
+.generatingOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.spinnerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-secondary);
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+
+
+.generatingText {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
 @media (max-width: 768px) {
   .testCard {
     flex-direction: column;
@@ -267,6 +303,20 @@
   .takeTestBtn {
     margin-left: 0;
     padding: 10px 12px;
+  }
+
+  .spinnerContainer {
+    padding: 24px;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+  }
+
+  .generatingText {
+    font-size: 14px;
   }
 
 }

@@ -41,13 +41,14 @@ export const getSingleFlashcard = async (req, res) => {
 
 export const createFlashcardSet = async (req, res) => {
   try {
-    const { file_id, title, description, cards } = req.body;
+    const { file_id, title, description, cards, level } = req.body;
 
     const flashcard = await createFlashcard({
       file_id,
       title,
       description,
       cards,
+      level,
     });
 
     res.status(201).json(flashcard);

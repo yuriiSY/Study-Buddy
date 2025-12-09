@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Chat from "../Chat/Chat";
 import Flashcard from "../Flashcard/Flashcard";
+import FlashcardsList from "../FlashcardsList/FlashcardsList";
 import TestsList from "../TestsList/TestsList";
 import MCQTest from "../MCQTest/MCQTest";
 import TestLeaderboard from "../TestLeaderboard/TestLeaderboard";
@@ -24,19 +25,21 @@ const TutorTabs = ({
 }) => {
   const { moduleId } = useParams();
   const [activeTab, setActiveTab] = useState("chat");
-  // const [notes, setNotes] = useState("");
   const [editing, setEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [flashcards, setFlashcards] = useState([]);
+  const [flashcardLevel, setFlashcardLevel] = useState(null);
+  const [flashcardLevelDescription, setFlashcardLevelDescription] = useState("");
   const [loadingFlashcards, setLoadingFlashcards] = useState(false);
   const [flashcardsError, setFlashcardsError] = useState(null);
   const [showFlashcardsTab, setShowFlashcardsTab] = useState(false);
   const [showQuizTab, setShowQuizTab] = useState(false);
   const [testsExist, setTestsExist] = useState(false);
-  const [flashcardsExist, setFlashcardsExist] = useState(false);
-  const [currentFlashcardSetId, setCurrentFlashcardSetId] = useState(null);
   const [selectedTest, setSelectedTest] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [viewingFlashcardsList, setViewingFlashcardsList] = useState(true);
+  const [loadingNextLevel, setLoadingNextLevel] = useState(false);
+  const [flashcardsAttempted, setFlashcardsAttempted] = useState(false);
   const notesPanelRef = useRef(null);
 
   useEffect(() => {
@@ -78,27 +81,25 @@ const TutorTabs = ({
       }
     };
 
-    const loadStoredFlashcards = async () => {
+    const loadFlashcards = async () => {
       try {
-        const res = await api.get(`/flashcards/file/${externalId}`);
-        const flashcardSets = res.data || [];
-        if (flashcardSets.length > 0) {
-          setFlashcardsExist(true);
-          setShowFlashcardsTab(true);
-          setCurrentFlashcardSetId(flashcardSets[0].id);
-          const cards = Array.isArray(flashcardSets[0].cards)
-            ? flashcardSets[0].cards
-            : [];
-          setFlashcards(cards);
-        }
+        const res = await api.get(`/flashcards/file/${externalId}`, { timeout: 10000 });
+        const flashcardSets = Array.isArray(res.data) ? res.data : [];
+        const hasFlashcards = flashcardSets.some(set => set.title?.includes("Recap Cards"));
+        setShowFlashcardsTab(hasFlashcards);
+        setFlashcardsAttempted(hasFlashcards);
       } catch (err) {
         console.error("Failed to load flashcards:", err);
+        setShowFlashcardsTab(false);
       }
     };
 
     loadTests();
-    loadStoredFlashcards();
+    loadFlashcards();
   }, [externalId]);
+
+  const handleLevelStatusLoaded = (statusData) => {
+  };
 
   const handleSaveNotes = async () => {
     console.log("Saving notes for fileId:", fileid, "notes:", notes);
@@ -133,58 +134,98 @@ const TutorTabs = ({
     }
   };
 
-  const loadFlashcards = async () => {
-    setLoadingFlashcards(true);
-    setFlashcardsError(null);
-    setShowFlashcardsTab(true);
+  const handleSelectFlashcardLevel = (level, cards) => {
+    const levelDescriptions = {
+      1: "Easy Level - Foundational concepts and definitions",
+      2: "Intermediate Level - Practical applications and critical thinking",
+      3: "Advanced Level - Complex analysis and synthesis"
+    };
+
+    setFlashcardLevel(level);
+    setFlashcardLevelDescription(levelDescriptions[level]);
+    setFlashcards(cards);
+    setViewingFlashcardsList(false);
     setActiveTab("flashcards");
+  };
 
-    try {
-      const res = await apiPY.post("/generate-flashcards", {
-        file_ids: [externalId],
-        num_flashcards: 5,
-      });
-
-      if (!res.data || !res.data.flashcards) {
-        throw new Error("Invalid response format");
-      }
-
-      const newCards = res.data.flashcards;
-
-      if (flashcardsExist && currentFlashcardSetId) {
-        const appendRes = await api.post(
-          `/flashcards/${currentFlashcardSetId}/append`,
-          { cards: newCards }
-        );
-        const allCards = Array.isArray(appendRes.data.cards)
-          ? appendRes.data.cards
-          : [];
-        setFlashcards(allCards);
-      } else {
-        const saveRes = await api.post("/flashcards", {
-          file_id: externalId,
-          title: "Generated Flashcards",
-          description: "Auto-generated flashcards from document",
-          cards: newCards,
-        });
-        setFlashcards(newCards);
-        setFlashcardsExist(true);
-        setCurrentFlashcardSetId(saveRes.data.id);
-      }
-    } catch (err) {
-      console.error("Failed to load flashcards:", err);
-      setFlashcardsError(
-        err?.response?.data?.error ||
-          err.message ||
-          "Failed to load flashcards."
-      );
-    } finally {
-      setLoadingFlashcards(false);
+  const handleFinishFlashcards = async () => {
+    setViewingFlashcardsList(true);
+    
+    if (flashcardLevel >= 1 && flashcardLevel <= 3) {
+      apiPY.post("/recap-cards-complete-level", {
+        file_id: externalId,
+        level: flashcardLevel,
+      }).catch(err => console.error("Failed to mark level as completed:", err));
     }
   };
 
-  const handleGenerateMoreFlashcards = async () => {
-    await loadFlashcards();
+  const handleNextFlashcardLevel = async () => {
+    const nextLevel = flashcardLevel + 1;
+    if (nextLevel > 3) return;
+
+    setLoadingNextLevel(true);
+    const cacheKey = `flashcards_level_${nextLevel}_${externalId}`;
+    const levelDescriptions = {
+      1: "Easy Level - Foundational concepts and definitions",
+      2: "Intermediate Level - Practical applications and critical thinking",
+      3: "Advanced Level - Complex analysis and synthesis"
+    };
+
+    const cachedCards = localStorage.getItem(cacheKey);
+    if (cachedCards) {
+      handleSelectFlashcardLevel(nextLevel, JSON.parse(cachedCards));
+      setLoadingNextLevel(false);
+      return;
+    }
+
+    apiPY.post("/recap-cards-complete-level", {
+      file_id: externalId,
+      level: flashcardLevel,
+    }).catch(err => console.error("Failed to mark level as completed:", err));
+
+    api.get(`/flashcards/file/${externalId}`, { timeout: 10000 })
+      .then(existingRes => {
+        const existingSets = Array.isArray(existingRes.data) ? existingRes.data : [];
+        const existingSet = existingSets.find(set => set.title === `Recap Cards Level ${nextLevel}`);
+        if (existingSet && Array.isArray(existingSet.cards) && existingSet.cards.length > 0) {
+          localStorage.setItem(cacheKey, JSON.stringify(existingSet.cards));
+          handleSelectFlashcardLevel(nextLevel, existingSet.cards);
+          setLoadingNextLevel(false);
+          return;
+        }
+        throw new Error("No existing set found");
+      })
+      .catch(() => {
+        apiPY.post("/generate-flashcards", {
+          file_ids: [externalId],
+          num_flashcards: 5,
+          level: nextLevel,
+        })
+          .then(res => {
+            if (res.data?.flashcards) {
+              const cards = res.data.flashcards;
+              localStorage.setItem(cacheKey, JSON.stringify(cards));
+              handleSelectFlashcardLevel(nextLevel, cards);
+              setLoadingNextLevel(false);
+              
+              api.post("/flashcards", {
+                file_id: externalId,
+                title: `Recap Cards Level ${nextLevel}`,
+                description: levelDescriptions[nextLevel],
+                cards: cards,
+                level: nextLevel,
+              }).catch(err => console.error("Failed to save flashcards:", err));
+            }
+          })
+          .catch(err => {
+            console.error("Failed to generate flashcards:", err.message);
+            setLoadingNextLevel(false);
+            const cachedFallback = localStorage.getItem(cacheKey);
+            if (!cachedFallback) {
+              alert(`Failed to load Level ${nextLevel} flashcards.`);
+            }
+          });
+      });
   };
 
   const handleGenerateQuiz = () => {
@@ -288,10 +329,13 @@ const TutorTabs = ({
           <Chat
             externalId={externalId}
             onAddNote={handleAddNote}
-            onGenerateFlashcards={loadFlashcards}
+            onGenerateFlashcards={() => {
+              setViewingFlashcardsList(true);
+              setActiveTab("flashcards");
+            }}
             onGenerateQuiz={handleGenerateQuiz}
             testsExist={testsExist}
-            flashcardsExist={flashcardsExist}
+            flashcardsExist={showFlashcardsTab}
           />
         )}
 
@@ -336,47 +380,21 @@ const TutorTabs = ({
 
         {activeTab === "flashcards" && (
           <div className={styles.flashcardsPanel}>
-            {loadingFlashcards ? (
-              <div className={styles.generatingOverlay}>
-                <div className={styles.generatingContent}>
-                  <div className={styles.spinner}></div>
-                  <p>Generating recap cards...</p>
-                  <span className={styles.dot}>.</span>
-                  <span
-                    className={styles.dot}
-                    style={{ animationDelay: "0.2s" }}
-                  >
-                    .
-                  </span>
-                  <span
-                    className={styles.dot}
-                    style={{ animationDelay: "0.4s" }}
-                  >
-                    .
-                  </span>
-                </div>
-              </div>
-            ) : flashcardsError ? (
-              <div style={{ padding: 20 }}>
-                <h2 style={{ color: "red" }}>Failed to load recap cards</h2>
-                <button
-                  onClick={loadFlashcards}
-                  style={{
-                    padding: "10px 20px",
-                    background: "var(--color-primary)",
-                    color: "white",
-                    borderRadius: "6px",
-                    marginTop: "10px",
-                  }}
-                >
-                  Retry
-                </button>
-              </div>
+            {viewingFlashcardsList ? (
+              <FlashcardsList
+                fileId={externalId}
+                onSelectLevel={handleSelectFlashcardLevel}
+                onLevelStatusLoaded={handleLevelStatusLoaded}
+                isVisible={true}
+              />
             ) : flashcards.length > 0 ? (
               <Flashcard
                 cards={flashcards}
-                onGenerateMore={handleGenerateMoreFlashcards}
-                isLoadingMore={loadingFlashcards}
+                level={flashcardLevel}
+                levelDescription={flashcardLevelDescription}
+                onNextLevel={handleNextFlashcardLevel}
+                onFinish={handleFinishFlashcards}
+                loadingNextLevel={loadingNextLevel}
               />
             ) : (
               <p style={{ padding: 20 }}>No flashcards available.</p>

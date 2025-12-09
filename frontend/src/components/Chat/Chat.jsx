@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import styles from "./Chat.module.css";
 import Message from "../Message/Message";
 import apiPY from "../../api/axiosPython";
-import { Send, BookMarked, Lightbulb, FileText, Brain, Target, Check } from "lucide-react";
+import { Send, BookMarked, Lightbulb, FileText, Brain, Target, Check, Copy } from "lucide-react";
 
 const Chat = ({ 
   externalId, 
@@ -17,6 +17,7 @@ const Chat = ({
   const [loading, setLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [addedNotes, setAddedNotes] = useState(new Set());
+  const [copiedMessageIdx, setCopiedMessageIdx] = useState(null);
   const chatBoxRef = useRef(null);
 
   useEffect(() => {
@@ -118,6 +119,15 @@ const Chat = ({
     }
   };
 
+  const handleCopyMessage = (text, idx) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedMessageIdx(idx);
+      setTimeout(() => setCopiedMessageIdx(null), 2000);
+    }).catch((err) => {
+      console.error("Failed to copy:", err);
+    });
+  };
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.chatContainer}>
@@ -151,7 +161,21 @@ const Chat = ({
             <>
               {messages.map((msg, idx) => (
                 <div key={idx} className={styles.messageWrapper}>
-                  <Message sender={msg.sender} text={msg.text} />
+                  {msg.sender === "bot" ? (
+                    <div className={styles.messageContentWrapper}>
+                      <Message sender={msg.sender} text={msg.text} />
+                      <button
+                        className={`${styles.copyIconBtn} ${copiedMessageIdx === idx ? styles.copied : ''}`}
+                        onClick={() => handleCopyMessage(msg.text, idx)}
+                        title={copiedMessageIdx === idx ? "Copied!" : "Copy"}
+                      >
+                        <Copy size={14} />
+                        {copiedMessageIdx === idx && <span>Copied</span>}
+                      </button>
+                    </div>
+                  ) : (
+                    <Message sender={msg.sender} text={msg.text} />
+                  )}
 
                   {msg.sender === "bot" && (
                     <button
@@ -235,7 +259,7 @@ const Chat = ({
           {!flashcardsExist && (
             <button
               className={styles.actionBtn}
-              onClick={onGenerateFlashcards}
+              onClick={() => onGenerateFlashcards()}
               disabled={!externalId}
               title={!externalId ? "Select a file first" : "Generate recap cards"}
             >
@@ -246,7 +270,7 @@ const Chat = ({
           {!testsExist && (
             <button
               className={styles.actionBtn}
-              onClick={onGenerateQuiz}
+              onClick={() => onGenerateQuiz()}
               disabled={!externalId}
               title={!externalId ? "Select a file first" : "Generate quiz"}
             >

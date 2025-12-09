@@ -2,6 +2,7 @@ import axios from "axios";
 
 const apiPY = axios.create({
   baseURL: "http://localhost:3000/",
+  timeout: 120000,
 });
 
 apiPY.interceptors.request.use((config) => {

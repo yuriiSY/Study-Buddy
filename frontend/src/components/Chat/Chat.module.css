@@ -218,6 +218,44 @@
   margin-bottom: 10px;
 }
 
+.messageContentWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.copyIconBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0;
+  font-size: 12px;
+}
+
+.messageContentWrapper:hover .copyIconBtn {
+  opacity: 1;
+}
+
+.copyIconBtn:hover:not(.copied) {
+  background: var(--bg-tertiary);
+  color: var(--color-primary);
+}
+
+.copyIconBtn.copied {
+  opacity: 1;
+  color: #10b981;
+}
+
 .addToNotesBtn {
   background: var(--bg-tertiary);
   color: var(--color-primary);

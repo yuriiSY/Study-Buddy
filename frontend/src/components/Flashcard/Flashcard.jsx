@@ -1,20 +1,51 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RiEyeLine, RiArrowLeftLine, RiArrowRightLine, RiLightbulbFlashLine } from "react-icons/ri";
+import { Zap, Trophy, Star, Sparkles, Clock } from "lucide-react";
+import { ClipLoader } from "react-spinners";
 import styles from "./Flashcard.module.css";
 
-const Flashcard = ({ cards = [], onFinish }) => {
+const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescription = "", loadingNextLevel: isLoadingNextLevel = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [celebration, setCelebration] = useState(false);
+  const [loadingFinish, setLoadingFinish] = useState(false);
+  const [loadingNextLevel, setLoadingNextLevel] = useState(false);
+
+  useEffect(() => {
+    setCelebration(false);
+    setCurrentIndex(0);
+    setShowAnswer(false);
+    setShowHint(false);
+  }, [cards]);
 
   const currentCard = cards[currentIndex];
+
+  const getLevelColor = () => {
+    switch(level) {
+      case 1: return "#3B82F6";
+      case 2: return "#5BC0DE";
+      case 3: return "#06B6D4";
+      default: return "#3B82F6";
+    }
+  };
+
+  const getLevelEmoji = () => {
+    switch(level) {
+      case 1: return "🎯";
+      case 2: return "⚡";
+      case 3: return "🔥";
+      default: return "🎯";
+    }
+  };
 
   const handleNext = () => {
     if (currentIndex < cards.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       setShowAnswer(false);
+      setShowHint(false);
     } else {
-      onFinish?.();
+      setCelebration(true);
     }
   };
 
@@ -25,8 +56,108 @@ const Flashcard = ({ cards = [], onFinish }) => {
     }
   };
 
+  const handleFinishClick = async () => {
+    setLoadingFinish(true);
+    try {
+      await onFinish?.();
+    } finally {
+      setLoadingFinish(false);
+    }
+  };
+
+  const handleNextLevelClick = async () => {
+    setLoadingNextLevel(true);
+    try {
+      await onNextLevel?.();
+    } finally {
+      setLoadingNextLevel(false);
+    }
+  };
+
+  if (celebration) {
+    const hasNextLevel = level < 3;
+
+    return (
+      <div className={styles.container}>
+        <div className={styles.celebrationContainer}>
+          {isLoadingNextLevel && (
+            <div className={styles.loadingOverlay}>
+              <div className={styles.loadingSpinner}>
+                <ClipLoader size={50} color="#3B82F6" />
+                <p className={styles.loadingText}>Loading next level...</p>
+              </div>
+            </div>
+          )}
+          <div className={styles.confetti}>
+            {[...Array(20)].map((_, i) => (
+              <div key={i} className={styles.confettiPiece} style={{ "--delay": `${i * 0.05}s` }} />
+            ))}
+          </div>
+          <Trophy size={80} className={styles.trophy} />
+          <h1 className={styles.celebrationTitle}>Excellent! 🎉</h1>
+          <p className={styles.celebrationText}>You completed all {cards.length} cards at {getLevelEmoji()} Level {level}!</p>
+          <p className={styles.celebrationSubtext}>{levelDescription}</p>
+          
+          <div className={styles.celebrationButtons}>
+            <button 
+              className={styles.doLaterBtn} 
+              onClick={handleFinishClick}
+              disabled={loadingFinish || loadingNextLevel}
+            >
+              {loadingFinish ? (
+                <ClipLoader size={18} color="currentColor" />
+              ) : (
+                <>
+                  <Clock size={18} /> Do it Later
+                </>
+              )}
+            </button>
+            {hasNextLevel ? (
+              <button 
+                className={styles.nextLevelBtn} 
+                onClick={handleNextLevelClick}
+                disabled={loadingFinish || loadingNextLevel}
+              >
+                {loadingNextLevel ? (
+                  <ClipLoader size={18} color="white" />
+                ) : (
+                  <>
+                    <Zap size={18} /> Next Level
+                  </>
+                )}
+              </button>
+            ) : (
+              <button 
+                className={styles.finishBtn} 
+                onClick={handleFinishClick}
+                disabled={loadingFinish || loadingNextLevel}
+              >
+                {loadingFinish ? (
+                  <ClipLoader size={18} color="white" />
+                ) : (
+                  <>Complete</>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
+      <div className={styles.levelBadge} style={{ "--level-color": getLevelColor() }}>
+        <span className={styles.levelEmoji}>{getLevelEmoji()}</span>
+        <span className={styles.levelText}>Level {level}</span>
+      </div>
+
+      <div className={styles.levelDescription}>{levelDescription}</div>
+
+      <div className={styles.progressBar}>
+        <div className={styles.progressFill} style={{ width: `${((currentIndex + 1) / cards.length) * 100}%`, backgroundColor: getLevelColor() }} />
+      </div>
+
       <div className={styles.flipWrapper}>
         <div className={`${styles.flipCard} ${showAnswer ? styles.flip : ""}`}>
           {/* FRONT (QUESTION) */}

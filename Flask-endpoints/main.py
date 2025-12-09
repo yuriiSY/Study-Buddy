@@ -159,7 +159,7 @@ def get_clip_vector_store():
         )
     return clip_vector_store
 
-def retrieve_by_file_ids(file_ids, query, k=8):  # Increased k for better results
+def retrieve_by_file_ids(file_ids, query, k=8):
     store = get_vector_store()
     clip_store = get_clip_vector_store()
     
@@ -168,7 +168,7 @@ def retrieve_by_file_ids(file_ids, query, k=8):  # Increased k for better result
     
     filter_cond = {"file_id": file_ids}
     
-    print(f"\n=== RETRIEVING CONTENT ===")
+    print(f"\n=== RETRIEVING CONTENT FOR FLASHCARDS/MCQs ===")
     print(f"Query: '{query}'")
     print(f"File IDs: {file_ids}")
     
@@ -177,16 +177,16 @@ def retrieve_by_file_ids(file_ids, query, k=8):  # Increased k for better result
     try:
         text_docs = store.similarity_search(query, k=k, filter=filter_cond)
         text_results = [doc.page_content for doc in text_docs]
-        print(f"✅ Found {len(text_results)} text chunks")
+        print(f"Found {len(text_results)} text chunks")
     except Exception as e:
-        print(f"❌ Text search error: {e}")
+        print(f"Text search error: {e}")
     
-    # Get image descriptions - MULTIPLE SEARCH STRATEGIES
+    # Get image descriptions - MORE AGGRESSIVE SEARCH
     image_results = []
     
-    # Strategy 1: Search with the query directly
+    # Strategy 1: Try the query directly
     try:
-        image_docs = clip_store.similarity_search(query, k=3, filter=filter_cond)
+        image_docs = clip_store.similarity_search(query, k=min(4, k//2), filter=filter_cond)
         for doc in image_docs:
             if doc.page_content not in image_results:
                 image_results.append(doc.page_content)
@@ -194,38 +194,50 @@ def retrieve_by_file_ids(file_ids, query, k=8):  # Increased k for better result
     except Exception as e:
         print(f"Strategy 1 error: {e}")
     
-    # Strategy 2: If query is specific but no images, try broader terms
-    if len(image_results) == 0:
+    # Strategy 2: If query is specific, also try broader terms
+    if query and len(query.split()) > 2:
         try:
-            visual_terms = ["image", "picture", "photo", "diagram", "graph", "chart", "figure", "illustration", "visual"]
-            for term in visual_terms:
+            simple_terms = query.split()[:2]  # Take first 2 words
+            for term in simple_terms:
                 docs = clip_store.similarity_search(term, k=2, filter=filter_cond)
                 for doc in docs:
                     if doc.page_content not in image_results:
                         image_results.append(doc.page_content)
-            print(f"Strategy 2: Found {len(image_results)} images with visual terms")
+            print(f"Strategy 2: Found additional images with simple terms")
         except Exception as e:
             print(f"Strategy 2 error: {e}")
     
-    # Strategy 3: Get ALL images for these files if still none
+    # Strategy 3: Always search for "image" and "diagram"
+    try:
+        visual_terms = ["image", "diagram", "chart", "graph", "figure", "photo", "picture", "illustration"]
+        for term in visual_terms:
+            docs = clip_store.similarity_search(term, k=2, filter=filter_cond)
+            for doc in docs:
+                if doc.page_content not in image_results:
+                    image_results.append(doc.page_content)
+        print(f"Strategy 3: Found images with visual terms")
+    except Exception as e:
+        print(f"Strategy 3 error: {e}")
+    
+    # Strategy 4: If still no images, get ANY images from these files
     if len(image_results) == 0:
         try:
-            # Try to get any images by searching with empty or generic query
-            all_docs = clip_store.similarity_search("", k=5, filter=filter_cond)
+            # Get random content from these files
+            all_docs = clip_store.similarity_search("a", k=5, filter=filter_cond)
             for doc in all_docs:
                 if doc.page_content not in image_results:
                     image_results.append(doc.page_content)
-            print(f"Strategy 3: Found {len(image_results)} images with generic search")
+            print(f"Strategy 4: Found {len(image_results)} images with generic search")
         except Exception as e:
-            print(f"Strategy 3 error: {e}")
+            print(f"Strategy 4 error: {e}")
     
-    print(f"✅ Total image descriptions retrieved: {len(image_results)}")
+    print(f"Total image descriptions retrieved: {len(image_results)}")
     
-    # Debug: Print what we found
+    # Show first few descriptions
     if image_results:
-        print("Image descriptions found:")
-        for i, desc in enumerate(image_results[:3]):  # Show first 3
-            print(f"  {i+1}. {desc[:80]}...")
+        print("Sample image descriptions:")
+        for i, desc in enumerate(image_results[:3]):
+            print(f"  {i+1}. {desc[:100]}...")
     
     print(f"=== RETRIEVAL COMPLETE ===\n")
     
@@ -316,15 +328,15 @@ def extract_images_from_pdf(file_stream):
                     
                     pix = None  # Free memory
                 except Exception as img_error:
-                    print(f"    ⚠️ Failed to extract image {img_index}: {img_error}")
+                    print(f"    Failed to extract image {img_index}: {img_error}")
                     continue
         
         doc.close()
-        print(f"  ✅ Total images extracted: {len(images)}")
+        print(f"  Total images extracted: {len(images)}")
         return images
         
     except Exception as e:
-        print(f"❌ Error extracting images from PDF: {e}")
+        print(f"Error extracting images from PDF: {e}")
         return []
     
 def extract_text_from_docx(file_stream):
@@ -488,21 +500,21 @@ def generate_image_description(image):
                 description = response.choices[0].message.content.strip()
                 
                 if description and len(description) > 20:  # Valid description
-                    print(f"  ✅ Generated description ({len(description)} chars): {description[:100]}...")
+                    print(f"  Generated description ({len(description)} chars): {description[:100]}...")
                     return description
                 else:
-                    print(f"  ⚠️ Attempt {attempt+1}: Description too short: '{description}'")
+                    print(f"  Attempt {attempt+1}: Description too short: '{description}'")
                     
             except Exception as e:
-                print(f"  ⚠️ Attempt {attempt+1} failed: {e}")
+                print(f"  Attempt {attempt+1} failed: {e}")
                 continue
         
         # If all attempts fail, create a basic description
-        print(f"  ⚠️ All attempts failed, creating basic description")
+        print(f"  All attempts failed, creating basic description")
         return f"An image of size {image.size[0]}x{image.size[1]} pixels"
         
     except Exception as e:
-        print(f"  ❌ Error generating image description: {e}")
+        print(f"  Error generating image description: {e}")
         return f"Image content (error: {str(e)[:50]})"
     
 def convert_image_or_text_to_pdf(file_stream, filename):
@@ -511,7 +523,7 @@ def convert_image_or_text_to_pdf(file_stream, filename):
     """
     ext = filename.lower().split('.')[-1]
 
-    # IMAGE → PDF
+    # IMAGE to PDF
     if ext in ["png", "jpg", "jpeg", "bmp", "gif", "webp"]:
         try:
             file_stream.seek(0)
@@ -535,14 +547,14 @@ def convert_image_or_text_to_pdf(file_stream, filename):
             # Use optimal settings
             image.save(pdf_out, format="PDF", quality=95, optimize=True)
             pdf_bytes = pdf_out.getvalue()
-            print(f"    ✅ PDF created: {len(pdf_bytes)} bytes")
+            print(f"    PDF created: {len(pdf_bytes)} bytes")
             return pdf_bytes, None
             
         except Exception as e:
-            print(f"    ❌ Image → PDF failed: {e}")
-            return None, f"Image → PDF failed: {e}"
+            print(f"    Image to PDF failed: {e}")
+            return None, f"Image to PDF failed: {e}"
 
-    # TEXT → PDF
+    # TEXT to PDF
     if ext == "txt":
         try:
             file_stream.seek(0)
@@ -575,14 +587,14 @@ def convert_image_or_text_to_pdf(file_stream, filename):
             
             c.save()
             pdf_bytes = pdf_out.getvalue()
-            print(f"    ✅ Text PDF created: {len(pdf_bytes)} bytes")
+            print(f"    Text PDF created: {len(pdf_bytes)} bytes")
             return pdf_bytes, None
             
         except Exception as e:
-            print(f"    ❌ Text → PDF failed: {e}")
-            return None, f"Text → PDF failed: {e}"
+            print(f"    Text to PDF failed: {e}")
+            return None, f"Text to PDF failed: {e}"
 
-    print(f"    ⚠️ Unsupported file type for conversion: {ext}")
+    print(f"    Unsupported file type for conversion: {ext}")
     return None, f"Unsupported file type for conversion to PDF: {ext}"
 
 
@@ -603,39 +615,39 @@ def process_file_content(file, filename):
     # ---------- Office files (convert to PDF first) ----------
     office_types = ['docx', 'pptx', 'xlsx', 'doc', 'ppt', 'xls']
     if file_extension in office_types:
-        print(f"🔄 Converting {file_extension.upper()} to PDF for full processing...")
+        print(f"Converting {file_extension.upper()} to PDF for full processing...")
         pdf_data, error = convert_office_to_pdf(file_stream, filename)
         if error:
-            print(f"⚠️ Office → PDF failed: {error}, falling back to native extraction...")
+            print(f"Office to PDF failed: {error}, falling back to native extraction...")
             # Fallback text extraction
             try:
                 file_stream.seek(0)
                 if file_extension == 'docx' and DOCX_SUPPORT:
                     text = extract_text_from_docx(file_stream)
-                    print(f"📝 Fallback: Extracted {len(text)} chars from DOCX")
+                    print(f"Fallback: Extracted {len(text)} chars from DOCX")
                     return text, f"Fallback text only. {error}", [], None
                 elif file_extension == 'pptx' and PPTX_SUPPORT:
                     text = extract_text_from_pptx(file_stream)
-                    print(f"📝 Fallback: Extracted {len(text)} chars from PPTX")
+                    print(f"Fallback: Extracted {len(text)} chars from PPTX")
                     return text, f"Fallback text only. {error}", [], None
                 elif file_extension == 'xlsx' and XLSX_SUPPORT:
                     text = extract_text_from_xlsx(file_stream)
-                    print(f"📝 Fallback: Extracted {len(text)} chars from XLSX")
+                    print(f"Fallback: Extracted {len(text)} chars from XLSX")
                     return text, f"Fallback text only. {error}", [], None
                 else:
                     return None, f"No extraction fallback available. {error}", [], None
             except Exception as e:
-                print(f"❌ Fallback extraction failed: {e}")
+                print(f"Fallback extraction failed: {e}")
                 return None, f"Fallback extraction failed: {e}", [], None
 
         # Success: extract text and images from PDF
-        print(f"✅ Successfully converted to PDF ({len(pdf_data)} bytes)")
+        print(f"Successfully converted to PDF ({len(pdf_data)} bytes)")
         pdf_stream = io.BytesIO(pdf_data)
         
         # Extract text
         pdf_stream.seek(0)
         text = extract_text_from_pdf(pdf_stream)
-        print(f"📝 Extracted {len(text)} chars of text")
+        print(f"Extracted {len(text)} chars of text")
         
         # Extract images
         pdf_stream.seek(0)
@@ -658,7 +670,7 @@ def process_file_content(file, filename):
         # Extract text
         pdf_stream = io.BytesIO(file_bytes)
         text = extract_text_from_pdf(pdf_stream)
-        print(f"📝 Extracted {len(text)} chars of text")
+        print(f"Extracted {len(text)} chars of text")
         
         # Extract images
         pdf_stream.seek(0)
@@ -704,10 +716,10 @@ def process_file_content(file, filename):
                     processed_image = image
                 
                 images = [original_image]  # Keep original for description generation
-                print(f"  ✅ Image ready: size={image.size}, mode={image.mode}")
+                print(f"  Image ready: size={image.size}, mode={image.mode}")
                 
             except Exception as img_error:
-                print(f"  ❌ Failed to open image: {img_error}")
+                print(f"  Failed to open image: {img_error}")
                 # Try alternative approach
                 file_stream.seek(0)
                 try:
@@ -717,7 +729,7 @@ def process_file_content(file, filename):
                     image = Image.open(file_stream)
                     image.load()  # Force load
                     images = [image]
-                    print(f"  ✅ Loaded with alternative method")
+                    print(f"  Loaded with alternative method")
                 except:
                     return None, f"Failed to process image: {img_error}", [], None
             
@@ -725,20 +737,20 @@ def process_file_content(file, filename):
             file_stream.seek(0)
             pdf_data, error = convert_image_or_text_to_pdf(file_stream, filename)
             if error:
-                print(f"  ❌ PDF conversion failed: {error}")
+                print(f"  PDF conversion failed: {error}")
                 # Still return the images even if PDF conversion fails
                 return "", error, images, None
             
-            print(f"  ✅ Successfully generated PDF ({len(pdf_data)} bytes)")
+            print(f"  Successfully generated PDF ({len(pdf_data)} bytes)")
             return "", None, images, pdf_data
             
         except Exception as e:
-            print(f"❌ Error processing image file {filename}: {e}")
+            print(f"Error processing image file {filename}: {e}")
             return None, f"Image processing failed: {e}", [], None
 
     # ---------- TEXT files ----------
     elif file_extension == 'txt':
-        print(f"📝 Processing text file: {filename}")
+        print(f"Processing text file: {filename}")
         try:
             file_stream.seek(0)
             text = file_stream.read().decode("utf-8", errors="ignore")
@@ -748,25 +760,25 @@ def process_file_content(file, filename):
             file_stream.seek(0)
             pdf_data, error = convert_image_or_text_to_pdf(file_stream, filename)
             if error:
-                print(f"  ⚠️ PDF conversion failed: {error}")
+                print(f"  PDF conversion failed: {error}")
                 return text, error, [], None
             
-            print(f"  ✅ Successfully generated PDF ({len(pdf_data)} bytes)")
+            print(f"  Successfully generated PDF ({len(pdf_data)} bytes)")
             return text, None, [], pdf_data
             
         except Exception as e:
-            print(f"❌ Error processing text file {filename}: {e}")
+            print(f"Error processing text file {filename}: {e}")
             return None, f"Text processing failed: {e}", [], None
 
     # ---------- Plain text fallback ----------
     else:
-        print(f"🤔 Unknown file type: {file_extension}, trying as text...")
+        print(f"Unknown file type: {file_extension}, trying as text...")
         try:
             text = file_bytes.decode("utf-8", errors="ignore")
-            print(f"✅ Processed as plain text: {len(text)} chars")
+            print(f"Processed as plain text: {len(text)} chars")
             return text, None, [], None
         except Exception as e:
-            print(f"❌ Unsupported file type: {file_extension}. {e}")
+            print(f"Unsupported file type: {file_extension}. {e}")
             return None, f"Unsupported file type: {file_extension}. {e}", [], None
         
 # ---------- LLM (Groq API call) ----------
@@ -872,6 +884,90 @@ def get_chat_history(file_ids, limit=10):
     except Exception as e:
         print(f"Error getting chat history: {e}")
         return []
+
+
+def init_recap_cards_table():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS recap_cards_progress (
+                id SERIAL PRIMARY KEY,
+                file_id VARCHAR(255) NOT NULL,
+                level INTEGER NOT NULL,
+                completed BOOLEAN DEFAULT FALSE,
+                completed_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(file_id, level)
+            )
+        """)
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("Recap cards progress table initialized")
+        return True
+    except Exception as e:
+        print(f"Error initializing recap cards table: {e}")
+        return False
+
+
+def mark_level_completed(file_id: str, level: int):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            INSERT INTO recap_cards_progress (file_id, level, completed, completed_at)
+            VALUES (%s, %s, TRUE, %s)
+            ON CONFLICT (file_id, level) DO UPDATE SET completed = TRUE, completed_at = %s
+        """, (file_id, level, datetime.now(), datetime.now()))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error marking level completed: {e}")
+        return False
+
+
+def get_completed_levels(file_id: str) -> list:
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT level FROM recap_cards_progress 
+            WHERE file_id = %s AND completed = TRUE
+            ORDER BY level
+        """, (file_id,))
+        
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        return [r[0] for r in rows]
+    except Exception as e:
+        print(f"Error getting completed levels: {e}")
+        return []
+
+
+def get_next_available_level(file_id: str) -> int:
+    completed_levels = get_completed_levels(file_id)
+    
+    if not completed_levels:
+        return 1
+    
+    completed_levels.sort()
+    
+    for level in [1, 2, 3]:
+        if level not in completed_levels:
+            if level == 1 or (level - 1) in completed_levels:
+                return level
+    
+    return 4
 
 
 def groq_chat_with_history(context: str, question: str, chat_history: list, images: list = None) -> str:
@@ -1019,59 +1115,91 @@ def get_db_connection():
 
     
 #-----------Flashcard Generation with Groq-----------
-def generate_flashcards_with_groq(context: str, num_flashcards: int = 5, fill_gaps: bool = False):
-    """Generate flashcards - with option to fill knowledge gaps"""
+def generate_flashcards_with_groq(context: str, num_flashcards: int = 5, level: int = 1, fill_gaps: bool = False):
+    """Generate flashcards at different difficulty levels"""
     client = Groq(api_key=GROQ_API_KEY)
     
-    # Choose prompt based on fill_gaps flag
-    if fill_gaps:
-        prompt = f"""
-        CONTENT FROM USER'S NOTES:
+    # Level-specific prompts
+    level_prompts = {
+        1: f"""
+        CONTEXT FROM USER'S NOTES:
         {context}
         
-        Create {num_flashcards} SMART flashcards that fill knowledge gaps and make the student an expert.
+        Create {num_flashcards} EASY flashcards based DIRECTLY on this content.
         
-        CRITICAL: Don't just repeat what's in the notes. Create cards that:
-        1. Add missing information the notes don't cover
-        2. Connect concepts to real-world applications
-        3. Address common misunderstandings
-        4. Explain WHY concepts matter
-        5. Build from basic to advanced understanding
+        LEVEL 1 REQUIREMENTS (EASY - DIRECT FROM NOTES):
+        - Questions should be simple and direct from the notes
+        - Test basic recall and understanding
+        - Answers should be short and factual
+        - Focus on key terms, definitions, and main ideas
+        - Make it suitable for beginners
         
-        For each card, include:
-        - question: Thought-provoking, addresses a gap
-        - answer: Comprehensive explanation that TEACHES
-        - hint: Guides thinking without giving answer away
-        
-        Return ONLY this JSON format:
-        [
-            {{
-                "question": "question text",
-                "answer": "answer text", 
-                "hint": "hint text"
-            }}
-        ]
-        
-        Example for sparse notes:
-        Notes: "Force = mass × acceleration"
-        Card: {{
-            "question": "While your notes show F=ma, how do we calculate force when an object is on an inclined plane?",
-            "answer": "On an inclined plane, we resolve weight into components. The force parallel to the plane = mg·sinθ, perpendicular = mg·cosθ. Friction force = μ·(mg·cosθ).",
-            "hint": "Think about breaking gravity into components parallel and perpendicular to the surface."
+        EXAMPLE LEVEL 1 CARD:
+        {{
+            "question": "What is Newton's First Law of Motion?",
+            "answer": "An object at rest stays at rest, and an object in motion stays in motion unless acted upon by an external force.",
+            "hint": "Think about inertia"
         }}
-        """
-    else:
-        prompt = f"""
-        CONTENT FROM USER'S NOTES:
+        
+        Return ONLY this JSON format:
+        [
+            {{
+                "question": "question text",
+                "answer": "answer text", 
+                "hint": "hint text"
+            }}
+        ]
+        """,
+        
+        2: f"""
+        CONTEXT FROM USER'S NOTES:
         {context}
         
-        Create {num_flashcards} high-quality flashcards based on this content.
+        Create {num_flashcards} INTERMEDIATE flashcards with practical applications.
         
-        REQUIREMENTS:
-        - Questions should test understanding of key concepts
-        - Answers should be clear and educational
-        - Hints should guide thinking without revealing answers
-        - Focus on the most important information
+        LEVEL 2 REQUIREMENTS (INTERMEDIATE - PRACTICAL/APPLICATION):
+        - Questions should apply concepts to real-world scenarios
+        - Include "twist and turns" - slightly tricky but fair
+        - Test application and problem-solving
+        - Connect concepts from different parts of the notes
+        - Make students think critically
+        
+        EXAMPLE LEVEL 2 CARD:
+        {{
+            "question": "If a car is moving at 60 km/h and suddenly brakes, why do passengers continue moving forward?",
+            "answer": "Due to inertia (Newton's First Law). Passengers maintain their forward motion until seatbelts or friction stop them.",
+            "hint": "Consider what happens when motion changes suddenly"
+        }}
+        
+        Return ONLY this JSON format:
+        [
+            {{
+                "question": "question text",
+                "answer": "answer text", 
+                "hint": "hint text"
+            }}
+        ]
+        """,
+        
+        3: f"""
+        CONTEXT FROM USER'S NOTES:
+        {context}
+        
+        Create {num_flashcards} ADVANCED flashcards using external knowledge.
+        
+        LEVEL 3 REQUIREMENTS (ADVANCED - BEYOND NOTES):
+        - Questions should extend beyond what's explicitly in the notes
+        - Incorporate advanced concepts, historical context, or real-world applications
+        - Connect to related fields or advanced topics
+        - Challenge students to synthesize information
+        - Use your external knowledge as an AI
+        
+        EXAMPLE LEVEL 3 CARD:
+        {{
+            "question": "How does Newton's First Law relate to Einstein's theory of relativity in understanding motion in space?",
+            "answer": "Newton's First Law works for inertial frames in classical mechanics, but Einstein showed that all motion is relative and gravity curves spacetime, affecting how objects move in the absence of forces.",
+            "hint": "Consider the limitations of classical mechanics at cosmic scales"
+        }}
         
         Return ONLY this JSON format:
         [
@@ -1082,6 +1210,17 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5, fill_ga
             }}
         ]
         """
+    }
+    
+    # Choose prompt based on level
+    if level not in level_prompts:
+        level = 1  # Default to level 1
+    
+    prompt = level_prompts[level]
+    
+    # Add fill_gaps enhancement if requested
+    if fill_gaps and level == 1:  # Usually only fill gaps for basic level
+        prompt += "\n\nADDITIONAL: Also identify and fill knowledge gaps in the notes."
     
     try:
         response = client.chat.completions.create(
@@ -1089,7 +1228,7 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5, fill_ga
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an expert educational content creator. Create effective flashcards that help students learn."
+                    "content": f"You are an expert educational content creator specializing in creating flashcards at difficulty level {level}."
                 },
                 {
                     "role": "user", 
@@ -1097,7 +1236,7 @@ def generate_flashcards_with_groq(context: str, num_flashcards: int = 5, fill_ga
                 }
             ],
             max_tokens=2000,
-            temperature=0.7
+            temperature=0.7 if level == 3 else 0.5  # Higher temperature for creative advanced questions
         )
         
         content = response.choices[0].message.content.strip()
@@ -1207,6 +1346,8 @@ def generate_missing_notes(context: str):
 @app.get("/")
 def health():
     try:
+        init_recap_cards_table()
+        
         client = Groq(api_key=GROQ_API_KEY)
         models = client.models.list()
         model_names = [model.id for model in models.data]
@@ -1251,7 +1392,8 @@ def is_file_supported(filename: str) -> bool:
 @app.post("/upload-files")
 async def upload_files(
     files: list[UploadFile] = File(...),
-    moduleId: str = Form(None)
+    moduleId: str = Form(None),
+    ocr: bool = Form(False)
 ):
     results = []
     errors = []
@@ -1285,7 +1427,7 @@ async def upload_files(
         
         print(f"\n=== UPLOADING FILE: {filename} ===")
         
-        # Extract text, images, pdf_data
+        # Extract text, images, pdf_data (YOUR ORIGINAL CODE)
         text, error, images, pdf_data = process_file_content(file_stream, filename)
         
         print(f"Processing results - Text length: {len(text) if text else 0}, Images found: {len(images)}, Error: {error}")
@@ -1304,7 +1446,7 @@ async def upload_files(
                     Body=pdf_data,
                     ContentType='application/pdf'
                 )
-                print(f"✅ Uploaded PDF to S3: {s3_key}")
+                print(f"Uploaded PDF to S3: {s3_key}")
             else:
                 s3.put_object(
                     Bucket=S3_BUCKET_NAME,
@@ -1313,12 +1455,30 @@ async def upload_files(
                     ContentType=file.content_type
                 )
         except Exception as e:
-            print(f"❌ S3 upload failed: {e}")
+            print(f"S3 upload failed: {e}")
             errors.append({"file_name": filename, "error": f"S3 upload failed: {e}"})
             s3_key = None
             s3_url = None
 
         chunks = []
+        # OCR PROCESSING
+        ocr_text = ""
+        if ocr:
+            print(f"OCR flag enabled, extracting text with Groq...")
+            try:
+                # Create FRESH stream for OCR (don't reuse the consumed stream)
+                ocr_stream = io.BytesIO(content)
+                ocr_text = extract_text_with_groq_ocr(ocr_stream, filename)
+                print(f"OCR extracted {len(ocr_text)} characters")
+                
+                # Use OCR text for vector storage
+                if ocr_text and len(ocr_text) > 10:
+                    text = ocr_text
+                    print(f"Using OCR text for vector storage")
+            except Exception as e:
+                print(f"OCR failed: {e}")
+                ocr_text = f"OCR failed: {str(e)}"
+        
         # Store text chunks in vector DB
         if text and text.strip():
             splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
@@ -1331,17 +1491,18 @@ async def upload_files(
                 "chunk_index": i,
                 "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
                 "content_type": "text",
-                "has_images": len(images) > 0
+                "has_images": len(images) > 0,
+                "ocr_processed": ocr
             } for i in range(len(chunks))]
             ids = [str(uuid.uuid4()) for _ in chunks]
             
             try:
                 store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
-                print(f"✅ Stored {len(chunks)} text chunks in vector DB")
+                print(f"Stored {len(chunks)} text chunks in vector DB")
             except Exception as e:
-                print(f"❌ Failed to store text chunks: {e}")
+                print(f"Failed to store text chunks: {e}")
 
-        # CRITICAL: Store image descriptions in CLIP vector store
+        # Store image descriptions in CLIP vector store
         if images and len(images) > 0:
             print(f"Processing {len(images)} images for CLIP storage...")
             images_stored = 0
@@ -1371,14 +1532,14 @@ async def upload_files(
                     )
                     
                     images_stored += 1
-                    print(f"  ✅ Successfully stored image {img_index + 1}")
+                    print(f"  Successfully stored image {img_index + 1}")
                     
                 except Exception as e:
-                    print(f"  ❌ Failed to process/store image {img_index}: {e}")
+                    print(f"  Failed to process/store image {img_index}: {e}")
             
-            print(f"✅ Total images stored in CLIP: {images_stored}/{len(images)}")
+            print(f"Total images stored in CLIP: {images_stored}/{len(images)}")
         else:
-            print(f"⚠️ No images found to store in CLIP")
+            print(f"No images found to store in CLIP")
 
         results.append({
             "file_name": filename,
@@ -1561,12 +1722,30 @@ def clear_chat_history(data: dict):
 
 @app.post("/generate-flashcards")
 def generate_flashcards(data: dict):
-
     file_ids = data.get("file_ids", [])
     num_flashcards = data.get("num_flashcards", 5)
-    fill_gaps = data.get("fill_gaps", False)  # NEW: Optional parameter
+    fill_gaps = data.get("fill_gaps", False)
+    requested_level = data.get("level", 1)
     
-    # Get content from notes
+    if not file_ids:
+        raise HTTPException(status_code=400, detail="file_ids are required")
+    
+    if requested_level not in [1, 2, 3]:
+        requested_level = 1
+    
+    completed_levels = get_completed_levels(file_ids[0])
+    next_available = get_next_available_level(file_ids[0])
+    max_unlocked_level = max(completed_levels) if completed_levels else 0
+    
+    if requested_level > max_unlocked_level + 1:
+        missing_level = requested_level - 1
+        raise HTTPException(
+            status_code=403,
+            detail=f"Level {requested_level} is locked. Complete Level {missing_level} first."
+        )
+    
+    level = requested_level
+    
     search_terms = [
         "key concepts",
         "important information", 
@@ -1581,40 +1760,148 @@ def generate_flashcards(data: dict):
     if not context.strip():
         raise HTTPException(status_code=400, detail="No content found in selected files")
 
-    # Generate flashcards with gap-filling if requested
-    flashcards = generate_flashcards_with_groq(context, num_flashcards, fill_gaps)
-
+    flashcards = generate_flashcards_with_groq(context, num_flashcards, level, fill_gaps)
+    print(flashcards)
     return {
         "flashcards": flashcards,
         "file_ids_used": file_ids,
         "total_generated": len(flashcards),
-        "fill_gaps_used": fill_gaps  # Let frontend know if gaps were filled
+        "level": level,
+        "level_description": get_level_description(level),
+        "fill_gaps_used": fill_gaps,
+        "progress": {
+            "completed_levels": completed_levels,
+            "next_available_level": next_available,
+            "all_levels_completed": len(completed_levels) == 3
+        }
     }
+
+
+def get_level_description(level: int) -> str:
+    """Get description for each level"""
+    descriptions = {
+        1: "Easy Level - Foundational concepts and definitions",
+        2: "Intermediate Level - Practical applications and critical thinking",
+        3: "Advanced Level - Complex analysis and synthesis"
+    }
+    return descriptions.get(level, "Easy Level - Foundational concepts and definitions")
+
+
+@app.get("/recap-cards-progress")
+def get_recap_progress(file_ids: List[str] = Query(..., alias="file_ids[]")):
+    if not file_ids:
+        raise HTTPException(status_code=400, detail="file_ids are required")
+    
+    file_id = file_ids[0]
+    completed_levels = get_completed_levels(file_id)
+    next_available = get_next_available_level(file_id)
+    
+    level_status = {}
+    for level in [1, 2, 3]:
+        level_status[level] = {
+            "completed": level in completed_levels,
+            "available": level <= next_available,
+            "description": get_level_description(level)
+        }
+    
+    return {
+        "file_id": file_id,
+        "completed_levels": completed_levels,
+        "next_available_level": next_available,
+        "all_levels_completed": len(completed_levels) == 3,
+        "level_status": level_status
+    }
+
+
+@app.post("/recap-cards-complete-level")
+def complete_level(data: dict):
+    file_id = data.get("file_id")
+    level = data.get("level")
+    
+    if not file_id or not level:
+        raise HTTPException(status_code=400, detail="file_id and level are required")
+    
+    if level not in [1, 2, 3]:
+        raise HTTPException(status_code=400, detail="level must be 1, 2, or 3")
+    
+    completed_levels = get_completed_levels(file_id)
+    max_unlocked_level = max(completed_levels) if completed_levels else 0
+    
+    if level > max_unlocked_level + 1:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Level {level} is not available. Complete Level {level - 1} first."
+        )
+    
+    if mark_level_completed(file_id, level):
+        updated_completed = get_completed_levels(file_id)
+        updated_next = get_next_available_level(file_id)
+        
+        return {
+            "success": True,
+            "file_id": file_id,
+            "level_completed": level,
+            "completed_levels": updated_completed,
+            "next_available_level": updated_next,
+            "all_levels_completed": len(updated_completed) == 3,
+            "message": f"Level {level} completed! {get_level_description(level)}"
+        }
+    else:
+        raise HTTPException(status_code=500, detail="Failed to mark level as completed")
 
 
 @app.post("/enhance-notes")
 def enhance_notes(data: dict):
-    """NEW ENDPOINT: Get additional notes to fill knowledge gaps"""
+    """Get additional notes to fill knowledge gaps - INCLUDING IMAGES"""
     file_ids = data.get("file_ids", [])
     
     if not file_ids:
         raise HTTPException(status_code=400, detail="file_ids are required")
     
-    # Get comprehensive context
-    context_chunks, _ = retrieve_by_file_ids(file_ids, "comprehensive understanding", k=8)
-    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
+    # Get comprehensive context including images
+    all_text_chunks = []
+    all_image_descriptions = []
+    
+    # Try multiple searches
+    for term in ["comprehensive understanding", "detailed information", "key concepts visual content"]:
+        text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, term, k=8)
+        
+        for chunk in text_chunks:
+            if chunk not in all_text_chunks:
+                all_text_chunks.append(chunk)
+        
+        for desc in image_descriptions:
+            if desc not in all_image_descriptions:
+                all_image_descriptions.append(desc)
+    
+    # Build context
+    context_parts = []
+    
+    if all_text_chunks:
+        text_context = "CURRENT NOTES TEXT:\n" + "\n---\n".join(all_text_chunks)
+        context_parts.append(text_context)
+    
+    if all_image_descriptions:
+        image_context = "CURRENT VISUAL CONTENT:\n" + "\n".join([f"- {desc}" for desc in all_image_descriptions])
+        context_parts.append(image_context)
+    
+    context = "\n\n".join(context_parts) if context_parts else "No content found."
     
     if not context.strip():
         raise HTTPException(status_code=400, detail="No content found in selected files")
     
-    # Generate missing notes
+    # Generate missing notes with the full context
     result = generate_missing_notes(context)
     
     return {
         "enhanced_notes": result.get("missing_notes", []),
         "study_advice": result.get("study_advice", ""),
         "file_ids_used": file_ids,
-        "original_notes_summary": context[:500] + "..." if len(context) > 500 else context
+        "original_content_summary": {
+            "text_chunks": len(all_text_chunks),
+            "images": len(all_image_descriptions),
+            "total_content": f"{len(all_text_chunks)} text chunks, {len(all_image_descriptions)} images"
+        }
     }
 
 @app.post("/generate-mcq")
@@ -1622,30 +1909,89 @@ def generate_mcq(data: dict):
     file_ids = data.get("file_ids", [])
     num_questions = data.get("num_questions", 5)
 
+    if not file_ids:
+        raise HTTPException(status_code=400, detail="file_ids are required")
+    
+    # Use search terms that capture ALL content types
     search_terms = [
-        "key concepts and definitions",
-        "important principles and theories",
-        "formulas and equations",
-        "processes and methods",
-        "relationships and connections"
+        "key concepts definitions important points",
+        "formulas equations calculations data",
+        "diagrams images charts visual information",
+        "processes methods steps procedures",
+        "facts information details explanations"
     ]
+    
+    # Collect content from multiple searches
+    all_text_chunks = []
+    all_image_descriptions = []
+    
+    for term in search_terms[:3]:  # Try first 3 terms
+        text_chunks, image_descriptions = retrieve_by_file_ids(file_ids, term, k=6)
+        
+        for chunk in text_chunks:
+            if chunk not in all_text_chunks:
+                all_text_chunks.append(chunk)
+        
+        for desc in image_descriptions:
+            if desc not in all_image_descriptions:
+                all_image_descriptions.append(desc)
+    
+    print(f"MCQ DEBUG: Text chunks: {len(all_text_chunks)}, Images: {len(all_image_descriptions)}")
+    
+    # Build comprehensive context
+    context_parts = []
+    
+    if all_text_chunks:
+        text_context = "DOCUMENT TEXT CONTENT:\n" + "\n---\n".join(all_text_chunks[:12])  # Limit to reasonable size
+        context_parts.append(text_context)
+    
+    if all_image_descriptions:
+        image_context = "VISUAL CONTENT (Images/Diagrams/Charts):\n"
+        for i, desc in enumerate(all_image_descriptions):
+            # Clean up the description
+            clean_desc = desc
+            for prefix in ["This image shows", "The image depicts", "The image contains", "This is an image of"]:
+                if desc.startswith(prefix):
+                    clean_desc = desc[len(prefix):].strip()
+                    break
+            
+            image_context += f"\nVisual {i+1}: {clean_desc}"
+        context_parts.append(image_context)
+    
+    # Last resort if no content
+    if not context_parts:
+        all_text_chunks, all_image_descriptions = retrieve_by_file_ids(file_ids, "", k=15)
+        
+        combined = []
+        if all_text_chunks:
+            combined.extend(all_text_chunks)
+        if all_image_descriptions:
+            combined.extend(all_image_descriptions)
+        
+        if combined:
+            context_parts.append("ALL AVAILABLE CONTENT:\n" + "\n".join(combined))
+    
+    context = "\n\n".join(context_parts) if context_parts else "No content found."
 
-    random_term = random.choice(search_terms)
-    context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=8)
-    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
+    if not context.strip() or context == "No content found.":
+        raise HTTPException(
+            status_code=400, 
+            detail=f"No content available to generate questions. Found {len(all_text_chunks)} text chunks and {len(all_image_descriptions)} images."
+        )
 
-    if not context.strip():
-        raise HTTPException(status_code=400, detail="No content found in selected files")
-
+    # Generate MCQs from the combined context
     mcqs = generate_mcq_with_groq(context, num_questions)
 
     return {
         "mcqs": mcqs,
         "file_ids_used": file_ids,
-        "total_questions": len(mcqs)
+        "total_questions": len(mcqs),
+        "debug_info": {
+            "text_chunks_used": len(all_text_chunks),
+            "image_descriptions_used": len(all_image_descriptions),
+            "context_length": len(context)
+        }
     }
-
-
 @app.post("/delete-file-embeddings")
 def delete_file_embeddings(data: dict):
     """Delete all embeddings and chat history for given file IDs"""
@@ -1694,7 +2040,7 @@ async def test_image_upload(file: UploadFile = File(...)):
     content = await file.read()
     file_stream = io.BytesIO(content)
     
-    print(f"\n🧪 TEST: Uploading {filename}")
+    print(f"\nTEST: Uploading {filename}")
     
     # 1. Test file processing
     text, error, images, pdf_data = process_file_content(file_stream, filename)
@@ -1717,10 +2063,10 @@ async def test_image_upload(file: UploadFile = File(...)):
             description = generate_image_description(images[0])
             result["image_description"] = description[:200] + "..."
             result["description_length"] = len(description)
-            print(f"✅ Generated description ({len(description)} chars)")
+            print(f"Generated description ({len(description)} chars)")
         except Exception as e:
             result["description_error"] = str(e)
-            print(f"❌ Description failed: {e}")
+            print(f"Description failed: {e}")
     
     # 3. Test CLIP storage
     if images and len(images) > 0:
@@ -1744,24 +2090,24 @@ async def test_image_upload(file: UploadFile = File(...)):
                 metadatas=[metadata],
                 ids=[str(uuid.uuid4())]
             )
-            result["clip_storage"] = "✅ Success"
-            print(f"✅ Stored in CLIP vector store")
+            result["clip_storage"] = "Success"
+            print(f"Stored in CLIP vector store")
             
             # Verify storage
             try:
                 # Try to retrieve it
                 retrieved = clip_store.similarity_search(description[:50], k=1, filter={"file_id": test_file_id})
-                result["retrieval_test"] = f"✅ Retrieved {len(retrieved)} items"
-                print(f"✅ Verified retrieval works")
+                result["retrieval_test"] = f"Retrieved {len(retrieved)} items"
+                print(f"Verified retrieval works")
             except Exception as e:
-                result["retrieval_test"] = f"❌ Retrieval failed: {e}"
-                print(f"❌ Retrieval failed: {e}")
+                result["retrieval_test"] = f"Retrieval failed: {e}"
+                print(f"Retrieval failed: {e}")
                 
         except Exception as e:
             result["clip_storage_error"] = str(e)
-            print(f"❌ CLIP storage failed: {e}")
+            print(f"CLIP storage failed: {e}")
     
-    print(f"🧪 TEST COMPLETE")
+    print(f"TEST COMPLETE")
     return result
 
 @app.post("/check-database")
@@ -1831,6 +2177,118 @@ def check_database(data: dict):
         
     except Exception as e:
         return {"error": str(e)}
+    
+
+
+#----------------------------OCR------------------------
+def extract_text_with_groq_ocr(file_stream, filename):
+    """Extract text from ANY file using Groq's OCR capability"""
+    client = Groq(api_key=GROQ_API_KEY)
+    
+    # Reset stream position
+    file_stream.seek(0)
+    
+    # Convert file to base64
+    file_bytes = file_stream.read()
+    
+    # For non-image files, convert to image first
+    file_ext = filename.lower().split('.')[-1] if '.' in filename else ''
+    
+    if file_ext in ['pdf', 'docx', 'pptx', 'txt']:
+        # Convert document to image(s) first
+        return extract_text_from_document_with_ocr(file_bytes, filename, client)
+    else:
+        # Direct OCR for image files
+        return extract_text_from_image(file_bytes, client)
+
+
+def extract_text_from_image(image_bytes, client):
+    """Extract text from image bytes using Groq"""
+    img_b64 = base64.b64encode(image_bytes).decode('utf-8')
+    
+    # Simple OCR prompt - JUST EXTRACT TEXT
+    response = client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Extract ALL text from this image. Return ONLY the text, no explanations."},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
+            ]
+        }],
+        max_tokens=2000,
+        temperature=0.1
+    )
+    
+    return response.choices[0].message.content.strip()
+
+
+def extract_text_from_document_with_ocr(file_bytes, filename, client):
+    """Extract text from documents by converting pages to images and OCRing each"""
+    # Convert PDF/DOC to images
+    images = []
+    
+    file_ext = filename.lower().split('.')[-1]
+    
+    if file_ext == 'pdf':
+        # Convert PDF pages to images
+        import fitz
+        doc = fitz.open(stream=file_bytes, filetype="pdf")
+        
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # Higher resolution for OCR
+            img_data = pix.tobytes("png")
+            img = Image.open(io.BytesIO(img_data))
+            images.append(img)
+        
+        doc.close()
+    
+    elif file_ext in ['docx', 'pptx']:
+        # Convert office docs to PDF then to images
+        # (Use your existing convert_office_to_pdf function)
+        pdf_data, error = convert_office_to_pdf(io.BytesIO(file_bytes), filename)
+        if pdf_data:
+            # Convert PDF to images as above
+            doc = fitz.open(stream=pdf_data, filetype="pdf")
+            for page_num in range(len(doc)):
+                page = doc[page_num]
+                pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+                img_data = pix.tobytes("png")
+                img = Image.open(io.BytesIO(img_data))
+                images.append(img)
+            doc.close()
+    
+    # OCR each image
+    all_text = []
+    for i, img in enumerate(images):
+        print(f"  OCRing page {i+1}/{len(images)}...")
+        
+        # Convert image to bytes
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format='PNG')
+        img_b64 = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
+        
+        # Extract text
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "Extract ALL text from this document page. Return ONLY the text, no explanations."},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
+                ]
+            }],
+            max_tokens=1000,
+            temperature=0.1
+        )
+        
+        page_text = response.choices[0].message.content.strip()
+        if page_text:
+            all_text.append(f"--- Page {i+1} ---\n{page_text}")
+    
+    return "\n\n".join(all_text)
+
 # ---------------- RUN ----------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))  # fallback for local

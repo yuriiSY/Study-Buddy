@@ -1,0 +1,311 @@
+.container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+.levelsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.levelCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  gap: 12px;
+}
+
+.levelCard:hover:not(.locked) {
+  background: var(--bg-hover);
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.levelCard.completed {
+  border-color: var(--color-primary);
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(91, 158, 255, 0.05) 100%);
+}
+
+.levelCard.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(0, 0, 0, 0.02) 100%);
+}
+
+.levelCard.locked:hover {
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(0, 0, 0, 0.02) 100%);
+  border-color: var(--border-color);
+  box-shadow: none;
+}
+
+.levelHeader {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+}
+
+.levelInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 8px;
+}
+
+.levelNumber {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.number {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.checkIcon {
+  color: #5BC0DE;
+  flex-shrink: 0;
+}
+
+.levelDescription {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+.cardRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.lockBadge,
+.completedBadge,
+.unlockedBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 70px;
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.lockBadge {
+  background: linear-gradient(135deg, rgba(128, 128, 128, 0.1) 0%, rgba(128, 128, 128, 0.05) 100%);
+  color: #808080;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.completedBadge {
+  background: linear-gradient(135deg, rgba(91, 192, 222, 0.15) 0%, rgba(91, 192, 222, 0.05) 100%);
+  color: #5BC0DE;
+  border: 1px solid rgba(91, 192, 222, 0.3);
+}
+
+.unlockedBadge {
+  background: linear-gradient(135deg, rgba(91, 158, 255, 0.15) 0%, rgba(91, 158, 255, 0.05) 100%);
+  color: var(--color-primary);
+  border: 1px solid rgba(91, 158, 255, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  .lockBadge {
+    background: linear-gradient(135deg, rgba(128, 128, 128, 0.15) 0%, rgba(128, 128, 128, 0.08) 100%);
+    color: #a0a0a0;
+    border-color: rgba(128, 128, 128, 0.4);
+  }
+
+  .completedBadge {
+    background: linear-gradient(135deg, rgba(91, 192, 222, 0.2) 0%, rgba(91, 192, 222, 0.08) 100%);
+    color: #80d4e8;
+    border-color: rgba(91, 192, 222, 0.4);
+  }
+
+  .unlockedBadge {
+    background: linear-gradient(135deg, rgba(91, 158, 255, 0.2) 0%, rgba(91, 158, 255, 0.08) 100%);
+    color: #80B4FF;
+    border-color: rgba(91, 158, 255, 0.4);
+  }
+}
+
+.startBtn {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+  flex-shrink: 0;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.startBtn:hover:not(.disabledBtn) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.startBtn.disabledBtn {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.progressSection {
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+}
+
+.progressTitle {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.progressBar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.progressStep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.progressCompleted {
+  background: linear-gradient(135deg, #5BC0DE 0%, #06B6D4 100%);
+  color: white;
+  border: 2px solid #5BC0DE;
+}
+
+.progressActive {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: white;
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.progressLocked {
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  border: 2px solid var(--border-color);
+  opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+  .levelCard {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .levelHeader {
+    flex-direction: row;
+  }
+
+  .levelInfo {
+    gap: 4px;
+  }
+
+  .cardRight {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .lockBadge,
+  .completedBadge,
+  .unlockedBadge {
+    min-width: auto;
+  }
+
+  .startBtn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .progressBar {
+    justify-content: space-around;
+  }
+
+  .progressStep {
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+}

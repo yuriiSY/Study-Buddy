@@ -404,6 +404,55 @@
   font-size: 16px;
 }
 
+.ocrToggleSection {
+  margin-bottom: 20px;
+}
+
+.ocrLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.ocrOptions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ocrOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.ocrOption:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--color-primary);
+}
+
+.ocrOption input {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+}
+
+.ocrOption input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .imagePickerSection {
   color: var(--text-primary);
   font-size: 14px;
