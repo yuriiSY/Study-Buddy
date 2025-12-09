@@ -22,6 +22,7 @@ export const createFlashcard = async ({
   title,
   description,
   cards,
+  level = 1,
 }) => {
   if (!file_id || !cards) {
     throw new Error("file_id and cards are required");
@@ -33,6 +34,7 @@ export const createFlashcard = async ({
       title,
       description,
       cards,
+      level,
       total_cards: Array.isArray(cards) ? cards.length : 0,
     },
   });
