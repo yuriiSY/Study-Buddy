@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./FlashcardsList.module.css";
 import api from "../../api/axios";
 import apiPY from "../../api/axiosPython";
 import { Lock, Unlock, Check } from "lucide-react";
 
-const FlashcardsList = ({ fileId, onSelectLevel }) => {
+const FlashcardsList = ({ fileId, onSelectLevel, isVisible = true, onLevelStatusLoaded }) => {
   const [levelStatus, setLevelStatus] = useState({
     1: { completed: false, available: true, description: "Easy Level - Foundational concepts and definitions" },
     2: { completed: false, available: false, description: "Intermediate Level - Practical applications and critical thinking" },
@@ -13,38 +13,71 @@ const FlashcardsList = ({ fileId, onSelectLevel }) => {
   const [loading, setLoading] = useState(true);
   const [generatingLevel, setGeneratingLevel] = useState(null);
 
-  useEffect(() => {
-    if (!fileId) return;
-
-    const loadLevelStatus = async () => {
-      try {
-        const res = await apiPY.get("/recap-cards-progress", {
-          params: { "file_ids[]": fileId }
-        });
-
-        if (res.data?.level_status) {
-          setLevelStatus(res.data.level_status);
-        }
-      } catch (err) {
-        console.error("Failed to load level status:", err);
-      } finally {
+  const loadLevelStatus = async (skipCache = false) => {
+    const cacheKey = `flashcards_level_status_${fileId}`;
+    
+    if (!skipCache) {
+      const cachedData = localStorage.getItem(cacheKey);
+      if (cachedData) {
+        setLevelStatus(JSON.parse(cachedData));
         setLoading(false);
       }
-    };
+    }
 
-    loadLevelStatus();
+    try {
+      const res = await apiPY.get("/recap-cards-progress", {
+        params: { "file_ids[]": fileId }
+      });
+
+      if (res.data?.level_status) {
+        const statusData = res.data.level_status;
+        setLevelStatus(statusData);
+        localStorage.setItem(cacheKey, JSON.stringify(statusData));
+        setLoading(false);
+        onLevelStatusLoaded?.(statusData);
+      }
+    } catch (err) {
+      console.error("Failed to load level status:", err);
+      if (skipCache) {
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+          setLevelStatus(JSON.parse(cachedData));
+        }
+      }
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!fileId) return;
+    loadLevelStatus(false);
   }, [fileId]);
+
+  useEffect(() => {
+    if (!isVisible || !fileId) return;
+    loadLevelStatus(true);
+  }, [isVisible, fileId]);
 
   const handleStartLevel = async (level) => {
     if (!levelStatus[level]?.available) return;
 
     setGeneratingLevel(level);
+    const cacheKey = `flashcards_level_${level}_${fileId}`;
+
     try {
-      const existingRes = await api.get(`/flashcards/file/${fileId}`);
+      const cachedCards = localStorage.getItem(cacheKey);
+      if (cachedCards) {
+        onSelectLevel(level, JSON.parse(cachedCards));
+        setGeneratingLevel(null);
+        return;
+      }
+
+      const existingRes = await api.get(`/flashcards/file/${fileId}`, { timeout: 10000 });
       const existingSets = Array.isArray(existingRes.data) ? existingRes.data : [];
       const existingSet = existingSets.find(set => set.title === `Recap Cards Level ${level}`);
       
       if (existingSet && Array.isArray(existingSet.cards) && existingSet.cards.length > 0) {
+        localStorage.setItem(cacheKey, JSON.stringify(existingSet.cards));
         onSelectLevel(level, existingSet.cards);
         return;
       }
@@ -57,6 +90,7 @@ const FlashcardsList = ({ fileId, onSelectLevel }) => {
 
       if (res.data?.flashcards) {
         const cards = res.data.flashcards;
+        localStorage.setItem(cacheKey, JSON.stringify(cards));
         
         try {
           const saveRes = await api.post("/flashcards", {
@@ -74,7 +108,13 @@ const FlashcardsList = ({ fileId, onSelectLevel }) => {
         }
       }
     } catch (err) {
-      console.error("Failed to load flashcards:", err);
+      console.error("Failed to load flashcards:", err.message);
+      const cachedCards = localStorage.getItem(cacheKey);
+      if (cachedCards) {
+        onSelectLevel(level, JSON.parse(cachedCards));
+      } else {
+        alert(`Failed to load Level ${level} flashcards. Please try again.`);
+      }
     } finally {
       setGeneratingLevel(null);
     }
