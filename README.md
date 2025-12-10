@@ -89,6 +89,18 @@ sudo nginx -t
 sudo systemctl reload nginx
 //Check if nginx serving SPA properly
 curl -vk https://thestudybuddyaiproject.online
+### Pull Specific file in Git
+//1. Make sure you're on the branch you want to update
+git checkout main
+//2. Fetch the latest from origin
+git fetch origin
+//3. Restore only specific files from the remote branch into your working tree
+git restore --source origin/main path/to/file1.jsx path/to/file2.css
+//or (older Git syntax)
+git checkout origin/main -- path/to/file1.jsx path/to/file2.css
+//then commit
+git add path/to/file1.jsx path/to/file2.css
+git commit -m "Update specific files from origin/main"
 
 ## Repository Layout
 ```text

@@ -1,0 +1,331 @@
+.sb-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  
+  .sb-modal {
+    width: min(1024px, 96vw);
+    max-height: 90vh;
+    background: #f5f9ff;
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.45);
+    padding: 24px 32px 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sb-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .sb-steps {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  
+  .sb-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #9ca3af;
+  }
+  
+  .sb-step--active {
+    color: #2563eb;
+  }
+  
+  .sb-step-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    border: 2px solid currentColor;
+    background: white;
+  }
+  
+  .sb-step-label {
+    font-weight: 500;
+  }
+  
+  .sb-modal-close {
+    font-size: 24px;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: transparent;
+    color: #9ca3af;
+  }
+  
+  .sb-modal-close:hover {
+    background: rgba(148, 163, 184, 0.18);
+    color: #4b5563;
+  }
+  
+  .sb-modal-title {
+    font-size: 26px;
+    text-align: center;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-bottom: 4px;
+  }
+  
+  .sb-modal-subtitle {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #6b7280;
+  }
+  
+  .sb-modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  
+  .sb-step-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .sb-field-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  .sb-input {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 12px 16px;
+    font-size: 15px;
+    background: #ffffff;
+  }
+  
+  .sb-input:focus {
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  }
+  
+  .sb-cover-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+  }
+  
+  .sb-cover-card {
+    border-radius: 16px;
+    padding: 4px;
+    border: 2px solid transparent;
+    background: #e5f1ff;
+  }
+  
+  .sb-cover-card img {
+    width: 100%;
+    height: 110px;
+    border-radius: 12px;
+    object-fit: cover;
+  }
+  
+  .sb-cover-card--selected {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+  
+  /* Upload step layout */
+  
+  .sb-step-upload {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
+    gap: 24px;
+  }
+  
+  .sb-dropzone {
+    border-radius: 24px;
+    padding: 28px 20px;
+    background: #eef4ff;
+    border: 2px dashed rgba(148, 163, 184, 0.8);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  
+  .sb-dropzone-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    color: #3b82f6;
+    font-size: 32px;
+    font-weight: 600;
+  }
+  
+  .sb-dropzone-text > div:first-child {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .sb-dropzone-hint {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+  
+  .sb-file-input {
+    display: none;
+  }
+  
+  .sb-link {
+    color: #2563eb;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .sb-upload-right {
+    border-radius: 24px;
+    padding: 20px 18px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  }
+  
+  .sb-upload-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .sb-upload-count {
+    font-size: 13px;
+    color: #6b7280;
+  }
+  
+  .sb-upload-list {
+    max-height: 260px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .sb-upload-empty {
+    font-size: 14px;
+    color: #9ca3af;
+  }
+  
+  .sb-upload-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 16px;
+    padding: 10px 12px;
+    background: #f3f4ff;
+  }
+  
+  .sb-upload-badge {
+    min-width: 40px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: #dbeafe;
+    color: #1d4ed8;
+    text-align: center;
+  }
+  
+  .sb-upload-meta {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sb-upload-name {
+    border: none;
+    background: transparent;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  
+  .sb-upload-size {
+    font-size: 12px;
+    color: #6b7280;
+  }
+  
+  .sb-upload-remove {
+    font-size: 18px;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    color: #9ca3af;
+  }
+  
+  .sb-upload-remove:hover {
+    background: rgba(148, 163, 184, 0.18);
+    color: #4b5563;
+  }
+  
+  .sb-upload-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #6b7280;
+  }
+  
+  /* Footer buttons */
+  
+  .sb-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  
+  .sb-btn {
+    border-radius: 999px;
+    padding: 9px 20px;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  
+  .sb-btn-primary {
+    background: linear-gradient(135deg, #5b9eff, #5bc0de);
+    color: white;
+  }
+  
+  .sb-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  
+  .sb-btn-ghost {
+    background: transparent;
+    color: #4b5563;
+  }
+  
+  @media (max-width: 900px) {
+    .sb-step-upload {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  

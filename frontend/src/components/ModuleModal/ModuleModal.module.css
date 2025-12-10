@@ -1,3 +1,4 @@
+/* Full-screen dark overlay */
 .overlay {
   position: fixed;
   top: 0;
@@ -11,12 +12,17 @@
   justify-content: center;
   z-index: 999;
   animation: fadeIn 0.3s ease-out;
+
+  /* 🔧 make the overlay itself scrollable on iOS */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
+/* Main modal card */
 .modal {
   background: var(--bg-secondary);
   width: 720px;
-  max-height: 1200px;
+  max-height: 90vh;            /* was 1200px */
   border-radius: 16px;
   border: 1px solid var(--border-color-light);
   box-shadow: var(--shadow-xl);
@@ -24,501 +30,406 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  animation: slideUp 0.4s ease;
+
+  /* 🔧 allow the content (including buttons) to scroll into view */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.closeButton {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
-  width: 40px;
-  height: 40px;
+
+/* header + stepper */
+
+.headerRow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-}
-
-.closeButton:hover {
-  color: var(--color-error);
-  background-color: var(--bg-tertiary);
-}
-
-.title {
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-  background: linear-gradient(
-    135deg,
-    var(--color-primary) 0%,
-    var(--color-secondary) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.subtitle {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin: 12px 0 20px 0;
-  line-height: 1.5;
-}
-
-.uploadButtonContainer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  justify-content: space-between;
   margin-bottom: 12px;
 }
 
-.infoTooltip {
-  position: relative;
+.stepper {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.step {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 0;
-  color: var(--text-tertiary);
-  cursor: help;
-  transition: color 0.2s ease;
-  font-size: 13px;
+  gap: 8px;
+  font-size: 14px;
+  color: #9ca3af;
 }
 
-.infoTooltip:hover {
-  color: var(--color-primary);
+.stepActive {
+  color: #2563eb;
 }
 
-.infoTooltip:hover .tooltipContent {
-  visibility: visible;
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.supportedText {
-  font-size: 13px;
-  font-weight: 500;
-  color: inherit;
-}
-
-.tooltipContent {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 12px 14px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  z-index: 1000;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  visibility: hidden;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: all 0.2s ease;
-  pointer-events: none;
-  margin-bottom: 8px;
-}
-
-.tooltipTitle {
+.stepNumber {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 8px 0;
 }
 
-.formatsList {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.5;
+.stepLabel {
+  font-weight: 500;
 }
+
+.closeButton {
+  font-size: 22px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background: rgba(148, 163, 184, 0.16);
+  color: #4b5563;
+}
+
+/* title + subtitle */
+
+.title {
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+  color: #3b82f6;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 22px;
+}
+
+/* step 1 - details */
 
 .formGroup {
   margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
 }
 
 .formGroup label {
-  font-size: 14px;
-  font-weight: 600;
+  display: block;
   margin-bottom: 8px;
-  color: var(--text-primary);
+  font-weight: 600;
+  color: #111827;
 }
 
 .input {
-  padding: 10px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: all 0.2s ease;
-}
-
-.input::placeholder {
-  color: var(--text-tertiary);
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 12px 16px;
+  font-size: 15px;
+  background: #ffffff;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-primary);
-  background-color: var(--bg-secondary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
 
-.tabs {
+/* cover images */
+
+.imagePickerSection {
+  margin-bottom: 24px;
+}
+
+.imagePickerSection label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.imageItem {
+  border-radius: 18px;
+  padding: 4px;
+  border: 2px solid transparent;
+  background: #e5f1ff;
+  cursor: pointer;
+}
+
+.imageItem img {
+  width: 100%;
+  height: 110px;
+  border-radius: 14px;
+  object-fit: cover;
+  display: block;
+}
+
+.selectedImage {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* file type toggle */
+
+.ocrToggleSection {
+  margin-bottom: 18px;
+}
+
+.ocrLabel {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.ocrOptions {
   display: flex;
-  gap: 8px;
-  border-bottom: 1px solid var(--border-color-light);
-  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.tabButton {
-  flex: 1;
-  padding: 10px 8px;
-  text-align: center;
+.ocrOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.ocrOption input {
+  accent-color: #2563eb;
+}
+
+/* step 2 layout: upload grid */
+
+.uploadGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.05fr);
+  gap: 24px;
+  margin-bottom: 14px;
+}
+
+/* dropzone */
+
+.dropzoneCard {
+  border-radius: 24px;
+  background: #eef3ff;
+  border: 2px dashed rgba(148, 163, 184, 0.9);
+  padding: 24px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.dropzoneInner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.dropzoneIconCircle {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 600;
+  color: #3b82f6;
+  box-shadow: 0 12px 25px rgba(59, 130, 246, 0.2);
+}
+
+.dropzoneTextBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dropzoneTitle {
+  font-weight: 600;
+  color: #111827;
+}
+
+.dropzoneSubtitle {
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.browseLink {
   background: none;
   border: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  border-bottom: 3px solid transparent;
-  color: var(--text-tertiary);
-  transition: all 0.2s ease;
-}
-
-.tabButton:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  border-radius: 6px;
-}
-
-.activeTab {
-  border-bottom: 3px solid var(--color-primary);
-  color: var(--color-primary);
-  font-weight: 600;
-}
-
-.fileList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 500px;
-  overflow-y: auto;
-  padding-right: 8px;
-}
-
-.fileList::-webkit-scrollbar {
-  width: 6px;
-}
-
-.fileList::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.fileList::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
-}
-
-.fileItem {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid var(--border-color-light);
-  border-radius: 10px;
-  padding: 12px 14px;
-  background: var(--bg-primary);
-  transition: all 0.2s ease;
-}
-
-.fileItem:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--color-primary);
-}
-
-.fileInfo {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.fileName {
-  font-weight: 500;
-  font-size: 0.95rem;
-  color: var(--text-primary);
-}
-
-.fileMeta {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-  margin-top: 2px;
-}
-
-/* Upload section */
-.uploadSection {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.fileInput {
-  font-size: 0.9rem;
-}
-
-.uploadList {
+  padding: 0;
   margin: 0;
-  padding-left: 18px;
-  list-style: disc;
-  color: var(--text-primary);
-}
-
-.footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid var(--border-color-light);
-  margin-top: 20px;
-  padding-top: 16px;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.actions {
-  display: flex;
-  gap: 10px;
-}
-
-.cancelButton {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 8px 16px;
   cursor: pointer;
-  font-size: 0.9rem;
+  color: #2563eb;
   font-weight: 500;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-.cancelButton:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-}
-
-.createButton {
-  background: linear-gradient(
-    135deg,
-    var(--color-primary) 0%,
-    var(--color-secondary) 100%
-  );
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 18px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-md);
-}
-
-.createButton:hover:not(:disabled) {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-
-.createButton:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.createButton:disabled {
-  background: var(--bg-tertiary);
-  color: var(--text-tertiary);
-  cursor: not-allowed;
-  box-shadow: none;
+.dropzoneHint {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
 }
 
 .hiddenFileInput {
   display: none;
 }
 
-.uploadButton {
-  display: inline-block;
-  background: linear-gradient(
-    135deg,
-    var(--color-primary) 0%,
-    var(--color-secondary) 100%
-  );
-  color: white;
-  font-weight: 600;
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 12px;
-  text-align: center;
-  font-size: 0.9rem;
-  box-shadow: var(--shadow-md);
+/* uploaded files card */
+
+.uploadedCard {
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  padding: 18px 18px 14px;
+  display: flex;
+  flex-direction: column;
 }
 
-.uploadButton:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+.uploadedHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.uploadedTitle {
+  font-weight: 600;
+  color: #111827;
+}
+
+.uploadedCount {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.uploadedListWrapper {
+  flex: 1 1 auto;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.uploadEmpty {
+  font-size: 14px;
+  color: #9ca3af;
+  padding: 8px 2px;
 }
 
 .uploadList {
   list-style: none;
+  margin: 0;
   padding: 0;
-  margin-top: 10px;
-  margin-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .uploadedFile {
   display: flex;
   align-items: center;
-  margin-bottom: 6px;
-  background-color: var(--bg-tertiary);
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  gap: 8px;
-  color: var(--text-primary);
+  gap: 10px;
+  border-radius: 16px;
+  padding: 10px 12px;
+  background: #f3f4ff;
 }
 
-.fileIcon {
-  margin-right: 8px;
-  font-size: 16px;
+.fileBadge {
+  min-width: 40px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #dbeafe;
+  color: #1d4ed8;
+  text-align: center;
 }
 
-.ocrToggleSection {
-  margin-bottom: 20px;
-}
-
-.ocrLabel {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: var(--text-primary);
-}
-
-.ocrOptions {
+.fileMeta {
+  flex: 1 1 auto;
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
 }
 
-.ocrOption {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-primary);
-  cursor: pointer;
-  transition: all 0.2s ease;
+.fileNameInput {
+  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 6px 10px;
   font-size: 14px;
-  color: var(--text-primary);
+  background: transparent;
 }
 
-.ocrOption:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--color-primary);
+.fileNameInput:focus {
+  outline: none;
+  border-color: #60a5fa;
+  background: #ffffff;
 }
 
-.ocrOption input {
+.fileSize {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.removeFileBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
   cursor: pointer;
-  width: 16px;
-  height: 16px;
-  accent-color: var(--color-primary);
 }
 
-.ocrOption input:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
+.removeFileBtn:hover {
+  background: rgba(148, 163, 184, 0.18);
+  color: #4b5563;
 }
 
-.imagePickerSection {
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 20px;
-}
-
-.imageGrid {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-
-.imageItem {
-  width: 80px;
-  height: 80px;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  border: 3px solid var(--border-color);
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.imageItem img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.imageItem:hover {
-  border-color: var(--color-primary);
-  transform: scale(1.05);
-}
-
-.selectedImage {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--bg-secondary), 0 0 0 4px var(--color-primary),
-    0 4px 12px rgba(91, 158, 255, 0.4);
-  transform: scale(1.05);
-}
+/* rejected files */
 
 .rejectedSection {
-  margin-top: 12px;
+  margin-top: 8px;
   padding: 10px 12px;
-  background-color: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 6px;
-  width: 100%;
+  border-radius: 16px;
+  background: #fef2f2;
 }
 
 .rejectedTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #b91c1c;
   display: flex;
   align-items: center;
   gap: 6px;
-  margin: 0 0 8px 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: #ef4444;
+  margin-bottom: 6px;
 }
 
 .rejectedList {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -528,219 +439,205 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  padding: 6px 8px;
-  background-color: rgba(239, 68, 68, 0.05);
-  border-radius: 4px;
 }
 
 .rejectedIcon {
-  font-size: 12px;
-  flex-shrink: 0;
-}
-
-.fileName {
-  flex: 1;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #f97373;
 }
 
 .rejectedFileName {
-  flex: 1;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  font-size: 13px;
+  color: #7f1d1d;
 }
 
-.removeFileBtn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 18px;
-  padding: 0;
-  margin-left: 8px;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
+/* footer */
+
+.footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.removeFileBtn:hover {
-  color: var(--color-error);
-  transform: scale(1.2);
+.footerMeta {
+  font-size: 13px;
+  color: #6b7280;
 }
 
-@media (max-width: 768px) {
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.backButton,
+.cancelButton,
+.createButton {
+  border-radius: 999px;
+  padding: 9px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+.cancelButton,
+.backButton {
+  background: transparent;
+  color: #4b5563;
+}
+
+.createButton {
+  background: linear-gradient(135deg, #5b9eff, #5bc0de);
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.35);
+}
+
+.createButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* responsive */
+  @media (max-width: 900px) {
+  .overlay {
+    /* anchor the modal to the top so it can scroll naturally on phones */
+    align-items: flex-start;
+  }
+
   .modal {
-    width: 90%;
-    max-width: 580px;
-    max-height: 80vh;
-    padding: 20px;
-  }
-
-  .title {
-    font-size: 1.4rem;
-  }
-
-  .subtitle {
-    font-size: 13px;
-  }
-
-  .tabs {
-    gap: 4px;
-    margin-bottom: 10px;
-  }
-
-  .tabButton {
-    padding: 8px 6px;
-    font-size: 0.85rem;
-  }
-
-  .fileList {
-    max-height: 350px;
-  }
-
-  .actions {
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .cancelButton,
-  .createButton {
-    flex: 1;
-    min-width: 120px;
-    padding: 10px 12px;
-    font-size: 0.85rem;
-  }
-
-  .uploadButton {
+    padding: 20px 16px 80px;   /* extra bottom padding so the button isn't under the bar */
     width: 100%;
-    padding: 12px 14px;
-    font-size: 0.9rem;
-  }
-
-  .imageGrid {
-    gap: 10px;
-  }
-
-  .imageItem {
-    width: 70px;
-    height: 70px;
-  }
-}
-
-@media (max-width: 480px) {
-  .modal {
-    width: 95%;
     max-width: 100%;
-    max-height: 90vh;
-    padding: 16px;
-    border-radius: 12px;
-    overflow: auto;
-  }
-
-  .title {
-    font-size: 1.2rem;
-    margin-bottom: 6px;
-  }
-
-  .subtitle {
-    font-size: 12px;
-    margin-bottom: 16px;
-  }
-
-  .closeButton {
-    width: 36px;
-    height: 36px;
-    font-size: 20px;
-  }
-
-  .formGroup label {
-    font-size: 13px;
-  }
-
-  .input {
-    padding: 8px 10px;
-    font-size: 0.9rem;
-  }
-
-  .tabs {
-    gap: 2px;
-    margin-bottom: 8px;
-  }
-
-  .tabButton {
-    padding: 6px 4px;
-    font-size: 0.75rem;
-  }
-
-  .fileList {
-    max-height: 300px;
-  }
-
-  .fileItem {
-    padding: 10px 12px;
-    gap: 10px;
-  }
-
-  .fileName {
-    font-size: 0.9rem;
-  }
-
-  .fileMeta {
-    font-size: 0.7rem;
-  }
-
-  .actions {
-    gap: 6px;
-    flex-direction: column;
-  }
-
-  .cancelButton,
-  .createButton {
-    width: 100%;
-    padding: 12px 14px;
-    font-size: 0.9rem;
-  }
-
-  .uploadButton {
-    width: 100%;
-    padding: 12px 14px;
-    font-size: 0.9rem;
-    margin-bottom: 12px;
+    max-height: 100vh;
   }
 
   .imageGrid {
-    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .imageItem {
-    width: 60px;
-    height: 60px;
-    border-width: 2px;
+  .uploadGrid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .footer {
-    margin-top: 16px;
-    padding-top: 12px;
-    font-size: 0.85rem;
     flex-direction: column;
-    gap: 10px;
+    align-items: flex-start;
   }
+}
+/* === THEME-AWARE OVERRIDES (keep at bottom of file) === */
 
-  .uploadButtonContainer {
-    margin-bottom: 10px;
-  }
+.modal {
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-xl);
+}
 
-  .infoTooltip {
-    font-size: 12px;
-  }
+/* Titles / labels use theme text colors */
+.title {
+  color: var(--color-primary);
+}
 
-  .uploadSection {
-    gap: 8px;
-  }
+.subtitle {
+  color: var(--text-secondary);
+}
+
+.formGroup label,
+.imagePickerSection label,
+.ocrLabel,
+.uploadedTitle,
+.rejectedTitle {
+  color: var(--text-primary);
+}
+
+/* Inputs + cards follow theme backgrounds / borders */
+.input {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.imageItem {
+  background: var(--bg-tertiary);
+}
+
+.dropzoneCard {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.uploadedCard {
+  background: var(--bg-primary);
+}
+
+.uploadedFile {
+  background: var(--bg-tertiary);
+}
+
+.rejectedSection {
+  background: var(--bg-tertiary);
+}
+
+/* Step circles + badges */
+.stepNumber {
+  background: var(--bg-primary);
+}
+
+.fileBadge {
+  background: var(--bg-secondary);
+  color: var(--color-primary-dark);
+}
+
+/* Secondary text */
+.dropzoneSubtitle,
+.dropzoneHint,
+.uploadedCount,
+.fileSize,
+.uploadEmpty,
+.rejectedFileName,
+.footerMeta {
+  color: var(--text-secondary);
+}
+
+/* Buttons inherit theme colors */
+.backButton,
+.cancelButton {
+  color: var(--text-secondary);
+}
+
+.createButton {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  color: #ffffff;
+  box-shadow: var(--shadow-md);
+}
+/* Make File Type pill text readable in all themes */
+.ocrOption,
+.ocrOption span {
+  color: #111827;          /* dark gray text on white pill */
+}
+/* Make filename text readable in all themes */
+.fileNameInput {
+  color: var(--text-primary);          /* use theme text */
+}
+
+/* When focused, keep same readable colors */
+.fileNameInput:focus {
+  background: var(--bg-primary);       /* light card in light mode, dark in dark mode */
+  color: var(--text-primary);
+  border-color: var(--border-color);   /* optional, matches theme */
+}
+
+/* Optional: dim placeholder / empty text if you ever add it */
+.fileNameInput::placeholder {
+  color: var(--text-secondary);
 }
