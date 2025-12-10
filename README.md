@@ -1,19 +1,14 @@
 # AI Study Buddy
-
 AI Study Buddy is a web app that helps students study more effectively. It is currently deployed at:
 
 👉 **https://thestudybuddyaiproject.online**
 
 The system is split into:
-
 - **Frontend (React + Vite)** – hosted on **AWS EC2**, served by **Nginx** over HTTPS  
 - **AI Service (FastAPI / Python)** – hosted on the **same EC2 instance**, behind Nginx  
 - **Core Backend API (Node/Express)** – hosted as a **Render Web Service**, with auto-deploys from GitHub `main`
-
 ---
-
 ## Features (Short Overview)
-
 - **Upload Notes:** PDFs, text, and images.
 - **AI Processing:** Summaries, quizzes, and question answering from your notes.
 - **Quizzes & Practice:** Auto-generated questions from your materials.
@@ -22,27 +17,21 @@ The system is split into:
 - **Weak-spot Analysis:** Highlights topics you’re struggling with.
 - **AI Tutor Chat:** Ask questions about modules and uploaded content.
 - **Study Partners + Community:** Match with others and use Q&A/forum style discussion.
-
 ---
-
 ## Tech Stack & Architecture
-
 ### Frontend (AWS EC2)
-
 - **React** SPA built with **Vite**
 - Built assets in `frontend/dist`
 - Served by **Nginx** from `/var/www/study-buddy`
 - Public entrypoint: **https://thestudybuddyaiproject.online**
 
 ### FastAPI / Python AI Service (AWS EC2)
-
 - Lives in `Flask-endpoints/`
 - Runs as a **Docker service** on the EC2 instance (e.g. `flask-api` container)
 - Exposes HTTP on a local port (e.g. `http://127.0.0.1:3000`)
 - Reverse-proxied by Nginx under an internal path (for example `/pypi` or `/ai`)
 
 ### Backend API (Node/Express on Render)
-
 - Source code in `backend/`
 - Deployed as a **Render Web Service** from the same GitHub repo  
 - Render:
@@ -54,15 +43,12 @@ The system is split into:
   - `BACKEND_BASE_URL=https://<your-service>.onrender.com`
 
 ### Database
-
 - **PostgreSQL**
   - Dev: via Docker (e.g. `postgres-pgvector` in `docker-compose.yml`)
   - Prod: managed Postgres (Render or another managed provider)
-
 ---
 
 ## Repository Layout
-
 ```text
 Study-Buddy/
   backend/          # Node/Express backend API (Render Web Service)
