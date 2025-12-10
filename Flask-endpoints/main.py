@@ -890,7 +890,7 @@ def get_chat_history(file_ids, limit=10):
         return []
 
 
-def init_recap_cards_table():
+def ensure_recap_cards_table():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -899,7 +899,7 @@ def init_recap_cards_table():
             CREATE TABLE IF NOT EXISTS recap_cards_progress (
                 id SERIAL PRIMARY KEY,
                 file_id VARCHAR(255) NOT NULL,
-                level INTEGER NOT NULL,
+                level INT NOT NULL CHECK (level IN (1, 2, 3)),
                 completed BOOLEAN DEFAULT FALSE,
                 completed_at TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -910,15 +910,16 @@ def init_recap_cards_table():
         conn.commit()
         cur.close()
         conn.close()
-        print("Recap cards progress table initialized")
         return True
     except Exception as e:
-        print(f"Error initializing recap cards table: {e}")
+        print(f"Error ensuring recap_cards_progress table: {e}")
         return False
 
 
 def mark_level_completed(file_id: str, level: int):
     try:
+        ensure_recap_cards_table()
+        
         conn = get_db_connection()
         cur = conn.cursor()
         
@@ -938,6 +939,7 @@ def mark_level_completed(file_id: str, level: int):
 
 
 def get_completed_levels(file_id: str) -> list:
+    ensure_recap_cards_table()
     try:
         conn = get_db_connection()
         cur = conn.cursor()
