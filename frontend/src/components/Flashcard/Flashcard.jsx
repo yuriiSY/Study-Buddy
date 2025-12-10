@@ -4,7 +4,7 @@ import { Zap, Trophy, Star, Sparkles, Clock } from "lucide-react";
 import { ClipLoader } from "react-spinners";
 import styles from "./Flashcard.module.css";
 
-const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescription = "", loadingNextLevel: isLoadingNextLevel = false }) => {
+const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescription = "", loadingNextLevel: isLoadingNextLevel = false, onLevelComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -59,6 +59,7 @@ const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescript
   const handleFinishClick = async () => {
     setLoadingFinish(true);
     try {
+      await onLevelComplete?.();
       await onFinish?.();
     } finally {
       setLoadingFinish(false);
@@ -99,19 +100,21 @@ const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescript
           <p className={styles.celebrationSubtext}>{levelDescription}</p>
           
           <div className={styles.celebrationButtons}>
-            <button 
-              className={styles.doLaterBtn} 
-              onClick={handleFinishClick}
-              disabled={loadingFinish || loadingNextLevel}
-            >
-              {loadingFinish ? (
-                <ClipLoader size={18} color="currentColor" />
-              ) : (
-                <>
-                  <Clock size={18} /> Do it Later
-                </>
-              )}
-            </button>
+            {hasNextLevel && (
+              <button 
+                className={styles.doLaterBtn} 
+                onClick={handleFinishClick}
+                disabled={loadingFinish || loadingNextLevel}
+              >
+                {loadingFinish ? (
+                  <ClipLoader size={18} color="currentColor" />
+                ) : (
+                  <>
+                    <Clock size={18} /> Do it Later
+                  </>
+                )}
+              </button>
+            )}
             {hasNextLevel ? (
               <button 
                 className={styles.nextLevelBtn} 
