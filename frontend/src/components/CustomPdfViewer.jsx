@@ -28,6 +28,7 @@ export default function CustomPdfViewer({
   const [selectedText, setSelectedText] = useState("");
   const [showAddBtn, setShowAddBtn] = useState(false);
   const [btnPosition, setBtnPosition] = useState({ x: 0, y: 0 });
+  const viewerWrapperRef = useRef();
 
   const isMobile = window.innerWidth <= 768;
 
@@ -55,25 +56,38 @@ export default function CustomPdfViewer({
         setShowAddBtn(false);
         return;
       }
-      const range = selection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
+      
+      try {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
 
-      setSelectedText(text);
-      setBtnPosition({
-        x: rect.left + window.scrollX,
-        y: rect.top + window.scrollY - 40,
-      });
+        if (rect.width === 0 || rect.height === 0) {
+          setShowAddBtn(false);
+          return;
+        }
 
-      setShowAddBtn(true);
+        setSelectedText(text);
+        setBtnPosition({
+          x: Math.max(10, rect.left + window.scrollX),
+          y: rect.bottom + window.scrollY + 6,
+        });
+
+        setShowAddBtn(true);
+      } catch (e) {
+        setShowAddBtn(false);
+      }
     };
 
-    document.addEventListener("mouseup", handleSelection);
-    document.addEventListener("keyup", handleSelection);
+    const pdfContainer = containerRef.current;
+    if (pdfContainer) {
+      pdfContainer.addEventListener("mouseup", handleSelection);
+      pdfContainer.addEventListener("touchend", handleSelection);
 
-    return () => {
-      document.removeEventListener("mouseup", handleSelection);
-      document.removeEventListener("keyup", handleSelection);
-    };
+      return () => {
+        pdfContainer.removeEventListener("mouseup", handleSelection);
+        pdfContainer.removeEventListener("touchend", handleSelection);
+      };
+    }
   }, []);
 
   const handleAddNote = async (text) => {
@@ -198,7 +212,7 @@ export default function CustomPdfViewer({
   };
 
   return (
-    <div className={styles.viewerWrapper}>
+    <div className={styles.viewerWrapper} ref={viewerWrapperRef}>
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.fileSelector}>
@@ -266,6 +280,11 @@ export default function CustomPdfViewer({
         </div>
       </div>
 
+      {/* Highlighting Hint */}
+      <div className={styles.hint}>
+        <span>💡 Tip: Highlight any text to add it to your notes</span>
+      </div>
+
       {/* PDF Scroll Block */}
       <div
         className={styles.pdfContainer}
@@ -307,10 +326,8 @@ export default function CustomPdfViewer({
           }}
           className={styles.addNoteFloating}
           style={{
-            position: "absolute",
-            top: btnPosition.y,
-            left: btnPosition.x,
-            zIndex: 9999,
+            top: `${btnPosition.y}px`,
+            left: `${btnPosition.x}px`,
           }}
         >
           <BookMarked size={14} />
