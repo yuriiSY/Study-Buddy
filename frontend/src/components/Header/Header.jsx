@@ -3,7 +3,7 @@ import styles from "./Header.module.css";
 import logoImg from "../../assets/logo2.png";
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../../store/auth/authSlice";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import ProfileModal from "../ProfileModal/ProfileModal";
 import {
   Home,
@@ -49,6 +49,7 @@ const Header = ({
   const themeDropdownRef = useRef();
   const dispatch = useDispatch();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const { isLoggedIn } = useSelector((state) => state.auth);
 
@@ -98,6 +99,7 @@ const Header = ({
   const handleLogout = () => {
     dispatch(logoutUser());
     setMobileMenuOpen(false);
+    navigate("/");  // send user to unsigned landing page
   };
 
   return (

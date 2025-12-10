@@ -1,7 +1,6 @@
 backend/.env
 frontend/.env
 __pycache__
-study-buddy-key.pem
 
 Flask-endpoints/docker-compose.yml
 backend/docker-compose.yml
