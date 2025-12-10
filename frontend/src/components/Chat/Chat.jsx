@@ -19,6 +19,7 @@ const Chat = ({
   const [addedNotes, setAddedNotes] = useState(new Set());
   const [copiedMessageIdx, setCopiedMessageIdx] = useState(null);
   const chatBoxRef = useRef(null);
+  const [messageIdCounter, setMessageIdCounter] = useState(0);
 
   useEffect(() => {
     if (!externalId) return;
@@ -37,12 +38,13 @@ const Chat = ({
 
         const parsedMessages = history
           .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-          .flatMap((item) => [
-            { sender: "user", text: item.question },
-            { sender: "bot", text: item.answer },
+          .flatMap((item, idx) => [
+            { id: `history-user-${idx}`, sender: "user", text: item.question },
+            { id: `history-bot-${idx}`, sender: "bot", text: item.answer },
           ]);
 
         setMessages(parsedMessages);
+        setMessageIdCounter(parsedMessages.length);
       } catch (error) {
         console.error("Failed to load chat history:", error);
       } finally {
@@ -54,27 +56,39 @@ const Chat = ({
   }, [externalId]);
 
   useEffect(() => {
-    if (chatBoxRef.current) {
-      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
-    }
-  }, [messages]);
+    const scrollToBottom = () => {
+      if (chatBoxRef.current) {
+        setTimeout(() => {
+          chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+        }, 0);
+      }
+    };
+    
+    scrollToBottom();
+  }, [messages, loading]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const userMessage = { sender: "user", text: input };
+    const userMessageText = input;
+    const userId = `msg-user-${messageIdCounter}`;
+    const botId = `msg-bot-${messageIdCounter + 1}`;
+    
+    const userMessage = { id: userId, sender: "user", text: userMessageText };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
+    setMessageIdCounter((prev) => prev + 2);
 
     try {
       const res = await apiPY.post("/ask", {
-        question: input,
+        question: userMessageText,
         file_ids: [externalId],
       });
 
       const botMessage = {
+        id: botId,
         sender: "bot",
         text: res.data?.answer || "No answer returned.",
       };
@@ -84,7 +98,7 @@ const Chat = ({
       console.error("Chat request failed:", error);
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: "⚠️ Sorry, something went wrong." },
+        { id: botId, sender: "bot", text: "⚠️ Sorry, something went wrong." },
       ]);
     } finally {
       setLoading(false);
@@ -92,9 +106,13 @@ const Chat = ({
   };
 
   const sendPresetPrompt = async (displayText, prompt) => {
-    const userMessage = { sender: "user", text: displayText };
+    const userId = `msg-user-${messageIdCounter}`;
+    const botId = `msg-bot-${messageIdCounter + 1}`;
+    
+    const userMessage = { id: userId, sender: "user", text: displayText };
     setMessages((prev) => [...prev, userMessage]);
     setLoading(true);
+    setMessageIdCounter((prev) => prev + 2);
 
     try {
       const res = await apiPY.post("/ask", {
@@ -103,6 +121,7 @@ const Chat = ({
       });
 
       const botMessage = {
+        id: botId,
         sender: "bot",
         text: res.data?.answer || "No answer returned.",
       };
@@ -112,7 +131,7 @@ const Chat = ({
       console.error("Preset prompt request failed:", error);
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: "⚠️ Sorry, something went wrong." },
+        { id: botId, sender: "bot", text: "⚠️ Sorry, something went wrong." },
       ]);
     } finally {
       setLoading(false);
@@ -159,18 +178,18 @@ const Chat = ({
             </div>
           ) : (
             <>
-              {messages.map((msg, idx) => (
-                <div key={idx} className={styles.messageWrapper}>
+              {messages.map((msg) => (
+                <div key={msg.id} className={styles.messageWrapper}>
                   {msg.sender === "bot" ? (
                     <div className={styles.messageContentWrapper}>
                       <Message sender={msg.sender} text={msg.text} />
                       <button
-                        className={`${styles.copyIconBtn} ${copiedMessageIdx === idx ? styles.copied : ''}`}
-                        onClick={() => handleCopyMessage(msg.text, idx)}
-                        title={copiedMessageIdx === idx ? "Copied!" : "Copy"}
+                        className={`${styles.copyIconBtn} ${copiedMessageIdx === msg.id ? styles.copied : ''}`}
+                        onClick={() => handleCopyMessage(msg.text, msg.id)}
+                        title={copiedMessageIdx === msg.id ? "Copied!" : "Copy"}
                       >
                         <Copy size={14} />
-                        {copiedMessageIdx === idx && <span>Copied</span>}
+                        {copiedMessageIdx === msg.id && <span>Copied</span>}
                       </button>
                     </div>
                   ) : (
@@ -179,17 +198,17 @@ const Chat = ({
 
                   {msg.sender === "bot" && (
                     <button
-                      className={`${styles.addToNotesBtn} ${addedNotes.has(idx) ? styles.addedToNotes : ''}`}
+                      className={`${styles.addToNotesBtn} ${addedNotes.has(msg.id) ? styles.addedToNotes : ''}`}
                       onClick={async () => {
-                        if (!addedNotes.has(idx)) {
+                        if (!addedNotes.has(msg.id)) {
                           await onAddNote(msg.text);
-                          setAddedNotes(prev => new Set(prev).add(idx));
+                          setAddedNotes(prev => new Set(prev).add(msg.id));
                         }
                       }}
-                      disabled={addedNotes.has(idx)}
-                      title={addedNotes.has(idx) ? "Added to notes" : "Add this response to notes"}
+                      disabled={addedNotes.has(msg.id)}
+                      title={addedNotes.has(msg.id) ? "Added to notes" : "Add this response to notes"}
                     >
-                      {addedNotes.has(idx) ? (
+                      {addedNotes.has(msg.id) ? (
                         <>
                           <Check size={14} />
                           Added to Notes
@@ -204,7 +223,7 @@ const Chat = ({
                   )}
                 </div>
               ))}
-              {loading && <Message sender="bot" text="Thinking..." />}
+              {loading && <div key="loading-indicator"><Message sender="bot" text="Thinking..." /></div>}
             </>
           )}
         </div>
