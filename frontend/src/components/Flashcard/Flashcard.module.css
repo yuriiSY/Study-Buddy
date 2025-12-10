@@ -7,6 +7,8 @@
   height: 100%;
   padding: 16px;
   overflow-y: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .levelBadge {
@@ -158,6 +160,8 @@
   position: relative;
   background-color: var(--bg-secondary);
   flex-shrink: 0;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .header {
