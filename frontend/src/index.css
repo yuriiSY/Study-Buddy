@@ -305,3 +305,32 @@ textarea:focus {
   margin: 1rem auto;
   box-shadow: var(--shadow-md);
 }
+
+/* --------- NEW: make the app scrollable when content overflows --------- */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* allow vertical scroll, prevent accidental horizontal scroll */
+html,
+body {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* root flex container so pages can grow and scroll naturally */
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+/* common app wrappers: ensure they don't lock the height */
+.App,
+.app-root,
+.app-shell {
+  flex: 1 0 auto;
+  min-height: 100%;
+}

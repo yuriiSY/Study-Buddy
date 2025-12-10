@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiPY = axios.create({
-  baseURL: "http://localhost:3000/",
+  baseURL: "/pypi/",
   timeout: 120000,
 });
 

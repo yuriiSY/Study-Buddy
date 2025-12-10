@@ -28,7 +28,7 @@ import App from "./App.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter basename="/Study-Buddy">
+    <BrowserRouter basename="/">
       <Provider store={store}>
         <App />
       </Provider>
