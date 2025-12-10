@@ -65,6 +65,8 @@ git restore <file>         # or, if you don't care:
 git reset --hard origin/main
 ### fastAPI
 cd ~/Study-Buddy/Flask-endpoints
+//Add docker-compose.yml file
+nano docker-compose.yml
 //Restart with fresh build
 docker-compose down
 docker-compose up -d --build
@@ -83,7 +85,7 @@ npm run build
 sudo rm -rf /var/www/study-buddy/*
 sudo cp -r dist/* /var/www/study-buddy/
 //reload nginx
-sudo nginx -t        # config check
+sudo nginx -t
 sudo systemctl reload nginx
 //Check if nginx serving SPA properly
 curl -vk https://thestudybuddyaiproject.online
