@@ -1,10 +1,7 @@
-import { useState } from "react";
 import styles from "./Onboarding.module.css";
 import { Plus, Upload, Zap } from "lucide-react";
 
 const Onboarding = ({ onClick }) => {
-  const [activeStep, setActiveStep] = useState(-1);
-
   const steps = [
     {
       number: 1,
@@ -29,15 +26,12 @@ const Onboarding = ({ onClick }) => {
   return (
     <div className={styles.container}>
       <div className={styles.stepsWrapper}>
-        {steps.map((step, index) => {
+        {steps.map((step) => {
           const Icon = step.icon;
           return (
             <div
-              key={index}
-              className={`${styles.stepCard} ${
-                activeStep === index ? styles.active : ""
-              }`}
-              onClick={() => setActiveStep(index)}
+              key={step.number}
+              className={styles.stepCard}  // no active / clickable styles
             >
               <div className={styles.stepNumber}>{step.number}</div>
               <div className={styles.stepContent}>

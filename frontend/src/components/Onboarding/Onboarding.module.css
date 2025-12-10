@@ -27,26 +27,8 @@
   background: var(--bg-secondary);
   border: 2px solid var(--color-primary);
   border-radius: 12px;
+  /* no cursor:pointer or hover styles here */
 }
-
-/* .stepCard:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(91, 158, 255, 0.15);
-} */
-
-/* .stepCard.active {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-  border-color: var(--color-primary);
-  color: white;
-} */
-
-/* .stepCard.active .stepNumber,
-.stepCard.active .stepIcon,
-.stepCard.active h3,
-.stepCard.active p {
-  color: white;
-} */
 
 .stepNumber {
   display: flex;
@@ -59,13 +41,7 @@
   border-radius: 50%;
   font-weight: 700;
   font-size: 1.6rem;
-  transition: all 0.3s ease;
 }
-
-/* .stepCard.active .stepNumber {
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 0 0 2px white;
-} */
 
 .stepContent {
   display: flex;
@@ -76,11 +52,6 @@
 
 .stepIcon {
   color: var(--color-primary);
-  transition: all 0.3s ease;
-}
-
-.stepCard.active .stepIcon {
-  color: white;
 }
 
 .stepCard h3 {
@@ -88,14 +59,12 @@
   font-size: 1.15rem;
   font-weight: 600;
   color: var(--text-primary);
-  transition: all 0.3s ease;
 }
 
 .stepCard p {
   margin: 0;
   font-size: 0.9rem;
   color: var(--text-secondary);
-  transition: all 0.3s ease;
   line-height: 1.5;
 }
 

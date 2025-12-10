@@ -50,7 +50,7 @@ const LoadingAnimation = ({ stage }) => {
         </div>
 
         <div className={styles.tips}>
-          <p className={styles.tipText}>✨ Grab a coffee, this might take a moment!</p>
+          <p className={styles.tipText}>🍵 Grab a cup of tea, this might take a moment!</p>
         </div>
       </div>
     </div>
