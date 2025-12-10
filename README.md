@@ -48,6 +48,46 @@ The system is split into:
   - Prod: managed Postgres (Render or another managed provider)
 ---
 
+## Redeployment
+### in your local Study-Buddy clone
+git add .
+git commit -m "Some message"
+git push origin main
+### ssh into ec2
+ssh -i /path/to/key.pem ubuntu@thestudybuddyaiproject.online
+cd ~/Study-Buddy
+git fetch origin
+git checkout main
+git pull origin main
+### local changes to stash
+git status
+git restore <file>         # or, if you don't care:
+git reset --hard origin/main
+### fastAPI
+cd ~/Study-Buddy/Flask-endpoints
+//Restart with fresh build
+docker-compose down
+docker-compose up -d --build
+//Check logs
+docker-compose logs -f
+//Quick health check
+curl -v http://localhost:3000/health
+curl -vk https://thestudybuddyaiproject.online/ai/health
+docker-compose ps
+docker-compose logs -f
+### frontend
+cd ~/Study-Buddy/frontend
+npm install          //only needed when deps change, but safe to run
+npm run build
+### nginx web root
+sudo rm -rf /var/www/study-buddy/*
+sudo cp -r dist/* /var/www/study-buddy/
+//reload nginx
+sudo nginx -t        # config check
+sudo systemctl reload nginx
+//Check if nginx serving SPA properly
+curl -vk https://thestudybuddyaiproject.online
+
 ## Repository Layout
 ```text
 Study-Buddy/
