@@ -508,3 +508,112 @@
     align-items: flex-start;
   }
 }
+/* === THEME-AWARE OVERRIDES (keep at bottom of file) === */
+
+.modal {
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Titles / labels use theme text colors */
+.title {
+  color: var(--color-primary);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+}
+
+.formGroup label,
+.imagePickerSection label,
+.ocrLabel,
+.uploadedTitle,
+.rejectedTitle {
+  color: var(--text-primary);
+}
+
+/* Inputs + cards follow theme backgrounds / borders */
+.input {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.imageItem {
+  background: var(--bg-tertiary);
+}
+
+.dropzoneCard {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.uploadedCard {
+  background: var(--bg-primary);
+}
+
+.uploadedFile {
+  background: var(--bg-tertiary);
+}
+
+.rejectedSection {
+  background: var(--bg-tertiary);
+}
+
+/* Step circles + badges */
+.stepNumber {
+  background: var(--bg-primary);
+}
+
+.fileBadge {
+  background: var(--bg-secondary);
+  color: var(--color-primary-dark);
+}
+
+/* Secondary text */
+.dropzoneSubtitle,
+.dropzoneHint,
+.uploadedCount,
+.fileSize,
+.uploadEmpty,
+.rejectedFileName,
+.footerMeta {
+  color: var(--text-secondary);
+}
+
+/* Buttons inherit theme colors */
+.backButton,
+.cancelButton {
+  color: var(--text-secondary);
+}
+
+.createButton {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  color: #ffffff;
+  box-shadow: var(--shadow-md);
+}
+/* Make File Type pill text readable in all themes */
+.ocrOption,
+.ocrOption span {
+  color: #111827;          /* dark gray text on white pill */
+}
+/* Make filename text readable in all themes */
+.fileNameInput {
+  color: var(--text-primary);          /* use theme text */
+}
+
+/* When focused, keep same readable colors */
+.fileNameInput:focus {
+  background: var(--bg-primary);       /* light card in light mode, dark in dark mode */
+  color: var(--text-primary);
+  border-color: var(--border-color);   /* optional, matches theme */
+}
+
+/* Optional: dim placeholder / empty text if you ever add it */
+.fileNameInput::placeholder {
+  color: var(--text-secondary);
+}
