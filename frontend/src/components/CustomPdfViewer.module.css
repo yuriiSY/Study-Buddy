@@ -8,6 +8,7 @@
   display: flex;
   flex-direction: column;
   box-shadow: none;
+  position: relative;
 }
 
 .header {
@@ -144,6 +145,18 @@
   text-align: center;
 }
 
+.hint {
+  background: rgba(107, 114, 128, 0.05);
+  border-left: 2px solid rgba(107, 114, 128, 0.3);
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .pdfContainer {
   overflow-y: auto;
   overflow-x: hidden;
@@ -157,6 +170,46 @@
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+}
+
+/* Light gray highlighting for PDF text selection */
+.pdfContainer ::selection {
+  background-color: rgba(209, 213, 219, 0.5);
+  color: inherit;
+}
+
+.pdfContainer ::-moz-selection {
+  background-color: rgba(209, 213, 219, 0.5);
+  color: inherit;
+}
+
+/* PDF text layer styling */
+.react-pdf__text-layer {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+}
+
+.react-pdf__text-layer span {
+  line-height: 1.15;
+  color: transparent;
+  background: transparent;
+  cursor: text;
+  word-spacing: normal;
+  letter-spacing: normal;
+}
+
+.react-pdf__page {
+  position: relative;
+  background-color: white;
+}
+
+.react-pdf__page canvas {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .footer {
@@ -175,23 +228,29 @@
 }
 
 .addNoteFloating {
-  background: var(--color-primary);
+  position: fixed;
+  background: rgba(107, 114, 128, 0.9);
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  z-index: 1000;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
 }
 
 .addNoteFloating:hover {
-  opacity: 0.9;
+  background: rgba(75, 85, 99, 0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
 }
 
 .inlinePageInput {
