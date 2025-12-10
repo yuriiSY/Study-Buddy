@@ -40,7 +40,9 @@ const TutorTabs = ({
   const [viewingFlashcardsList, setViewingFlashcardsList] = useState(true);
   const [loadingNextLevel, setLoadingNextLevel] = useState(false);
   const [flashcardsAttempted, setFlashcardsAttempted] = useState(false);
+  const [levelCompletionRefresh, setLevelCompletionRefresh] = useState(0);
   const notesPanelRef = useRef(null);
+  const flashcardsListRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -81,24 +83,41 @@ const TutorTabs = ({
       }
     };
 
-    const loadFlashcards = async () => {
-      try {
-        const res = await api.get(`/flashcards/file/${externalId}`, { timeout: 10000 });
-        const flashcardSets = Array.isArray(res.data) ? res.data : [];
-        const hasFlashcards = flashcardSets.some(set => set.title?.includes("Recap Cards"));
-        setShowFlashcardsTab(hasFlashcards);
-        setFlashcardsAttempted(hasFlashcards);
-      } catch (err) {
-        console.error("Failed to load flashcards:", err);
-        setShowFlashcardsTab(false);
+    const checkFlashcardsExist = () => {
+      for (let level = 1; level <= 3; level++) {
+        const cacheKey = `flashcards_level_${level}_${externalId}`;
+        if (localStorage.getItem(cacheKey)) {
+          setShowFlashcardsTab(true);
+          return;
+        }
       }
+      setShowFlashcardsTab(false);
     };
 
     loadTests();
-    loadFlashcards();
+    checkFlashcardsExist();
   }, [externalId]);
 
   const handleLevelStatusLoaded = (statusData) => {
+    for (let level = 1; level <= 3; level++) {
+      const cacheKey = `flashcards_level_${level}_${externalId}`;
+      if (localStorage.getItem(cacheKey)) {
+        setShowFlashcardsTab(true);
+        return;
+      }
+    }
+    setShowFlashcardsTab(false);
+  };
+
+  const checkFlashcardsAndUpdateTab = () => {
+    for (let level = 1; level <= 3; level++) {
+      const cacheKey = `flashcards_level_${level}_${externalId}`;
+      if (localStorage.getItem(cacheKey)) {
+        setShowFlashcardsTab(true);
+        return;
+      }
+    }
+    setShowFlashcardsTab(false);
   };
 
   const handleSaveNotes = async () => {
@@ -148,15 +167,22 @@ const TutorTabs = ({
     setActiveTab("flashcards");
   };
 
+  const handleLevelComplete = async () => {
+    if (flashcardLevel >= 1 && flashcardLevel <= 3) {
+      try {
+        await apiPY.post("/recap-cards-complete-level", {
+          file_id: externalId,
+          level: flashcardLevel,
+        });
+      } catch (err) {
+        console.error("Failed to mark level as completed:", err);
+      }
+      setLevelCompletionRefresh(prev => prev + 1);
+    }
+  };
+
   const handleFinishFlashcards = async () => {
     setViewingFlashcardsList(true);
-    
-    if (flashcardLevel >= 1 && flashcardLevel <= 3) {
-      apiPY.post("/recap-cards-complete-level", {
-        file_id: externalId,
-        level: flashcardLevel,
-      }).catch(err => console.error("Failed to mark level as completed:", err));
-    }
   };
 
   const handleNextFlashcardLevel = async () => {
@@ -183,48 +209,35 @@ const TutorTabs = ({
       level: flashcardLevel,
     }).catch(err => console.error("Failed to mark level as completed:", err));
 
-    api.get(`/flashcards/file/${externalId}`, { timeout: 10000 })
-      .then(existingRes => {
-        const existingSets = Array.isArray(existingRes.data) ? existingRes.data : [];
-        const existingSet = existingSets.find(set => set.title === `Recap Cards Level ${nextLevel}`);
-        if (existingSet && Array.isArray(existingSet.cards) && existingSet.cards.length > 0) {
-          localStorage.setItem(cacheKey, JSON.stringify(existingSet.cards));
-          handleSelectFlashcardLevel(nextLevel, existingSet.cards);
+    apiPY.post("/generate-flashcards", {
+      file_ids: [externalId],
+      num_flashcards: 5,
+      level: nextLevel,
+    })
+      .then(res => {
+        if (res.data?.flashcards) {
+          const cards = res.data.flashcards;
+          localStorage.setItem(cacheKey, JSON.stringify(cards));
+          checkFlashcardsAndUpdateTab();
+          handleSelectFlashcardLevel(nextLevel, cards);
           setLoadingNextLevel(false);
-          return;
+          
+          api.post("/flashcards", {
+            file_id: externalId,
+            cards: cards,
+            title: `Recap Cards Level ${nextLevel}`,
+            description: levelDescriptions[nextLevel],
+            level: nextLevel,
+          }).catch(err => console.error("Failed to save flashcards:", err));
         }
-        throw new Error("No existing set found");
       })
-      .catch(() => {
-        apiPY.post("/generate-flashcards", {
-          file_ids: [externalId],
-          num_flashcards: 5,
-          level: nextLevel,
-        })
-          .then(res => {
-            if (res.data?.flashcards) {
-              const cards = res.data.flashcards;
-              localStorage.setItem(cacheKey, JSON.stringify(cards));
-              handleSelectFlashcardLevel(nextLevel, cards);
-              setLoadingNextLevel(false);
-              
-              api.post("/flashcards", {
-                file_id: externalId,
-                title: `Recap Cards Level ${nextLevel}`,
-                description: levelDescriptions[nextLevel],
-                cards: cards,
-                level: nextLevel,
-              }).catch(err => console.error("Failed to save flashcards:", err));
-            }
-          })
-          .catch(err => {
-            console.error("Failed to generate flashcards:", err.message);
-            setLoadingNextLevel(false);
-            const cachedFallback = localStorage.getItem(cacheKey);
-            if (!cachedFallback) {
-              alert(`Failed to load Level ${nextLevel} flashcards.`);
-            }
-          });
+      .catch(err => {
+        console.error("Failed to generate flashcards:", err.message);
+        setLoadingNextLevel(false);
+        const cachedFallback = localStorage.getItem(cacheKey);
+        if (!cachedFallback) {
+          alert(`Failed to load Level ${nextLevel} flashcards.`);
+        }
       });
   };
 
@@ -382,10 +395,12 @@ const TutorTabs = ({
           <div className={styles.flashcardsPanel}>
             {viewingFlashcardsList ? (
               <FlashcardsList
+                ref={flashcardsListRef}
                 fileId={externalId}
                 onSelectLevel={handleSelectFlashcardLevel}
                 onLevelStatusLoaded={handleLevelStatusLoaded}
                 isVisible={true}
+                levelCompletionRefresh={levelCompletionRefresh}
               />
             ) : flashcards.length > 0 ? (
               <Flashcard
@@ -395,6 +410,7 @@ const TutorTabs = ({
                 onNextLevel={handleNextFlashcardLevel}
                 onFinish={handleFinishFlashcards}
                 loadingNextLevel={loadingNextLevel}
+                onLevelComplete={handleLevelComplete}
               />
             ) : (
               <p style={{ padding: 20 }}>No flashcards available.</p>
