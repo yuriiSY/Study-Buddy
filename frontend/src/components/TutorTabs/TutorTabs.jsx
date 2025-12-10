@@ -168,16 +168,30 @@ const TutorTabs = ({
   };
 
   const handleLevelComplete = async () => {
+    console.log("handleLevelComplete called with level:", flashcardLevel, "externalId:", externalId);
     if (flashcardLevel >= 1 && flashcardLevel <= 3) {
       try {
-        await apiPY.post("/recap-cards-complete-level", {
+        console.log("Making API call to /recap-cards-complete-level with:", { file_id: externalId, level: flashcardLevel });
+        const response = await apiPY.post("/recap-cards-complete-level", {
           file_id: externalId,
           level: flashcardLevel,
         });
+        console.log("Level completed successfully:", response.status, response.data);
+        
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        setLevelCompletionRefresh(prev => prev + 1);
+        return true;
       } catch (err) {
-        console.error("Failed to mark level as completed:", err);
+        console.error("Failed to mark level as completed:", {
+          status: err.response?.status,
+          data: err.response?.data,
+          message: err.message
+        });
+        throw err;
       }
-      setLevelCompletionRefresh(prev => prev + 1);
+    } else {
+      console.warn("Invalid flashcardLevel:", flashcardLevel);
     }
   };
 

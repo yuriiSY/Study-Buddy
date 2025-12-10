@@ -58,9 +58,15 @@ const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescript
 
   const handleFinishClick = async () => {
     setLoadingFinish(true);
+    console.log("handleFinishClick called for level:", level);
     try {
+      console.log("Calling onLevelComplete...");
       await onLevelComplete?.();
+      console.log("onLevelComplete done, calling onFinish...");
       await onFinish?.();
+      console.log("onFinish done");
+    } catch (err) {
+      console.error("Error in handleFinishClick:", err);
     } finally {
       setLoadingFinish(false);
     }
