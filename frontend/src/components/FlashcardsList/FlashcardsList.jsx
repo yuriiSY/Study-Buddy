@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import styles from "./FlashcardsList.module.css";
 import api from "../../api/axios";
 import apiPY from "../../api/axiosPython";
 import { Lock, Unlock, Check } from "lucide-react";
 
-const FlashcardsList = ({ fileId, onSelectLevel, isVisible = true, onLevelStatusLoaded }) => {
+const FlashcardsList = forwardRef(({ fileId, onSelectLevel, isVisible = true, onLevelStatusLoaded, levelCompletionRefresh = 0 }, ref) => {
   const [levelStatus, setLevelStatus] = useState({
     1: { completed: false, available: true, description: "Easy Level - Foundational concepts and definitions" },
     2: { completed: false, available: false, description: "Intermediate Level - Practical applications and critical thinking" },
@@ -13,14 +13,38 @@ const FlashcardsList = ({ fileId, onSelectLevel, isVisible = true, onLevelStatus
   const [loading, setLoading] = useState(true);
   const [generatingLevel, setGeneratingLevel] = useState(null);
 
+  const markLevelCompleted = (level) => {
+    setLevelStatus(prev => {
+      const updated = { ...prev };
+      updated[level].completed = true;
+      
+      if (level < 3) {
+        updated[level + 1].available = true;
+      }
+      
+      const cacheKey = `flashcards_level_status_${fileId}`;
+      localStorage.setItem(cacheKey, JSON.stringify(updated));
+      onLevelStatusLoaded?.(updated);
+      
+      return updated;
+    });
+  };
+
+  useImperativeHandle(ref, () => ({
+    markLevelCompleted,
+  }));
+
   const loadLevelStatus = async (skipCache = false) => {
     const cacheKey = `flashcards_level_status_${fileId}`;
     
     if (!skipCache) {
       const cachedData = localStorage.getItem(cacheKey);
       if (cachedData) {
-        setLevelStatus(JSON.parse(cachedData));
+        const parsedData = JSON.parse(cachedData);
+        setLevelStatus(parsedData);
         setLoading(false);
+        onLevelStatusLoaded?.(parsedData);
+        return;
       }
     }
 
@@ -41,7 +65,9 @@ const FlashcardsList = ({ fileId, onSelectLevel, isVisible = true, onLevelStatus
       if (skipCache) {
         const cachedData = localStorage.getItem(cacheKey);
         if (cachedData) {
-          setLevelStatus(JSON.parse(cachedData));
+          const parsedData = JSON.parse(cachedData);
+          setLevelStatus(parsedData);
+          onLevelStatusLoaded?.(parsedData);
         }
       }
       setLoading(false);
@@ -56,7 +82,11 @@ const FlashcardsList = ({ fileId, onSelectLevel, isVisible = true, onLevelStatus
   useEffect(() => {
     if (!isVisible || !fileId) return;
     loadLevelStatus(true);
-  }, [isVisible, fileId]);
+  }, [isVisible, fileId, levelCompletionRefresh]);
+
+  useEffect(() => {
+    onLevelStatusLoaded?.(levelStatus);
+  }, [levelStatus, onLevelStatusLoaded]);
 
   const handleStartLevel = async (level) => {
     if (!levelStatus[level]?.available) return;
@@ -72,16 +102,6 @@ const FlashcardsList = ({ fileId, onSelectLevel, isVisible = true, onLevelStatus
         return;
       }
 
-      const existingRes = await api.get(`/flashcards/file/${fileId}`, { timeout: 10000 });
-      const existingSets = Array.isArray(existingRes.data) ? existingRes.data : [];
-      const existingSet = existingSets.find(set => set.title === `Recap Cards Level ${level}`);
-      
-      if (existingSet && Array.isArray(existingSet.cards) && existingSet.cards.length > 0) {
-        localStorage.setItem(cacheKey, JSON.stringify(existingSet.cards));
-        onSelectLevel(level, existingSet.cards);
-        return;
-      }
-
       const res = await apiPY.post("/generate-flashcards", {
         file_ids: [fileId],
         num_flashcards: 5,
@@ -91,13 +111,14 @@ const FlashcardsList = ({ fileId, onSelectLevel, isVisible = true, onLevelStatus
       if (res.data?.flashcards) {
         const cards = res.data.flashcards;
         localStorage.setItem(cacheKey, JSON.stringify(cards));
+        onLevelStatusLoaded?.(levelStatus);
         
         try {
           const saveRes = await api.post("/flashcards", {
             file_id: fileId,
+            cards: cards,
             title: `Recap Cards Level ${level}`,
             description: levelStatus[level].description,
-            cards: cards,
             level: level,
           });
           
@@ -210,6 +231,8 @@ const FlashcardsList = ({ fileId, onSelectLevel, isVisible = true, onLevelStatus
       </div>
     </div>
   );
-};
+});
+
+FlashcardsList.displayName = "FlashcardsList";
 
 export default FlashcardsList;
