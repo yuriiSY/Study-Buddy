@@ -1,15 +1,15 @@
+// frontend/src/components/StudyCard/StudyCard.jsx
 import React from "react";
 import styles from "./StudyCard.module.css";
 
-const StudyCard = ({ title, color, image, text }) => {
+const StudyCard = ({ title, color, image }) => {
   return (
-    <div className={styles.card} style={{ backgroundColor: color }}>
+    <article className={styles.card} style={{ backgroundColor: color }}>
       <h3 className={styles.title}>{title}</h3>
-      <div className={styles.content}>
+      <div className={styles.imageWrapper}>
         <img src={image} alt={title} className={styles.image} />
-        <p className={styles.text}>{text}</p>
       </div>
-    </div>
+    </article>
   );
 };
 

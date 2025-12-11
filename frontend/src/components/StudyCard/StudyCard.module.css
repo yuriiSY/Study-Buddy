@@ -1,71 +1,77 @@
+/* frontend/src/components/StudyCard/StudyCard.module.css */
+
 .card {
-  width: 320px;
-  min-height: 380px;
-  border-radius: 16px;
+  width: 100%;
+  height: 260px;
+  border-radius: 24px;
+  padding: 24px 16px;
+  box-sizing: border-box;
+
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  gap: 60px;
-  padding: 24px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
-  border: 1px solid var(--border-color-light);
-  box-shadow: var(--shadow-md);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
 
-.card::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-lg);
-}
-
-.card:hover::before {
-  opacity: 0.08;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+  overflow: hidden; /* stop anything from bleeding into other cards */
 }
 
 .title {
-  font-size: 1.2rem;
+  margin: 0 0 16px;
   font-weight: 600;
-  margin-bottom: 0;
-  color: var(--text-primary);
-  position: relative;
-  z-index: 1;
+  text-align: center;
+  line-height: 1.2;
+
+  /* allow long titles to wrap inside the card */
+  word-break: break-word;
+  hyphens: auto;
+
+  /* responsive font size */
+  font-size: clamp(0.95rem, 1.1vw + 0.3rem, 1.2rem);
 }
 
-.content {
+.imageWrapper {
+  flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  position: relative;
-  z-index: 1;
+  justify-content: center;
+  width: 100%;
 }
 
 .image {
-  width: 80px;
-  height: 80px;
+  max-width: 80px;
+  max-height: 80px;
+  width: 40%;
+  height: auto;
   object-fit: contain;
-  margin-bottom: 10px;
-  filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.15));
 }
 
-.text {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  text-align: center;
-  line-height: 1.5;
+/* Tablet and below */
+@media (max-width: 768px) {
+  .card {
+    height: 220px;
+    padding: 20px 12px;
+  }
+
+  .title {
+    margin-bottom: 12px;
+    font-size: clamp(0.9rem, 3vw, 1.05rem);
+  }
+
+  .image {
+    max-width: 64px;
+    max-height: 64px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .card {
+    height: 200px;
+    padding: 16px 10px;
+  }
+
+  .title {
+    font-size: clamp(0.85rem, 3.5vw, 1rem);
+  }
 }

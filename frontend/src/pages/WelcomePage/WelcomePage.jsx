@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 import intoImg1 from "../../assets/introImg1.png";
 import intoImg2 from "../../assets/introImg2.png";
-import intoImg3 from "../../assets/introImg2.png";
+import intoImg3 from "../../assets/introImg3.png";
 
 export const WelcomePage = () => {
   const navigate = useNavigate();

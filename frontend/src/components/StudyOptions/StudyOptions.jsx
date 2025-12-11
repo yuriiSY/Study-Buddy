@@ -5,66 +5,47 @@ import StudyCard from "../StudyCard/StudyCard";
 import { useNavigate } from "react-router-dom";
 
 const StudyOptions = () => {
+  // Features aligned with README short overview
   const cards = [
     {
-      title: "Matching",
-      color: "#FFDAD6",
-      image: "https://cdn-icons-png.flaticon.com/512/616/616408.png",
-      // text: "lungs",
-    },
-    {
-      title: "Expert Solutions",
-      color: "#C6F7E2",
-      image: "https://cdn-icons-png.flaticon.com/512/2920/2920214.png",
-      // text: "Step 1: Anaphase phase...",
-    },
-    {
-      title: "Memorization",
-      color: "#C7E9FB",
-      image: "https://cdn-icons-png.flaticon.com/512/2830/2830308.png",
-      // text: "la pintura",
-    },
-    {
-      title: "Flashcards",
-      color: "#5A4FF3",
-      image: "https://cdn-icons-png.flaticon.com/512/821/821484.png",
-      // text: "superior vena cava",
-    },
-    {
-      title: "Definitions",
-      color: "#FFF0C9",
-      image: "https://cdn-icons-png.flaticon.com/512/2721/2721298.png",
-      // text: "photosynthesis",
-    },
-    {
-      title: "Practice Tests",
-      color: "#E9D8FD",
-      image: "https://cdn-icons-png.flaticon.com/512/2593/2593448.png",
-      // text: "Quiz Mode",
-    },
-    {
-      title: "Diagrams",
-      color: "#FEE2E2",
-      image: "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
-      // text: "Heart structure",
-    },
-    {
-      title: "Games",
-      color: "#DCFCE7",
-      image: "https://cdn-icons-png.flaticon.com/512/2784/2784463.png",
-      // text: "Match challenge",
-    },
-    {
-      title: "Study Plan",
-      color: "#FEF9C3",
-      image: "https://cdn-icons-png.flaticon.com/512/3707/3707225.png",
-      // text: "Weekly goals",
-    },
-    {
-      title: "Notes",
+      title: "Upload Notes",
       color: "#FDE68A",
-      image: "https://cdn-icons-png.flaticon.com/512/1828/1828911.png",
-      // text: "Summaries",
+      image: "https://cdn-icons-png.flaticon.com/512/1828/1828911.png", // documents / notes
+    },
+    {
+      title: "AI Processing",
+      color: "#C6F7E2",
+      image: "https://cdn-icons-png.flaticon.com/512/2830/2830308.png", // brain / processing
+    },
+    {
+      title: "Quizzes & Practice",
+      color: "#5A4FF3",
+      image: "https://cdn-icons-png.flaticon.com/512/2593/2593448.png", // quiz / test
+    },
+    {
+      title: "Pomodoro Timer",
+      color: "#FFF0C9",
+      image: "https://cdn-icons-png.flaticon.com/512/2088/2088617.png", // timer
+    },
+    {
+      title: "Gamification",
+      color: "#E9D8FD",
+      image: "https://cdn-icons-png.flaticon.com/512/2784/2784463.png", // game / rewards
+    },
+    {
+      title: "Weak-spot Analysis",
+      color: "#FEE2E2",
+      image: "https://cdn-icons-png.flaticon.com/512/2721/2721298.png", // target / analytics
+    },
+    {
+      title: "AI Tutor Chat",
+      color: "#C7E9FB",
+      image: "https://cdn-icons-png.flaticon.com/512/2920/2920214.png", // chatbot / tutor
+    },
+    {
+      title: "Study Partners & Community",
+      color: "#FEF9C3",
+      image: "https://cdn-icons-png.flaticon.com/512/3233/3233475.png", // people / community
     },
   ];
 
@@ -100,10 +81,10 @@ const StudyOptions = () => {
       <div className={styles.head}>
         <h1 className={styles.title}>How do you want to study?</h1>
         <p className={styles.subtitle}>
-          Master any material using interactive Study Buddy.
+          Master any material using AI Study Buddy&apos;s smart tools.
         </p>
         <button className={styles.button} onClick={() => navigate("/register")}>
-          Sign up{" "}
+          Sign up
         </button>
       </div>
 
