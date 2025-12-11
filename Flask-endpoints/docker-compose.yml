@@ -3,10 +3,15 @@ services:
   flask-api: 
     build: .
     container_name: flask-api
-    ports: - "3000:3000"
+    ports:
+      - "3000:3000"
     environment:
     GROQ_API_KEY: ""
     GROQ_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct"
+    # Hard caps so a single upload can't kill the host
+    mem_limit: 1g          # adjust to ~50–60% of EC2 RAM
+    cpu_shares: 512        # de-prioritise vs other containers if needed
+    restart: unless-stopped
     # For local development, use the following lines
     #DB_HOST: "host.docker.internal"
     #DB_NAME: "admin"
@@ -21,5 +26,11 @@ services:
     AWS_ACCESS_KEY_ID: "AKIAUUCDVZ74TEBKRPBJ"
     AWS_SECRET_ACCESS_KEY: ""
     AWS_REGION: "eu-west-1"
-    S3_BUCKET_NAME: "study-buddy-demo" 
-    command: > uvicorn main:app --host 0.0.0.0 --port 3000 --reload
+  S3_BUCKET_NAME: "study-buddy-demo"
+  command: >
+    uvicorn main:app
+    --host 0.0.0.0
+    --port 3000
+    --workers 1
+    --limit-concurrency 2
+    --timeout-keep-alive 5

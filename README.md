@@ -109,3 +109,24 @@ Study-Buddy/
   frontend/         # React + Vite SPA (deployed on EC2 / Nginx)
   Flask-endpoints/  # Python FastAPI AI service (Docker on EC2)
   docker-compose.yml
+
+#nginx server file
+server {
+    ...
+
+    # Reject uploads > 30MB at the proxy level
+    client_max_body_size 30M;
+
+    location /ai/ {
+        proxy_pass         http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header   Connection "";
+
+        # Don't hang forever on slow/large processing
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_connect_timeout 60s;
+    }
+
+    ...
+}

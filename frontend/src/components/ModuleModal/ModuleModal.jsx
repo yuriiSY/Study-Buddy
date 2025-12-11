@@ -26,6 +26,10 @@ const SUPPORTED_EXTENSIONS = [
   "txt",
 ];
 
+// Keep this in sync with backend MAX_UPLOAD_SIZE_MB
+const MAX_UPLOAD_MB = 25;
+const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
+
 const ModuleModal = ({
   isOpen,
   onClose,
@@ -50,6 +54,8 @@ const ModuleModal = ({
 
   const [loading, setLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState("uploading");
+
+  const [isDragging, setIsDragging] = useState(false);
 
   // Reset state when modal opens / mode changes
   useEffect(() => {
@@ -89,44 +95,97 @@ const ModuleModal = ({
     }
   };
 
-  const handleFileUpload = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-
+  // Shared logic for input change and drag-drop
+  const processSelectedFiles = (files) => {
     const supported = [];
-    const supportedNames = [];
     const rejected = [];
+    const tooBig = [];
 
     files.forEach((file) => {
-      if (isFileSupported(file.name)) {
-        supported.push(file);
-        supportedNames.push(file.name);
-      } else {
-        rejected.push(file.name);
+      const name = file.name || "unnamed";
+
+      // 1) Type check
+      if (!isFileSupported(name)) {
+        rejected.push(name);
+        return;
       }
+
+      // 2) Size check
+      if (file.size > MAX_UPLOAD_BYTES) {
+        tooBig.push(name);
+        return;
+      }
+
+      supported.push(file);
     });
 
-    if (rejected.length) {
+    // Unsupported formats
+    if (rejected.length > 0) {
       setRejectedFiles((prev) => [...prev, ...rejected]);
       toast.error(
         `Unsupported file format(s): ${rejected.join(
           ", "
-        )}. Please use supported formats.`
+        )}. Please use supported formats.`,
+        { autoClose: 5000 }
       );
     }
 
-    if (supported.length) {
+    // Too-large files
+    if (tooBig.length > 0) {
+      toast.error(
+        `These files are too large (>${MAX_UPLOAD_MB} MB): ${tooBig.join(
+          ", "
+        )}`,
+        { autoClose: 5000 }
+      );
+    }
+
+    // Good ones
+    if (supported.length > 0) {
       setUploadedFiles((prev) => [...prev, ...supported]);
-      setFileNames((prev) => [...prev, ...supportedNames]);
-      if (!rejected.length) {
-        toast.success(`${supported.length} file(s) added successfully`, {
+
+      if (rejected.length === 0 && tooBig.length === 0) {
+        toast.success(`✅ ${supported.length} file(s) added successfully`, {
           autoClose: 2000,
         });
       }
     }
+  };
 
-    // allow re-selecting same file name later
+  const handleFileUpload = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    processSelectedFiles(files);
+
+    // Clear the input so selecting the same file again re-triggers onChange
     e.target.value = "";
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (loading) return;
+
+    const files = Array.from(e.dataTransfer?.files || []);
+    if (!files.length) return;
+
+    processSelectedFiles(files);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!loading) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
   };
 
   const handleRemoveFile = (index) => {
@@ -268,10 +327,18 @@ const ModuleModal = ({
       }
     } catch (err) {
       console.error("Upload failed:", err);
-      console.error("Error details:", err.response?.data);
-      const errorMsg =
-        err.response?.data?.error || err.message || "Upload failed";
-      toast.error(`Upload failed: ${errorMsg}`);
+      const data = err.response?.data;
+
+      if (err.response?.status === 400 && data?.errors?.length) {
+        const msg = data.errors
+          .map((e) => `${e.file_name}: ${e.error}`)
+          .join("; ");
+        toast.error(msg);
+      } else {
+        const errorMsg = data?.error || err.message || "Upload failed";
+        toast.error(`Upload failed: ${errorMsg}`);
+      }
+
       setLoadingStage("uploading");
     } finally {
       setLoading(false);
@@ -393,8 +460,14 @@ const ModuleModal = ({
             <div className={styles.uploadGrid}>
               {/* LEFT: dropzone */}
               <div
-                className={styles.dropzoneCard}
+                className={`${styles.dropzoneCard} ${
+                  isDragging ? styles.dropzoneActive : ""
+                }`}
                 onClick={openFilePicker}
+                onDragOver={handleDragOver}
+                onDragEnter={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
                 role="button"
               >
                 <div className={styles.dropzoneInner}>
@@ -418,8 +491,9 @@ const ModuleModal = ({
                       to choose files
                     </div>
                     <div className={styles.dropzoneHint}>
-                      Supported: DOCX, DOC, PPTX, PPT, XLSX, XLS, PDF, PNG, JPG, JPEG, BMP, GIF,
-                      WEBP, TIFF, TXT & more. Max 50MB each.
+                      Supported: DOCX, DOC, PPTX, PPT, XLSX, XLS, PDF, PNG,
+                      JPG, JPEG, BMP, GIF, WEBP, TIFF, TXT & more. Max{" "}
+                      {MAX_UPLOAD_MB}MB each.
                     </div>
                   </div>
                 </div>
@@ -432,7 +506,9 @@ const ModuleModal = ({
                   className={styles.hiddenFileInput}
                   onChange={handleFileUpload}
                   disabled={loading}
-                  accept={SUPPORTED_EXTENSIONS.map((ext) => `.${ext}`).join(",")}
+                  accept={SUPPORTED_EXTENSIONS.map((ext) => `.${ext}`).join(
+                    ","
+                  )}
                 />
               </div>
 
@@ -453,7 +529,9 @@ const ModuleModal = ({
                   ) : (
                     <ul className={styles.uploadList}>
                       {uploadedFiles.map((file, i) => {
-                        const ext = getFileExtension(file.name || "").toUpperCase();
+                        const ext = getFileExtension(
+                          file.name || ""
+                        ).toUpperCase();
                         const sizeKb = Math.round(file.size / 1024);
                         return (
                           <li key={i} className={styles.uploadedFile}>
@@ -502,7 +580,9 @@ const ModuleModal = ({
                   {rejectedFiles.map((filename, i) => (
                     <li key={i} className={styles.rejectedFile}>
                       <span className={styles.rejectedIcon} />
-                      <span className={styles.rejectedFileName}>{filename}</span>
+                      <span className={styles.rejectedFileName}>
+                        {filename}
+                      </span>
                       <button
                         type="button"
                         className={styles.removeFileBtn}

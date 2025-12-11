@@ -51,6 +51,10 @@ AWS_REGION = os.environ.get("AWS_REGION")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
+# ---------------- UPLOAD LIMITS ----------------
+MAX_UPLOAD_SIZE_MB = int(os.environ.get("MAX_UPLOAD_SIZE_MB", "25"))  # change if needed
+MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024
+
 # ---------------- FASTAPI APP ----------------
 app = FastAPI(title="Study Buddy API")
 
@@ -1395,6 +1399,17 @@ def is_file_supported(filename: str) -> bool:
     extension = get_file_extension(filename)
     return extension in SUPPORTED_EXTENSIONS
 
+def get_upload_size(upload_file: UploadFile) -> int:
+    """
+    Return size of uploaded file in bytes without loading it into memory.
+    Uses the underlying SpooledTemporaryFile. 
+    """
+    current_pos = upload_file.file.tell()
+    upload_file.file.seek(0, os.SEEK_END)
+    size = upload_file.file.tell()
+    upload_file.file.seek(current_pos)
+    return size
+
 @app.post("/upload-files")
 async def upload_files(
     files: list[UploadFile] = File(...),
@@ -1404,44 +1419,98 @@ async def upload_files(
     results = []
     errors = []
 
-    # Validate all files first
-    for file in files:
-        if not is_file_supported(file.filename):
-            errors.append({
-                "file_name": file.filename,
-                "error": f"Unsupported file type: {get_file_extension(file.filename)}. Supported formats: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
-            })
+    # Count how many files are invalid (type or size)
+    invalid_files = 0
 
-    if len(errors) == len(files):
+    # --------- VALIDATION PASS (no heavy work, no reading into memory) ---------
+    for file in files:
+        filename = file.filename or "unnamed"
+
+        # 1) Type check
+        if not is_file_supported(filename):
+            errors.append({
+                "file_name": filename,
+                "error": (
+                    f"Unsupported file type: {get_file_extension(filename)}. "
+                    f"Supported formats: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
+                )
+            })
+            invalid_files += 1
+            continue
+
+        # 2) Size check (uses SpooledTemporaryFile, no big allocation)
+        try:
+            size_bytes = get_upload_size(file)
+        except Exception as e:
+            errors.append({
+                "file_name": filename,
+                "error": f"Could not determine file size: {e}"
+            })
+            invalid_files += 1
+            continue
+
+        if size_bytes > MAX_UPLOAD_SIZE_BYTES:
+            errors.append({
+                "file_name": filename,
+                "error": (
+                    f"File too large: {size_bytes // (1024 * 1024)} MB. "
+                    f"Maximum allowed is {MAX_UPLOAD_SIZE_MB} MB."
+                )
+            })
+            invalid_files += 1
+            continue
+
+    # If *all* files are invalid (type or size), bail out before doing any work
+    if invalid_files == len(files):
         return JSONResponse(
             status_code=400,
-            content={"error": "No supported files provided", "errors": errors}
+            content={"error": "No valid files provided", "errors": errors}
         )
 
+    # --------- PROCESSING PASS (only for files that passed checks) ---------
     # Get vector stores
     store = get_vector_store()
     clip_store = get_clip_vector_store()
 
     for file in files:
-        filename = file.filename
-        
+        filename = file.filename or "unnamed"
+
+        # Skip unsupported types
         if not is_file_supported(filename):
             continue
-            
+
+        # Skip files that exceeded size limit
+        try:
+            size_bytes = get_upload_size(file)
+        except Exception:
+            # Size already produced an error in the first pass
+            continue
+
+        if size_bytes > MAX_UPLOAD_SIZE_BYTES:
+            continue
+
+        # Now safe to read whole content into memory
         content = await file.read()
         file_stream = io.BytesIO(content)
-        
-        print(f"\n=== UPLOADING FILE: {filename} ===")
-        
-        # Extract text, images, pdf_data (YOUR ORIGINAL CODE)
+
+        print(f"\n=== UPLOADING FILE: {filename} ({size_bytes} bytes) ===")
+
+        # Extract text, images, pdf_data (existing logic)
         text, error, images, pdf_data = process_file_content(file_stream, filename)
-        
-        print(f"Processing results - Text length: {len(text) if text else 0}, Images found: {len(images)}, Error: {error}")
-        
+
+        print(
+            f"Processing results - Text length: {len(text) if text else 0}, "
+            f"Images found: {len(images)}, Error: {error}"
+        )
+
         file_id = str(uuid.uuid4())
         timestamp = int(time.time() * 1000)
         pdf_filename = filename.rsplit('.', 1)[0] + '.pdf'
-        s3_key = f"modules/{moduleId}/{timestamp}-{pdf_filename}" if moduleId else f"uploads/{file_id}-{pdf_filename}"
+        s3_key = (
+            f"modules/{moduleId}/{timestamp}-{pdf_filename}"
+            if moduleId
+            else f"uploads/{file_id}-{pdf_filename}"
+        )
         s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
 
         try:
@@ -1470,24 +1539,24 @@ async def upload_files(
         # OCR PROCESSING
         ocr_text = ""
         if ocr:
-            print(f"OCR flag enabled, extracting text with Groq...")
+            print("OCR flag enabled, extracting text with Groq...")
             try:
-                # Create FRESH stream for OCR (don't reuse the consumed stream)
                 ocr_stream = io.BytesIO(content)
                 ocr_text = extract_text_with_groq_ocr(ocr_stream, filename)
                 print(f"OCR extracted {len(ocr_text)} characters")
-                
-                # Use OCR text for vector storage
+
                 if ocr_text and len(ocr_text) > 10:
                     text = ocr_text
-                    print(f"Using OCR text for vector storage")
+                    print("Using OCR text for vector storage")
             except Exception as e:
                 print(f"OCR failed: {e}")
                 ocr_text = f"OCR failed: {str(e)}"
-        
+
         # Store text chunks in vector DB
         if text and text.strip():
-            splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+            splitter = RecursiveCharacterTextSplitter(
+                chunk_size=1000, chunk_overlap=200
+            )
             chunks = splitter.split_text(text)
 
             texts = chunks
@@ -1495,13 +1564,16 @@ async def upload_files(
                 "file_id": file_id,
                 "file_name": filename,
                 "chunk_index": i,
-                "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
+                "file_type": (
+                    filename.lower().split('.')[-1]
+                    if '.' in filename else 'unknown'
+                ),
                 "content_type": "text",
                 "has_images": len(images) > 0,
                 "ocr_processed": ocr
             } for i in range(len(chunks))]
             ids = [str(uuid.uuid4()) for _ in chunks]
-            
+
             try:
                 store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
                 print(f"Stored {len(chunks)} text chunks in vector DB")
@@ -1509,50 +1581,47 @@ async def upload_files(
                 print(f"Failed to store text chunks: {e}")
 
         # Store image descriptions in CLIP vector store
+        images_stored = 0
         if images and len(images) > 0:
             print(f"Processing {len(images)} images for CLIP storage...")
-            images_stored = 0
-            
             for img_index, img in enumerate(images):
                 print(f"  Processing image {img_index + 1}/{len(images)}...")
                 try:
-                    # Generate image description
                     description = generate_image_description(img)
                     print(f"  Generated description: {description[:100]}...")
-                    
-                    # Prepare metadata
+
                     metadata = {
                         "file_id": file_id,
                         "file_name": filename,
                         "image_index": img_index,
                         "file_type": "image",
                         "content_type": "image",
-                        "original_content": description[:500]  # Limit description length
+                        "original_content": description[:500]
                     }
-                    
-                    # Store in CLIP vector store
+
                     clip_store.add_texts(
                         texts=[description],
                         metadatas=[metadata],
                         ids=[str(uuid.uuid4())]
                     )
-                    
+
                     images_stored += 1
                     print(f"  Successfully stored image {img_index + 1}")
-                    
                 except Exception as e:
                     print(f"  Failed to process/store image {img_index}: {e}")
-            
             print(f"Total images stored in CLIP: {images_stored}/{len(images)}")
         else:
-            print(f"No images found to store in CLIP")
+            print("No images found to store in CLIP")
 
         results.append({
             "file_name": filename,
             "file_id": file_id,
             "chunks": len(chunks),
             "images_processed": len(images),
-            "file_type": filename.lower().split('.')[-1] if '.' in filename else 'unknown',
+            "file_type": (
+                filename.lower().split('.')[-1]
+                if '.' in filename else 'unknown'
+            ),
             "s3_key": s3_key,
             "s3_url": s3_url,
             "html": None,
@@ -1560,10 +1629,10 @@ async def upload_files(
             "debug_info": {
                 "text_extracted": len(text) if text else 0,
                 "images_found": len(images),
-                "images_stored_in_clip": images_stored if 'images_stored' in locals() else 0
+                "images_stored_in_clip": images_stored
             }
         })
-        
+
         print(f"=== COMPLETED: {filename} ===\n")
 
     response_data = {"uploaded": results}

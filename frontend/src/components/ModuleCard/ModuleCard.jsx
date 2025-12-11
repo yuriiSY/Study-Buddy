@@ -109,7 +109,7 @@ const ModuleCard = ({
           <div className={styles.imageSkeleton}></div>
         )}
         <img
-          src={coverImage && showImage ? getImageUrl(coverImage) : ""}
+          src={coverImage && showImage ? getImageUrl(coverImage) : undefined}
           alt="module-cover"
           style={{ display: "none" }}
           onLoad={() => setImageLoaded(true)}

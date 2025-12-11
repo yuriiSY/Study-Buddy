@@ -392,6 +392,11 @@
   margin-top: 2px;
 }
 
+.dropzoneActive {
+  border-color: rgba(59, 130, 246, 0.7);
+  background: rgba(59, 130, 246, 0.03);
+}
+
 .removeFileBtn {
   width: 28px;
   height: 28px;
