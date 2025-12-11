@@ -1,0 +1,16 @@
+OCR: 
+https://www.kaggle.com/datasets/hojjatk/mnist-dataset/data  60k images for digits
+https://huggingface.co/datasets/Teklia/IAM-line 6.48 K train set, 2.92 k test,976 validation for sentence recognition
+
+summaries:
+https://huggingface.co/datasets/abisee/cnn_dailymail 300k
+https://huggingface.co/datasets/kmfoda/booksum 400k
+
+QA:
+https://huggingface.co/datasets/rajpurkar/squad_v2 130k
+
+MCQ:
+https://huggingface.co/datasets/allenai/sciq 11.7k
+https://huggingface.co/datasets/yyyyifan/TQA - with images 3.29k
+
+
