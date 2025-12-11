@@ -1,0 +1,25 @@
+#./Flask-endpoints/docker-compose.yml 
+services: 
+  flask-api: 
+    build: .
+    container_name: flask-api
+    ports: - "3000:3000"
+    environment:
+    GROQ_API_KEY: ""
+    GROQ_MODEL: "meta-llama/llama-4-scout-17b-16e-instruct"
+    # For local development, use the following lines
+    #DB_HOST: "host.docker.internal"
+    #DB_NAME: "admin"
+    #DB_USER: "secret"
+    #DB_PASSWORD: "mydb"
+    # For deployment, uncomment the following lines and comment out the local development lines above
+    DB_HOST: "dpg-d4f5rejuibrs73bc38eg-a.frankfurt-postgres.render.com"
+    DB_NAME: "asd_grup"
+    DB_USER: "admin"
+    DB_PASSWORD: ""
+    DB_PORT: 5432
+    AWS_ACCESS_KEY_ID: "AKIAUUCDVZ74TEBKRPBJ"
+    AWS_SECRET_ACCESS_KEY: ""
+    AWS_REGION: "eu-west-1"
+    S3_BUCKET_NAME: "study-buddy-demo" 
+    command: > uvicorn main:app --host 0.0.0.0 --port 3000 --reload
