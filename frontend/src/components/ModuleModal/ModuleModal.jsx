@@ -219,15 +219,15 @@ const ModuleModal = ({
       setStep(1);
       return;
     }
-
+  
     if (!uploadedFiles.length) {
       toast.warning("Please upload at least one file.");
       return;
     }
-
+  
     setLoading(true);
     setLoadingStage("uploading");
-
+  
     try {
       // ---------- 1️⃣ SEND FILES TO PYTHON ----------
       const pyFormData = new FormData();
@@ -236,80 +236,106 @@ const ModuleModal = ({
       }
       uploadedFiles.forEach((file) => pyFormData.append("files", file));
       pyFormData.append("ocr", ocr);
-
+  
       const respy = await apiPY.post("/upload-files", pyFormData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+  
       console.log("Python upload successful:", respy.data);
       setLoadingStage("processing");
-
+  
       if (respy.data.errors && respy.data.errors.length > 0) {
         console.error("Python upload errors:", respy.data.errors);
-        const errorFiles = respy.data.errors
-          .map((e) => e.file_name)
-          .join(", ");
+        const errorFiles = respy.data.errors.map((e) => e.file_name).join(", ");
         toast.error(`Some files failed to process: ${errorFiles}`);
       }
-
+  
       if (!respy.data.uploaded || respy.data.uploaded.length === 0) {
         toast.error("No files were successfully processed.");
         setLoading(false);
         return;
       }
-
+  
+      // Filter to only files that have valid S3 info
+      const successfulUploads = respy.data.uploaded
+        .map((u, idx) => ({ ...u, originalIndex: idx }))
+        .filter((u) => u.s3_url && u.s3_key);
+  
+      const failedForS3 = respy.data.uploaded
+        .filter((u) => !u.s3_url || !u.s3_key)
+        .map((u) => u.file_name);
+  
+      if (failedForS3.length > 0) {
+        toast.error(
+          `These files could not be stored and were skipped: ${failedForS3.join(
+            ", "
+          )}`
+        );
+      }
+  
+      if (successfulUploads.length === 0) {
+        toast.error(
+          "All files failed to upload to cloud storage. Please try again."
+        );
+        setLoading(false);
+        setLoadingStage("uploading");
+        return;
+      }
+  
       // ---------- 2️⃣ SEND METADATA TO NODE.JS ----------
       setLoadingStage("creating");
       let createdModule = null;
-
-      for (let i = 0; i < respy.data.uploaded.length; i++) {
-        const uploadedInfo = respy.data.uploaded[i];
-
+  
+      for (let i = 0; i < successfulUploads.length; i++) {
+        const uploadedInfo = successfulUploads[i];
+        const originalIndex = uploadedInfo.originalIndex;
+  
         const displayName =
-          fileNames[i] && fileNames[i].trim()
-            ? fileNames[i].trim()
+          fileNames[originalIndex] && fileNames[originalIndex].trim()
+            ? fileNames[originalIndex].trim()
             : uploadedInfo.file_name;
-
+  
         const nodePayload = {
+          // first successfully stored file creates the module
           ...(mode === "create" && i === 0 && { moduleName }),
           ...(mode === "create" &&
             i > 0 &&
             createdModule && { moduleId: createdModule.id }),
           ...(mode === "upload" && { moduleId: Number(moduleId) }),
-
+  
           file_id: uploadedInfo.file_id,
           file_name: displayName,
           s3Url: uploadedInfo.s3_url,
           s3Key: uploadedInfo.s3_key,
           html: uploadedInfo.html || "",
-
+  
           ...(mode === "create" && i === 0 && { coverImage: selectedImage }),
         };
-
+  
         console.log(
-          `Sending to Node.js (file ${i + 1}/${respy.data.uploaded.length}):`,
+          `Sending to Node.js (file ${i + 1}/${successfulUploads.length}):`,
           nodePayload
         );
-
+  
         const res = await api.post("/files/upload", nodePayload, {
           headers: { "Content-Type": "application/json" },
         });
-
+  
         console.log("Node.js response:", res.data);
-
+  
         if (mode === "create" && i === 0 && res.data.module) {
           createdModule = res.data.module;
         }
       }
-
+  
       if (mode === "create" && onCreate && createdModule) {
         onCreate(createdModule);
       }
-
+  
       if (mode === "upload" && onUploadSuccess) {
         onUploadSuccess();
       }
-
+  
       // Reset + close
       setModuleName("");
       setSelectedImage(null);
@@ -319,7 +345,7 @@ const ModuleModal = ({
       setOcr(false);
       setLoadingStage("uploading");
       onClose();
-
+  
       if (mode === "create" && createdModule) {
         setTimeout(() => {
           navigate(`/modules/${createdModule.id}`);
@@ -328,22 +354,23 @@ const ModuleModal = ({
     } catch (err) {
       console.error("Upload failed:", err);
       const data = err.response?.data;
-
+  
       if (err.response?.status === 400 && data?.errors?.length) {
         const msg = data.errors
           .map((e) => `${e.file_name}: ${e.error}`)
           .join("; ");
         toast.error(msg);
       } else {
-        const errorMsg = data?.error || err.message || "Upload failed";
+        const errorMsg = data?.error || data?.message || err.message || "Upload failed";
         toast.error(`Upload failed: ${errorMsg}`);
       }
-
+  
       setLoadingStage("uploading");
     } finally {
       setLoading(false);
     }
   };
+  
 
   if (loading) {
     return <LoadingAnimation stage={loadingStage} />;

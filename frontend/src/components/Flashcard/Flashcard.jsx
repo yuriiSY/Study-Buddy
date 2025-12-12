@@ -75,11 +75,17 @@ const Flashcard = ({ cards = [], onFinish, onNextLevel, level = 1, levelDescript
   const handleNextLevelClick = async () => {
     setLoadingNextLevel(true);
     try {
-      await onNextLevel?.();
+      if (onLevelComplete) {
+        console.log("handleNextLevelClick: marking level completed for safety, level:", level);
+        await onLevelComplete();     // re-mark this level as completed
+      }
+      await onNextLevel?.();          // then load/generate the next level
+    } catch (err) {
+      console.error("Error in handleNextLevelClick:", err);
     } finally {
       setLoadingNextLevel(false);
     }
-  };
+  };  
 
   if (celebration) {
     const hasNextLevel = level < 3;

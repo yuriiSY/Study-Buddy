@@ -74,7 +74,7 @@ docker-compose up -d --build
 docker-compose logs -f
 //Quick health check
 curl -v http://localhost:3000/health
-curl -vk https://thestudybuddyaiproject.online/ai/health
+curl -vk https://thestudybuddyaiproject.online/pypi/health
 docker-compose ps
 docker-compose logs -f
 ### frontend
@@ -110,6 +110,7 @@ Study-Buddy/
   Flask-endpoints/  # Python FastAPI AI service (Docker on EC2)
   docker-compose.yml
 
+sudo nano /etc/nginx/sites-available/study-buddy
 #nginx server file
 server {
     ...

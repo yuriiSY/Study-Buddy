@@ -71,6 +71,7 @@ app.add_middleware(
 )
 # ---------- Connect to hosted PostgreSQL ----------
 print("Connecting to hosted PostgreSQL...")
+conn = None
 try:
     conn = db.connect(
         host=DB_HOST,
@@ -82,8 +83,9 @@ try:
     )
     print("Connected to PostgreSQL!")
 except Exception as e:
-    print("Failed to connect:", e)
-    raise
+    # Log the error but do not crash the entire app
+    print("Failed to connect to PostgreSQL at startup:", e)
+    conn = None
 
 # Load embedding models
 text_embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
@@ -919,6 +921,9 @@ def ensure_recap_cards_table():
         print(f"Error ensuring recap_cards_progress table: {e}")
         return False
 
+def init_recap_cards_table():
+    """Backward-compatible wrapper used by the root ("/") health endpoint."""
+    return ensure_recap_cards_table()
 
 def mark_level_completed(file_id: str, level: int):
     try:
@@ -1797,70 +1802,106 @@ def clear_chat_history(data: dict):
 
 @app.post("/generate-flashcards")
 def generate_flashcards(data: dict):
-    file_ids = data.get("file_ids", [])
-    num_flashcards = data.get("num_flashcards", 5)
-    fill_gaps = data.get("fill_gaps", False)
-    requested_level = data.get("level", 1)
-    
-    if not file_ids:
-        raise HTTPException(status_code=400, detail="file_ids are required")
-    
-    if requested_level not in [1, 2, 3]:
-        requested_level = 1
-    
-    completed_levels = get_completed_levels(file_ids[0])
-    next_available = get_next_available_level(file_ids[0])
-    max_unlocked_level = max(completed_levels) if completed_levels else 0
-    
-    if requested_level > max_unlocked_level + 1:
-        missing_level = requested_level - 1
-        raise HTTPException(
-            status_code=403,
-            detail=f"Level {requested_level} is locked. Complete Level {missing_level} first."
+    """Generate recap flashcards for a given difficulty level (1–3).
+
+    Handles string/int level values safely and enforces simple level-locking:
+    you cannot skip ahead more than one level beyond the highest completed.
+    Any unexpected errors are converted into a 500 with a clear message
+    instead of crashing the service.
+    """
+    try:
+        file_ids = data.get("file_ids") or []
+        num_flashcards = data.get("num_flashcards", 5)
+        fill_gaps = data.get("fill_gaps", False)
+
+        if not file_ids:
+            raise HTTPException(status_code=400, detail="file_ids are required")
+
+        # Normalise level coming from JSON (may be "1", "2", "3" as strings)
+        raw_level = data.get("level", 1)
+        try:
+            requested_level = int(raw_level)
+        except (TypeError, ValueError):
+            requested_level = 1
+
+        if requested_level not in [1, 2, 3]:
+            requested_level = 1
+
+        file_id = file_ids[0]
+
+        completed_levels = get_completed_levels(file_id)
+        next_available = get_next_available_level(file_id)
+        max_unlocked_level = max(completed_levels) if completed_levels else 0
+
+        # Enforce that you can't jump ahead more than one level
+        if requested_level > max_unlocked_level + 1:
+            missing_level = requested_level - 1
+            raise HTTPException(
+                status_code=403,
+                detail=f"Level {requested_level} is locked. Complete Level {missing_level} first.",
+            )
+
+        level = requested_level
+
+        # Build context for flashcards
+        search_terms = [
+            "key concepts",
+            "important information",
+            "main topics",
+            "detailed explanations",
+        ]
+        random_term = random.choice(search_terms)
+
+        context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=6)
+        context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
+
+        if not context.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="No content found in selected files",
+            )
+
+        flashcards = generate_flashcards_with_groq(
+            context, num_flashcards, level, fill_gaps
         )
-    
-    level = requested_level
-    
-    search_terms = [
-        "key concepts",
-        "important information", 
-        "main topics",
-        "detailed explanations"
-    ]
-    
-    random_term = random.choice(search_terms)
-    context_chunks, _ = retrieve_by_file_ids(file_ids, random_term, k=6)
-    context = "\n---\n".join(context_chunks) if context_chunks else "No content found."
+        print("Generated flashcards:", flashcards)
 
-    if not context.strip():
-        raise HTTPException(status_code=400, detail="No content found in selected files")
-
-    flashcards = generate_flashcards_with_groq(context, num_flashcards, level, fill_gaps)
-    print(flashcards)
-    return {
-        "flashcards": flashcards,
-        "file_ids_used": file_ids,
-        "total_generated": len(flashcards),
-        "level": level,
-        "level_description": get_level_description(level),
-        "fill_gaps_used": fill_gaps,
-        "progress": {
-            "completed_levels": completed_levels,
-            "next_available_level": next_available,
-            "all_levels_completed": len(completed_levels) == 3
+        return {
+            "flashcards": flashcards,
+            "file_ids_used": file_ids,
+            "total_generated": len(flashcards),
+            "level": level,
+            "level_description": get_level_description(level),
+            "fill_gaps_used": fill_gaps,
+            "progress": {
+                "completed_levels": completed_levels,
+                "next_available_level": next_available,
+                "all_levels_completed": len(completed_levels) == 3,
+            },
         }
-    }
 
+    except HTTPException:
+        # Pass explicit FastAPI errors through unchanged
+        raise
+    except Exception as e:
+        # Anything unexpected becomes a clean 500
+        print(f"Error in generate_flashcards: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Unexpected error while generating flashcards.",
+        )
 
 def get_level_description(level: int) -> str:
-    """Get description for each level"""
+    """Get description for each level."""
     descriptions = {
         1: "Easy Level - Foundational concepts and definitions",
         2: "Intermediate Level - Practical applications and critical thinking",
-        3: "Advanced Level - Complex analysis and synthesis"
+        3: "Advanced Level - Complex analysis and synthesis",
     }
-    return descriptions.get(level, "Easy Level - Foundational concepts and definitions")
-
+    return descriptions.get(
+        level,
+        "Easy Level - Foundational concepts and definitions",
+    )
 
 @app.get("/recap-cards-progress")
 def get_recap_progress(file_ids: List[str] = Query(..., alias="file_ids[]")):
@@ -1890,28 +1931,54 @@ def get_recap_progress(file_ids: List[str] = Query(..., alias="file_ids[]")):
 
 @app.post("/recap-cards-complete-level")
 def complete_level(data: dict):
-    file_id = data.get("file_id")
-    level = data.get("level")
-    
-    if not file_id or not level:
-        raise HTTPException(status_code=400, detail="file_id and level are required")
-    
-    if level not in [1, 2, 3]:
-        raise HTTPException(status_code=400, detail="level must be 1, 2, or 3")
-    
-    completed_levels = get_completed_levels(file_id)
-    max_unlocked_level = max(completed_levels) if completed_levels else 0
-    
-    if level > max_unlocked_level + 1:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Level {level} is not available. Complete Level {level - 1} first."
-        )
-    
-    if mark_level_completed(file_id, level):
+    """Mark a recap level as completed for a file.
+
+    Handles string/int level values safely and keeps the
+    "don't skip levels" rule.
+    """
+    try:
+        file_id = data.get("file_id")
+        raw_level = data.get("level")
+
+        if not file_id or raw_level is None:
+            raise HTTPException(
+                status_code=400,
+                detail="file_id and level are required",
+            )
+
+        # Normalise level to int
+        try:
+            level = int(raw_level)
+        except (TypeError, ValueError):
+            raise HTTPException(
+                status_code=400,
+                detail="level must be 1, 2, or 3",
+            )
+
+        if level not in [1, 2, 3]:
+            raise HTTPException(
+                status_code=400,
+                detail="level must be 1, 2, or 3",
+            )
+
+        completed_levels = get_completed_levels(file_id)
+        max_unlocked_level = max(completed_levels) if completed_levels else 0
+
+        if level > max_unlocked_level + 1:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Level {level} is not available. Complete Level {level - 1} first.",
+            )
+
+        if not mark_level_completed(file_id, level):
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to mark level as completed",
+            )
+
         updated_completed = get_completed_levels(file_id)
         updated_next = get_next_available_level(file_id)
-        
+
         return {
             "success": True,
             "file_id": file_id,
@@ -1919,11 +1986,17 @@ def complete_level(data: dict):
             "completed_levels": updated_completed,
             "next_available_level": updated_next,
             "all_levels_completed": len(updated_completed) == 3,
-            "message": f"Level {level} completed! {get_level_description(level)}"
+            "message": f"Level {level} completed! {get_level_description(level)}",
         }
-    else:
-        raise HTTPException(status_code=500, detail="Failed to mark level as completed")
 
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in recap-cards-complete-level: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Unexpected error while marking level as completed.",
+        )
 
 @app.post("/enhance-notes")
 def enhance_notes(data: dict):
